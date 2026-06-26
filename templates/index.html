@@ -7,21 +7,35 @@
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+  <div class="stars" id="stars"></div>
+
   <div class="container">
     <div class="card">
-      <span class="heart-icon">💕</span>
+      <span class="hero-emoji">💕</span>
       <h1 class="title">Nosso Quiz</h1>
       <p class="subtitle">
-        Você acha que ainda me conhece bem?<br>
-        Vamos descobrir... 💭
+        será que você ainda me conhece?<br>
+        vamos descobrir juntos ✨
       </p>
       <button class="btn btn-primary" onclick="startQuiz()">
-        Começar Quiz ❤️
+        começar! 💖
       </button>
     </div>
   </div>
 
   <script>
+    // background stars
+    const stars = ['✦', '★', '✧', '☆', '⋆'];
+    for (let i = 0; i < 20; i++) {
+      const span = document.createElement('span');
+      span.textContent = stars[i % stars.length];
+      span.style.left = Math.random() * 100 + '%';
+      span.style.top = Math.random() * 100 + '%';
+      span.style.animationDelay = Math.random() * 3 + 's';
+      span.style.fontSize = (10 + Math.random() * 12) + 'px';
+      document.getElementById('stars').appendChild(span);
+    }
+
     async function startQuiz() {
       const btn = document.querySelector('.btn-primary');
       btn.innerHTML = '<span class="spinner"></span>';
@@ -31,9 +45,9 @@
         const res = await fetch('/api/start', { method: 'POST' });
         const data = await res.json();
         window.location.href = `/quiz/${data.session_id}`;
-      } catch (err) {
-        alert('Erro ao iniciar o quiz. Tente novamente.');
-        btn.innerHTML = 'Começar Quiz ❤️';
+      } catch {
+        alert('Ops! Algo deu errado. Tenta de novo 💕');
+        btn.innerHTML = 'começar! 💖';
         btn.disabled = false;
       }
     }

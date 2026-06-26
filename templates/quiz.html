@@ -7,16 +7,25 @@
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+  <div class="confetti-container" id="confettiContainer"></div>
+
   <div class="container">
     <div class="card">
-      <div class="score-display" id="scoreDisplay">❤️ 0</div>
-      <div class="progress-bar">
-        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+      <div class="score-badge" id="scoreBadge"><span>❤️</span> 0</div>
+
+      <div class="progress-section">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+        <span class="question-counter" id="questionCounter">1 / 10</span>
       </div>
-      <div class="question-number" id="questionNumber">Pergunta 1 de 10</div>
-      <div class="question-text" id="questionText">Carregando...</div>
+
+      <div class="question-text" id="questionText">carregando...</div>
+
       <div class="options" id="optionsContainer"></div>
+
       <div class="feedback" id="feedback">
+        <span class="feedback-icon" id="feedbackIcon">✅</span>
         <div class="feedback-text" id="feedbackText"></div>
         <div class="fun-fact" id="funFact"></div>
       </div>
@@ -24,13 +33,12 @@
   </div>
 
   <script>
+    const LETTERS = ['A', 'B', 'C', 'D'];
     const sessionId = window.location.pathname.split('/').pop();
-    let currentQuestion = 0;
-    let totalQuestions = 10;
-    let score = 0;
     let answered = false;
 
     async function loadQuestion() {
+      answered = false;
       const res = await fetch(`/api/question/${sessionId}`);
       const data = await res.json();
 
@@ -39,31 +47,56 @@
         return;
       }
 
-      currentQuestion = data.current;
-      totalQuestions = data.total;
-      answered = false;
+      document.getElementById('questionCounter').textContent = `${data.current} / ${data.total}`;
+      document.getElementById('progressFill').style.width = `${((data.current - 1) / data.total) * 100}%`;
 
-      document.getElementById('questionNumber').textContent =
-        `Pergunta ${data.current} de ${data.total}`;
-      document.getElementById('questionText').textContent = data.question;
-      document.getElementById('progressFill').style.width =
-        `${((data.current - 1) / data.total) * 100}%`;
+      // animate question
+      const qEl = document.getElementById('questionText');
+      qEl.style.animation = 'none';
+      qEl.offsetHeight; // trigger reflow
+      qEl.style.animation = 'fadeSlideIn 0.5s ease';
+      qEl.textContent = data.question;
 
       const container = document.getElementById('optionsContainer');
       container.innerHTML = '';
-      document.getElementById('feedback').classList.remove('show');
+      container.style.animation = 'none';
+      container.offsetHeight;
+      container.style.animation = 'fadeSlideIn 0.5s ease';
 
-      data.options.forEach((option, index) => {
+      data.options.forEach((option, i) => {
         const btn = document.createElement('button');
         btn.className = 'option-btn';
-        btn.textContent = option;
-        btn.dataset.index = index;
-        btn.onclick = () => selectAnswer(index, data.question_id);
+        btn.innerHTML = `<span class="letter">${LETTERS[i]}</span>${option}`;
+        btn.dataset.index = i;
+        btn.onclick = () => selectAnswer(i, data.question_id);
         container.appendChild(btn);
       });
+
+      document.getElementById('feedback').classList.remove('show');
     }
 
-    async function selectAnswer(index, questionId) {
+    function fireConfetti() {
+      const container = document.getElementById('confettiContainer');
+      const colors = ['#ff85a2', '#c8a8e9', '#85d9c0', '#ffd166', '#a8d8f0', '#ff6b8a'];
+      const shapes = ['●', '♥', '★', '♦', '✿'];
+
+      for (let i = 0; i < 40; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'confetti-piece';
+        piece.textContent = shapes[Math.floor(Math.random() * shapes.length)];
+        piece.style.left = (20 + Math.random() * 60) + '%';
+        piece.style.top = '-10px';
+        piece.style.color = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.fontSize = (8 + Math.random() * 14) + 'px';
+        piece.style.animationDuration = (1.5 + Math.random() * 1.5) + 's';
+        piece.style.animationDelay = Math.random() * 0.5 + 's';
+        container.appendChild(piece);
+
+        setTimeout(() => piece.remove(), 3000);
+      }
+    }
+
+    async function selectAnswer(index) {
       if (answered) return;
       answered = true;
 
@@ -79,19 +112,26 @@
 
       const data = await res.json();
 
+      // highlight correct/wrong
       buttons.forEach((btn, i) => {
         if (i === data.correct_answer) btn.classList.add('correct');
         if (i === index && !data.correct) btn.classList.add('wrong');
       });
 
-      const feedback = document.getElementById('feedback');
-      feedback.className = `feedback show ${data.correct ? 'correct' : 'wrong'}`;
-      document.getElementById('feedbackText').textContent =
-        data.correct ? '✅ Acertou!' : '❌ Errou!';
-      document.getElementById('funFact').textContent = data.fun_fact;
-      document.getElementById('scoreDisplay').textContent = `❤️ ${data.score}`;
+      if (data.correct) {
+        fireConfetti();
+      }
 
-      score = data.score;
+      // feedback
+      const feedback = document.getElementById('feedback');
+      const isCorrect = data.correct;
+
+      feedback.className = `feedback show ${isCorrect ? 'correct' : 'wrong'}`;
+      document.getElementById('feedbackIcon').textContent = isCorrect ? '🎉' : '😢';
+      document.getElementById('feedbackText').textContent = isCorrect ? 'ACERTOU!' : 'ERROU...';
+      document.getElementById('funFact').textContent = data.fun_fact;
+
+      document.getElementById('scoreBadge').innerHTML = `<span>❤️</span> ${data.score}`;
 
       setTimeout(() => {
         if (data.finished) {
@@ -99,7 +139,7 @@
         } else {
           loadQuestion();
         }
-      }, 2000);
+      }, 2200);
     }
 
     loadQuestion();

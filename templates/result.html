@@ -7,36 +7,76 @@
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-  <div class="hearts-container" id="heartsContainer"></div>
-  <div class="container" style="position: relative; z-index: 1;">
+  <div class="hearts-rain" id="heartsRain"></div>
+  <div class="stars" id="stars"></div>
+
+  <div class="container">
     <div class="card">
-      <span class="result-emoji" id="resultEmoji">💕</span>
-      <div class="result-score" id="resultScore">0/10</div>
-      <div class="result-label" id="resultLabel">você acertou</div>
-      <div class="result-message" id="resultMessage"></div>
-      <div class="final-question" id="finalQuestion"></div>
-      <div class="final-buttons">
-        <button class="btn btn-yes" onclick="answerYes()">Sim! 💕</button>
-        <button class="btn btn-no" onclick="answerNo()">Não 😢</button>
+      <div id="resultContent">
+        <span class="result-emoji" id="resultEmoji">💕</span>
+
+        <div class="result-score-wrap">
+          <span class="result-score" id="resultScore">0</span>
+          <span class="result-score-total" id="resultTotal">/10</span>
+        </div>
+        <div class="result-label" id="resultLabel">perguntas certas</div>
+
+        <div class="result-message" id="resultMessage"></div>
+
+        <div class="final-question" id="finalQuestion"></div>
+
+        <div class="final-buttons" id="finalButtons">
+          <button class="btn btn-yes" onclick="answerYes()">sim! 💕</button>
+          <button class="btn btn-no" onclick="answerNo()">não 😢</button>
+        </div>
       </div>
     </div>
   </div>
 
   <script>
     const sessionId = window.location.pathname.split('/').pop();
+    const hearts = ['💕', '❤️', '💗', '💖', '💝', '💘', '🥰'];
+    const stars = ['✦', '★', '✧', '☆', '⋆'];
+
+    function startHeartsRain() {
+      const container = document.getElementById('heartsRain');
+      for (let i = 0; i < 25; i++) {
+        const span = document.createElement('span');
+        span.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+        span.style.left = Math.random() * 100 + '%';
+        span.style.fontSize = (14 + Math.random() * 22) + 'px';
+        span.style.animationDuration = (5 + Math.random() * 5) + 's';
+        span.style.animationDelay = Math.random() * 4 + 's';
+        container.appendChild(span);
+      }
+    }
+
+    function addStars() {
+      const container = document.getElementById('stars');
+      for (let i = 0; i < 15; i++) {
+        const span = document.createElement('span');
+        span.textContent = stars[i % stars.length];
+        span.style.left = Math.random() * 100 + '%';
+        span.style.top = Math.random() * 100 + '%';
+        span.style.animationDelay = Math.random() * 3 + 's';
+        span.style.fontSize = (10 + Math.random() * 10) + 'px';
+        container.appendChild(span);
+      }
+    }
 
     async function loadResult() {
       const res = await fetch(`/api/result/${sessionId}`);
       const data = await res.json();
 
-      document.getElementById('resultScore').textContent = `${data.score}/${data.total}`;
+      document.getElementById('resultScore').textContent = data.score;
+      document.getElementById('resultTotal').textContent = `/${data.total}`;
       document.getElementById('resultLabel').textContent =
         data.score === 1 ? 'pergunta certa' : 'perguntas certas';
 
       if (data.percentage >= 80) {
         document.getElementById('resultEmoji').textContent = '🥰';
         document.title = 'Você me conhece! 💕';
-        startHearts();
+        startHeartsRain();
       } else if (data.percentage >= 50) {
         document.getElementById('resultEmoji').textContent = '😊';
       } else {
@@ -45,54 +85,40 @@
 
       document.getElementById('resultMessage').textContent = data.message;
       document.getElementById('finalQuestion').textContent = data.final_question;
-    }
-
-    function startHearts() {
-      const container = document.getElementById('heartsContainer');
-      const hearts = ['💕', '❤️', '💗', '💖', '💝', '💘', '🥰'];
-      for (let i = 0; i < 30; i++) {
-        const span = document.createElement('span');
-        span.textContent = hearts[Math.floor(Math.random() * hearts.length)];
-        span.style.left = Math.random() * 100 + '%';
-        span.style.fontSize = (16 + Math.random() * 24) + 'px';
-        span.style.animationDuration = (4 + Math.random() * 4) + 's';
-        span.style.animationDelay = Math.random() * 4 + 's';
-        container.appendChild(span);
-      }
+      addStars();
     }
 
     function answerYes() {
-      const card = document.querySelector('.card');
-      card.innerHTML = `
-        <span style="font-size: 80px; display: block; margin-bottom: 16px;">🥹💕</span>
-        <h1 class="title">Ainda bem que você disse sim!</h1>
-        <p class="subtitle" style="font-size: 1.2rem;">
-          Eu nunca parei de pensar em você.<br>
-          Vou te procurar no nosso lugar favorito.<br>
-          Te espero lá... 💕
-        </p>
-        <p style="font-family: 'Dancing Script', cursive; font-size: 1.5rem; color: var(--primary); margin-top: 20px;">
-          Eu te amo ❤️
-        </p>
+      const content = document.getElementById('resultContent');
+      content.innerHTML = `
+        <div class="final-card-content">
+          <span style="font-size: 72px; display: block; margin-bottom: 8px; animation: bounce 2s ease-in-out infinite;">🥹💕</span>
+          <h1 class="title">ainda bem que você disse sim!</h1>
+          <p class="subtitle" style="font-size: 1.15rem;">
+            eu nunca parei de pensar em você.<br>
+            vamos escrever um novo capítulo juntos? 💕
+          </p>
+          <p style="font-family: 'Fredoka One', cursive; font-size: 1.4rem; color: var(--pink-dark); margin-top: 16px;">
+            eu te amo ❤️
+          </p>
+        </div>
       `;
-      startHearts();
+      startHeartsRain();
     }
 
     function answerNo() {
-      const card = document.querySelector('.card');
-      card.innerHTML = `
-        <span style="font-size: 80px; display: block; margin-bottom: 16px;">😢💔</span>
-        <h1 class="title">Eu entendo...</h1>
-        <p class="subtitle" style="font-size: 1.1rem;">
-          Às vezes as histórias terminam,<br>
-          mas isso não apaga o que vivemos.<br>
-          Obrigado por ter participado da minha vida.<br><br>
-          Se um dia mudar de ideia,<br>
-          eu vou estar aqui. 💕
-        </p>
-        <p style="font-family: 'Dancing Script', cursive; font-size: 1.3rem; color: var(--text-light); margin-top: 20px;">
-        Com carinho ❤️
-        </p>
+      const content = document.getElementById('resultContent');
+      content.innerHTML = `
+        <div class="final-card-content">
+          <span style="font-size: 72px; display: block; margin-bottom: 8px;">😢💔</span>
+          <h1 class="title">eu entendo...</h1>
+          <p class="subtitle" style="font-size: 1.1rem;">
+            algumas histórias terminam,<br>
+            mas isso não apaga o que a gente viveu.<br><br>
+            obrigado por ter feito parte da minha vida.<br>
+            se um dia mudar de ideia, eu vou estar aqui. 💕
+          </p>
+        </div>
       `;
     }
 
