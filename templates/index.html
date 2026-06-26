@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nosso Quiz 💕</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <span class="heart-icon">💕</span>
+      <h1 class="title">Nosso Quiz</h1>
+      <p class="subtitle">
+        Você acha que ainda me conhece bem?<br>
+        Vamos descobrir... 💭
+      </p>
+      <button class="btn btn-primary" onclick="startQuiz()">
+        Começar Quiz ❤️
+      </button>
+    </div>
+  </div>
+
+  <script>
+    async function startQuiz() {
+      const btn = document.querySelector('.btn-primary');
+      btn.innerHTML = '<span class="spinner"></span>';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/start', { method: 'POST' });
+        const data = await res.json();
+        window.location.href = `/quiz/${data.session_id}`;
+      } catch (err) {
+        alert('Erro ao iniciar o quiz. Tente novamente.');
+        btn.innerHTML = 'Começar Quiz ❤️';
+        btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>

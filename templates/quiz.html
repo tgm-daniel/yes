@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz 💕</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="score-display" id="scoreDisplay">❤️ 0</div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+      </div>
+      <div class="question-number" id="questionNumber">Pergunta 1 de 10</div>
+      <div class="question-text" id="questionText">Carregando...</div>
+      <div class="options" id="optionsContainer"></div>
+      <div class="feedback" id="feedback">
+        <div class="feedback-text" id="feedbackText"></div>
+        <div class="fun-fact" id="funFact"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const sessionId = window.location.pathname.split('/').pop();
+    let currentQuestion = 0;
+    let totalQuestions = 10;
+    let score = 0;
+    let answered = false;
+
+    async function loadQuestion() {
+      const res = await fetch(`/api/question/${sessionId}`);
+      const data = await res.json();
+
+      if (data.finished) {
+        window.location.href = `/resultado/${sessionId}`;
+        return;
+      }
+
+      currentQuestion = data.current;
+      totalQuestions = data.total;
+      answered = false;
+
+      document.getElementById('questionNumber').textContent =
+        `Pergunta ${data.current} de ${data.total}`;
+      document.getElementById('questionText').textContent = data.question;
+      document.getElementById('progressFill').style.width =
+        `${((data.current - 1) / data.total) * 100}%`;
+
+      const container = document.getElementById('optionsContainer');
+      container.innerHTML = '';
+      document.getElementById('feedback').classList.remove('show');
+
+      data.options.forEach((option, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.textContent = option;
+        btn.dataset.index = index;
+        btn.onclick = () => selectAnswer(index, data.question_id);
+        container.appendChild(btn);
+      });
+    }
+
+    async function selectAnswer(index, questionId) {
+      if (answered) return;
+      answered = true;
+
+      const buttons = document.querySelectorAll('.option-btn');
+      buttons.forEach(btn => btn.disabled = true);
+      buttons[index].classList.add('selected');
+
+      const res = await fetch(`/api/answer/${sessionId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ answer: index }),
+      });
+
+      const data = await res.json();
+
+      buttons.forEach((btn, i) => {
+        if (i === data.correct_answer) btn.classList.add('correct');
+        if (i === index && !data.correct) btn.classList.add('wrong');
+      });
+
+      const feedback = document.getElementById('feedback');
+      feedback.className = `feedback show ${data.correct ? 'correct' : 'wrong'}`;
+      document.getElementById('feedbackText').textContent =
+        data.correct ? '✅ Acertou!' : '❌ Errou!';
+      document.getElementById('funFact').textContent = data.fun_fact;
+      document.getElementById('scoreDisplay').textContent = `❤️ ${data.score}`;
+
+      score = data.score;
+
+      setTimeout(() => {
+        if (data.finished) {
+          window.location.href = `/resultado/${sessionId}`;
+        } else {
+          loadQuestion();
+        }
+      }, 2000);
+    }
+
+    loadQuestion();
+  </script>
+</body>
+</html>
