@@ -2,10 +2,9 @@ import json
 import os
 import random
 
-from fastapi import FastAPI, Depends, HTTPException, Request
+from fastapi import FastAPI, Depends, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from database import engine, Base, get_db, BASE_DIR
@@ -15,10 +14,22 @@ app = FastAPI(title="MultiQuiz")
 Base.metadata.create_all(bind=engine)
 
 app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
-templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 
 with open(os.path.join(BASE_DIR, "profiles.json")) as f:
     PROFILES = json.load(f)
+
+
+TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
+
+
+def _render(name: str, **kwargs) -> str:
+    path = os.path.join(TEMPLATES_DIR, name)
+    with open(path) as f:
+        html = f.read()
+    for k, v in kwargs.items():
+        html = html.replace("{{ " + k + " }}", v)
+        html = html.replace("{{ " + k + "|safe }}", v)
+    return html
 
 
 def get_profile(profile_id: str) -> dict:
@@ -42,13 +53,12 @@ def get_result_tier(percentage: float) -> str:
 # ---- PÁGINAS ----
 
 @app.get("/", response_class=HTMLResponse)
-async def login_page(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+async def login_page():
+    return HTMLResponse(_render("index.html"))
 
 
 @app.get("/start/{profile_id}")
 async def start_redirect(profile_id: str):
-    """Cria sessão e redireciona pro quiz."""
     if profile_id not in PROFILES:
         raise HTTPException(status_code=404, detail="Perfil não encontrado")
     db = next(get_db())
@@ -66,37 +76,25 @@ async def start_redirect(profile_id: str):
 
 
 @app.get("/quiz/{session_id}", response_class=HTMLResponse)
-async def quiz_page(request: Request, session_id: str):
+async def quiz_page(session_id: str):
     db = next(get_db())
     try:
         session = db.query(QuizSession).filter(QuizSession.id == session_id).first()
         if not session:
             raise HTTPException(status_code=404, detail="Sessão não encontrada")
         profile = get_profile(session.profile_id)
-        return templates.TemplateResponse("quiz.html", {
-            "request": request,
-            "pistas_json": json.dumps(profile["pistas"]),
-            "carinho_json": json.dumps(profile["carinhoMessages"]),
-            "emoji": profile["emoji"],
-        })
+        return HTMLResponse(_render("quiz.html",
+            pistas_json=json.dumps(profile["pistas"]),
+            carinho_json=json.dumps(profile["carinhoMessages"]),
+            emoji=profile["emoji"],
+        ))
     finally:
         db.close()
 
 
 @app.get("/resultado/{session_id}", response_class=HTMLResponse)
-async def result_page(request: Request, session_id: str):
-    db = next(get_db())
-    try:
-        session = db.query(QuizSession).filter(QuizSession.id == session_id).first()
-        if not session:
-            raise HTTPException(status_code=404, detail="Sessão não encontrada")
-        profile = get_profile(session.profile_id)
-        return templates.TemplateResponse("result.html", {
-            "request": request,
-            "profile_json": json.dumps(profile),
-        })
-    finally:
-        db.close()
+async def result_page(session_id: str):
+    return HTMLResponse(_render("result.html"))
 
 
 # ---- API ----
