@@ -25,6 +25,7 @@ body.dark .preview-box, body.dark .preview-box .preview-text { background: var(-
 body.dark .admin-log-item { background: var(--surface); border-color: rgba(255,181,194,0.06); }
 body.dark .admin-log-item .log-time { color: var(--text-light); }
 body.dark .profile-list-item .add-icon { color: var(--pink); }
+body.dark .pista-item textarea, body.dark .carinho-item textarea { background: var(--bg2); color: var(--text); border-color: rgba(255,181,194,0.1); }
 
 /* layout */
 .admin-wrap { max-width: 1100px; margin: 0 auto; padding: 20px 16px 60px; }
@@ -124,6 +125,20 @@ body.dark .profile-list-item .add-icon { color: var(--pink); }
 .admin-msg.success { display: block; background: rgba(107,158,122,0.1); color: #6b9e7a; border: 1px solid rgba(107,158,122,0.2); }
 .admin-msg.error { display: block; background: rgba(255,92,112,0.1); color: var(--pink-dark); border: 1px solid rgba(255,92,112,0.2); }
 
+/* Pista / Carinho items */
+.pista-item, .carinho-item { display: flex; gap: 6px; margin-bottom: 6px; align-items: center; }
+.pista-item textarea, .carinho-item textarea { flex: 1; padding: 6px 8px; border: 2px solid rgba(255,181,194,0.15); border-radius: var(--radius-sm); font-family: inherit; resize: vertical; min-height: 40px; }
+
+/* Delete button for pista/carinho */
+.del-btn { cursor: pointer; color: var(--pink-dark); font-size: 1.1rem; flex-shrink: 0; padding: 4px; }
+
+/* Welcome message row */
+.welcome-row { display: flex; gap: 6px; align-items: flex-end; }
+
+/* Q-table wrapper for horizontal scroll */
+.q-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+.q-table-wrap::-webkit-scrollbar { display: none; }
+
 /* No profile selected placeholder */
 .no-profile { text-align: center; padding: 60px 20px; color: var(--text-light); }
 .no-profile span { font-size: 3rem; display: block; margin-bottom: 12px; }
@@ -164,14 +179,24 @@ body.dark .profile-list-item .add-icon { color: var(--pink); }
   .profile-list-item { flex: 1; min-width: 80px; text-align: center; font-size: 0.75rem; padding: 8px 10px; word-break: break-all; }
   .stats-row .stat-card { min-width: 80px; padding: 12px 10px; }
   .profile-stat-card { min-width: 100px; }
-  .profile-editor { padding: 14px; }
+  .profile-editor { padding: 14px; max-width: 100%; overflow-x: hidden; }
   .form-section { margin-bottom: 14px; }
   .form-grid { grid-template-columns: 1fr; }
   .form-grid input, .form-grid textarea { font-size: 16px; }
   .save-bar { flex-wrap: wrap; gap: 6px; }
   .save-bar .btn { min-width: 0; flex: 1; font-size: 0.75rem; padding: 12px 8px; }
   .save-bar .btn-sm { font-size: 7px; padding: 6px 8px; }
+  .welcome-row { flex-direction: column; align-items: stretch; }
+  .welcome-row .btn-preview { width: 100%; text-align: center; padding: 12px; }
+  .pista-item, .carinho-item { gap: 4px; }
+  .pista-item textarea, .carinho-item textarea { min-height: 50px; }
+  .q-table .q-edit input, .q-table .q-edit textarea { font-size: 16px; }
   .session-hd { flex-wrap: wrap; gap: 6px; padding: 10px 12px; }
+  .preview-box { padding: 24px 16px; max-width: 95%; }
+  .preview-box .preview-svg.horse svg { width: 70px; height: 80px; }
+  .preview-box .preview-svg.heart svg { width: 70px; height: 70px; }
+  .preview-box .preview-text { font-size: 0.9rem; }
+  .toast { left: 24px; right: 24px; text-align: center; bottom: 16px; }
   .session-hd .profile-tag { font-size: 7px; }
   .session-hd .date { font-size: 0.65rem; width: 100%; order: 10; }
   .session-hd .score-badge-admin { font-size: 0.7rem; }
@@ -201,7 +226,12 @@ body.dark .profile-list-item .add-icon { color: var(--pink); }
   .form-grid input, .form-grid textarea { font-size: 16px; }
   .q-table { font-size: 0.65rem; }
   .q-table .q-edit textarea { font-size: 16px; }
-  .save-bar .btn { font-size: 0.7rem; padding: 10px 6px; }
+  .save-bar { flex-direction: column; }
+  .save-bar .btn { font-size: 0.7rem; padding: 14px 6px; width: 100%; }
+  .save-bar .btn-sm { font-size: 7px; padding: 10px 6px; width: 100%; }
+  .welcome-row .btn-preview { padding: 14px; }
+  .pista-item, .carinho-item { gap: 3px; }
+  .pista-item textarea, .carinho-item textarea { min-height: 60px; font-size: 16px; }
 }
 
 /* Per-profile stats */
@@ -685,7 +715,7 @@ function renderProfileEditor(key) {
       <div><label>Subtítulo</label><input value="${esc(p.subtitle||'')}" id="pf_subtitle" onchange="markDirty()"></div>
       <div><label>Emoji</label><input value="${esc(p.emoji||'')}" id="pf_emoji" onchange="markDirty()"></div>
       <div><label>Instagram</label><input value="${esc(p.instagram||'')}" id="pf_instagram" onchange="markDirty()"></div>
-      <div class=full><label>Mensagem de Boas-Vindas</label><div style="display:flex;gap:6px;"><textarea rows=3 id="pf_welcome" onchange="markDirty()" style="flex:1;">${esc(p.welcomeMessage||'')}</textarea><button class="btn-sm secondary" onclick="previewWelcome()" style="align-self:flex-end;white-space:nowrap;">👁 Preview</button></div></div>
+      <div class=full><label>Mensagem de Boas-Vindas</label><div class="welcome-row"><textarea rows=3 id="pf_welcome" onchange="markDirty()" style="flex:1;">${esc(p.welcomeMessage||'')}</textarea><button class="btn-sm secondary btn-preview" onclick="previewWelcome()">👁 Preview</button></div></div>
       <div class=full><label>Mensagem "Sim"</label><textarea rows=2 id="pf_yesMsg" onchange="markDirty()">${esc(p.yesMessage||'')}</textarea></div>
       <div class=full><label>Footer "Sim"</label><textarea rows=1 id="pf_yesFooter" onchange="markDirty()">${esc(p.yesFooter||'')}</textarea></div>
       <div class=full><label>Mensagem "Não"</label><textarea rows=2 id="pf_noMsg" onchange="markDirty()">${esc(p.noMessage||'')}</textarea></div>
@@ -704,7 +734,7 @@ function renderProfileEditor(key) {
 
   // Questions
   html += `<div class=form-section><h4>Perguntas</h4>
-    <table class=q-table>
+    <div class=q-table-wrap><table class=q-table>
       <thead><tr><th class=q-id>#</th><th class=q-text>Pergunta</th><th class=q-opts>Opções (1 por linha)</th><th class=q-correct>Correta</th><th class=q-fact>Fun Fact</th><th class=q-del></th></tr></thead>
       <tbody id="qBody">`;
   questions.forEach((q, i) => {
@@ -718,16 +748,16 @@ function renderProfileEditor(key) {
       <td class=q-del onclick="deleteQuestion(${i})">✕</td>
     </tr>`;
   });
-  html += `</tbody></table>
+  html += `</tbody></table></div>
     <button class=btn-add onclick="addQuestion()">+ Adicionar Pergunta</button>
   </div>`;
 
   // Pistas
   html += `<div class=form-section><h4>Pistas</h4><div id="pistasContainer">`;
   pistas.forEach((pi, i) => {
-    html += `<div style="display:flex;gap:6px;margin-bottom:6px;align-items:center;">
-      <textarea rows=2 style="flex:1;padding:6px 8px;border:2px solid rgba(255,181,194,0.15);border-radius:var(--radius-sm);font-size:0.8rem;font-family:inherit;" class="pista_field" data-pidx="${i}">${esc(pi.join('|'))}</textarea>
-      <span style="cursor:pointer;color:var(--pink-dark);font-size:1.1rem;" onclick="deletePista(${i})">✕</span>
+    html += `<div class="pista-item">
+      <textarea rows=2 class="pista_field" data-pidx="${i}">${esc(pi.join('|'))}</textarea>
+      <span class="del-btn" onclick="deletePista(${i})">✕</span>
     </div>`;
   });
   html += `</div><button class=btn-add onclick="addPista()">+ Adicionar Pista</button></div>`;
@@ -735,9 +765,9 @@ function renderProfileEditor(key) {
   // Carinho Messages
   html += `<div class=form-section><h4>Mensagens de Carinho</h4><div id="carinhoContainer">`;
   carinho.forEach((c, i) => {
-    html += `<div style="display:flex;gap:6px;margin-bottom:6px;align-items:center;">
-      <textarea rows=2 style="flex:1;padding:6px 8px;border:2px solid rgba(255,181,194,0.15);border-radius:var(--radius-sm);font-size:0.8rem;font-family:inherit;" class="carinho_field" data-cidx="${i}">${esc(c)}</textarea>
-      <span style="cursor:pointer;color:var(--pink-dark);font-size:1.1rem;" onclick="deleteCarinho(${i})">✕</span>
+    html += `<div class="carinho-item">
+      <textarea rows=2 class="carinho_field" data-cidx="${i}">${esc(c)}</textarea>
+      <span class="del-btn" onclick="deleteCarinho(${i})">✕</span>
     </div>`;
   });
   html += `</div><button class=btn-add onclick="addCarinho()">+ Adicionar Mensagem de Carinho</button></div>`;
@@ -913,9 +943,9 @@ function addPista() {
   const container = document.getElementById('pistasContainer');
   const idx = container.querySelectorAll('.pista_field').length;
   const div = document.createElement('div');
-  div.style.cssText = 'display:flex;gap:6px;margin-bottom:6px;align-items:center;';
-  div.innerHTML = `<textarea rows=2 style="flex:1;padding:6px 8px;border:2px solid rgba(255,181,194,0.15);border-radius:var(--radius-sm);font-size:0.8rem;font-family:inherit;" class="pista_field"></textarea>
-    <span style="cursor:pointer;color:var(--pink-dark);font-size:1.1rem;" onclick="this.parentElement.remove()">✕</span>`;
+  div.className = 'pista-item';
+  div.innerHTML = `<textarea rows=2 class="pista_field"></textarea>
+    <span class="del-btn" onclick="this.parentElement.remove()">✕</span>`;
   container.appendChild(div);
 }
 
@@ -928,9 +958,9 @@ function addCarinho() {
   const container = document.getElementById('carinhoContainer');
   const idx = container.querySelectorAll('.carinho_field').length;
   const div = document.createElement('div');
-  div.style.cssText = 'display:flex;gap:6px;margin-bottom:6px;align-items:center;';
-  div.innerHTML = `<textarea rows=2 style="flex:1;padding:6px 8px;border:2px solid rgba(255,181,194,0.15);border-radius:var(--radius-sm);font-size:0.8rem;font-family:inherit;" class="carinho_field"></textarea>
-    <span style="cursor:pointer;color:var(--pink-dark);font-size:1.1rem;" onclick="this.parentElement.remove()">✕</span>`;
+  div.className = 'carinho-item';
+  div.innerHTML = `<textarea rows=2 class="carinho_field"></textarea>
+    <span class="del-btn" onclick="this.parentElement.remove()">✕</span>`;
   container.appendChild(div);
 }
 
