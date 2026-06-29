@@ -100,7 +100,7 @@
         </svg>
       </div>
       <div class="welcome-text" id="welcomeText"></div>
-      <button class="btn btn-primary" onclick="closeWelcome()">começar o quiz</button>
+      <button class="btn btn-primary" onclick="closeWelcome()">Começar</button>
     </div>
   </div>
 
@@ -211,6 +211,7 @@
 
     function closeWelcome() {
       document.getElementById('welcomeOverlay').classList.remove('show');
+      loadQuestion();
     }
 
     // ---- TYPEWRITER ----
