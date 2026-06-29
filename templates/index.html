@@ -7,16 +7,80 @@
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+  <div class="floating-bg"></div>
+  <div class="floating-items" id="floatingItems"></div>
   <div class="stars" id="stars"></div>
 
   <div class="container">
     <div class="card">
-      <span class="hero-emoji">💕</span>
-      <h1 class="title">Nosso Quiz</h1>
+      <div class="card-heart">
+        <svg viewBox="-10 -10 140 130" width="28" height="28">
+          <defs>
+            <linearGradient id="miniGradIdx" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#ffb5c2" />
+              <stop offset="100%" stop-color="#ff8fa0" />
+            </linearGradient>
+            <filter id="miniShadowIdx" x="-50%" y="-50%" width="200%" height="200%">
+              <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#ff8fa0" flood-opacity="0.3" />
+            </filter>
+          </defs>
+          <path d="M60 100 C20 70 0 50 0 30 C0 12 15 0 30 0 C40 0 50 8 60 20 C70 8 80 0 90 0 C105 0 120 12 120 30 C120 50 100 70 60 100Z" fill="url(#miniGradIdx)" filter="url(#miniShadowIdx)" />
+        </svg>
+      </div>
+
+      <div class="heart-character" id="heartCharacter">
+        <svg viewBox="-15 -15 150 150" width="100" height="100" id="heartSvg">
+          <defs>
+            <linearGradient id="heartGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#ffb5c2" />
+              <stop offset="100%" stop-color="#ff8fa0" />
+            </linearGradient>
+            <filter id="heartShadow" x="-50%" y="-50%" width="200%" height="200%">
+              <feDropShadow dx="0" dy="5" stdDeviation="8" flood-color="#ff8fa0" flood-opacity="0.35" />
+            </filter>
+          </defs>
+
+          <!-- heart body -->
+          <path d="M60 100 C20 70 0 50 0 30 C0 12 15 0 30 0 C40 0 50 8 60 20 C70 8 80 0 90 0 C105 0 120 12 120 30 C120 50 100 70 60 100Z"
+                fill="url(#heartGrad)" filter="url(#heartShadow)" />
+
+          <!-- shine -->
+          <ellipse cx="80" cy="25" rx="18" ry="10" fill="rgba(255,255,255,0.4)" transform="rotate(-20 80 25)" />
+
+          <!-- left eye -->
+          <circle cx="42" cy="42" r="8" fill="white" />
+          <g class="eye-group" data-origin-x="45" data-origin-y="44">
+            <circle class="pupil" cx="45" cy="44" r="4.5" fill="#4a3a5a" />
+            <circle cx="46.5" cy="42" r="1.8" fill="white" />
+          </g>
+
+          <!-- right eye -->
+          <circle cx="78" cy="42" r="8" fill="white" />
+          <g class="eye-group" data-origin-x="81" data-origin-y="44">
+            <circle class="pupil" cx="81" cy="44" r="4.5" fill="#4a3a5a" />
+            <circle cx="82.5" cy="42" r="1.8" fill="white" />
+          </g>
+
+          <!-- blushes -->
+          <ellipse cx="30" cy="56" rx="8" ry="4" fill="rgba(255,92,112,0.2)" />
+          <ellipse cx="90" cy="56" rx="8" ry="4" fill="rgba(255,92,112,0.2)" />
+
+          <!-- smile -->
+          <path d="M48 58 Q60 68 72 58" stroke="#4a3a5a" stroke-width="2.5" fill="none" stroke-linecap="round" />
+        </svg>
+        <div class="heart-sparkles" id="heartSparkles"></div>
+      </div>
+
+      <h1 class="title">
+        NOSSO <span class="title-highlight">QUIZ</span>
+      </h1>
+      <div class="title-sub">✦ edição especial ✦</div>
+
       <p class="subtitle">
         será que você ainda me conhece?<br>
-        vamos descobrir juntos ✨
+        vem descobrir! 💕
       </p>
+
       <button class="btn btn-primary" onclick="startQuiz()">
         começar! 💖
       </button>
@@ -24,17 +88,95 @@
   </div>
 
   <script>
-    // background stars
-    const stars = ['✦', '★', '✧', '☆', '⋆'];
-    for (let i = 0; i < 20; i++) {
+    // ---- floating items ----
+    const heartVars = ['💕', '❤️', '💗', '💖', '💝', '💘', '♡', '♥', '💓', '🐴', '🐎', '🫦', '🙈', '🐻', '🦊', '🦦', '🐆', '✨', '🪐', '🧜‍♀️'];
+    const floatingContainer = document.getElementById('floatingItems');
+    for (let i = 0; i < 16; i++) {
       const span = document.createElement('span');
-      span.textContent = stars[i % stars.length];
+      span.textContent = heartVars[i % heartVars.length];
+      span.style.left = (5 + Math.random() * 90) + '%';
+      span.style.top = (5 + Math.random() * 90) + '%';
+      span.style.animationDelay = (Math.random() * 6) + 's';
+      span.style.animationDuration = (7 + Math.random() * 5) + 's';
+      span.style.fontSize = (14 + Math.random() * 18) + 'px';
+      floatingContainer.appendChild(span);
+    }
+
+    // ---- stars ----
+    const starChars = ['✦', '★', '✧'];
+    for (let i = 0; i < 15; i++) {
+      const span = document.createElement('span');
+      span.textContent = starChars[i % starChars.length];
       span.style.left = Math.random() * 100 + '%';
       span.style.top = Math.random() * 100 + '%';
       span.style.animationDelay = Math.random() * 3 + 's';
-      span.style.fontSize = (10 + Math.random() * 12) + 'px';
+      span.style.fontSize = (10 + Math.random() * 10) + 'px';
       document.getElementById('stars').appendChild(span);
     }
+
+    // ---- interactive heart ----
+    const heart = document.getElementById('heartCharacter');
+    const svg = document.getElementById('heartSvg');
+    const pupils = document.querySelectorAll('.pupil');
+
+    // mouse tracking for eyes
+    const eyeGroups = document.querySelectorAll('.eye-group');
+    document.addEventListener('mousemove', (e) => {
+      const rect = heart.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const dx = (e.clientX - cx) / rect.width;
+      const dy = (e.clientY - cy) / rect.height;
+      const maxMove = 3;
+      eyeGroups.forEach(g => {
+        const ox = parseFloat(g.dataset.originX);
+        const oy = parseFloat(g.dataset.originY);
+        const moveX = Math.max(-maxMove, Math.min(maxMove, dx * maxMove));
+        const moveY = Math.max(-maxMove, Math.min(maxMove, dy * maxMove));
+        g.setAttribute('transform', `translate(${moveX}, ${moveY})`);
+      });
+    });
+
+    // click reaction
+    heart.addEventListener('click', () => {
+      heart.style.transform = 'scale(1.2)';
+      setTimeout(() => { heart.style.transform = 'scale(1)'; }, 300);
+      spawnSparkles();
+    });
+
+    // hover glow
+    heart.addEventListener('mouseenter', () => {
+      svg.querySelector('path').style.filter = 'drop-shadow(0 0 12px rgba(255,143,160,0.5))';
+    });
+    heart.addEventListener('mouseleave', () => {
+      svg.querySelector('path').style.filter = '';
+    });
+
+    // sparkle generator
+    function spawnSparkles() {
+      const container = document.getElementById('heartSparkles');
+      const sparkles = ['✨', '🌸', '💕', '⭐', '♥'];
+      for (let i = 0; i < 8; i++) {
+        const s = document.createElement('span');
+        s.textContent = sparkles[Math.floor(Math.random() * sparkles.length)];
+        s.style.position = 'absolute';
+        s.style.left = (20 + Math.random() * 60) + '%';
+        s.style.top = (20 + Math.random() * 60) + '%';
+        s.style.fontSize = (10 + Math.random() * 14) + 'px';
+        s.style.pointerEvents = 'none';
+        s.style.animation = 'sparklePop 1s ease-out forwards';
+        container.appendChild(s);
+        setTimeout(() => s.remove(), 1000);
+      }
+    }
+
+    // inject sparkle animation
+    const style = document.createElement('style');
+    style.textContent = `@keyframes sparklePop {
+      0% { opacity: 1; transform: translateY(0) scale(0.5) rotate(0deg); }
+      100% { opacity: 0; transform: translateY(-30px) scale(1.2) rotate(180deg); }
+    }`;
+    document.head.appendChild(style);
 
     async function startQuiz() {
       const btn = document.querySelector('.btn-primary');
@@ -46,7 +188,7 @@
         const data = await res.json();
         window.location.href = `/quiz/${data.session_id}`;
       } catch {
-        alert('Ops! Algo deu errado. Tenta de novo 💕');
+        alert('Ops! Tenta de novo 💕');
         btn.innerHTML = 'começar! 💖';
         btn.disabled = false;
       }

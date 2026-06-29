@@ -9,9 +9,26 @@
 <body>
   <div class="hearts-rain" id="heartsRain"></div>
   <div class="stars" id="stars"></div>
+  <div class="floating-bg"></div>
+  <div class="floating-items" id="floatingItems"></div>
 
   <div class="container">
     <div class="card">
+      <div class="card-heart">
+        <svg viewBox="-10 -10 140 130" width="28" height="28">
+          <defs>
+            <linearGradient id="miniGradRes" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#ffb5c2" />
+              <stop offset="100%" stop-color="#ff8fa0" />
+            </linearGradient>
+            <filter id="miniShadowRes" x="-50%" y="-50%" width="200%" height="200%">
+              <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#ff8fa0" flood-opacity="0.3" />
+            </filter>
+          </defs>
+          <path d="M60 100 C20 70 0 50 0 30 C0 12 15 0 30 0 C40 0 50 8 60 20 C70 8 80 0 90 0 C105 0 120 12 120 30 C120 50 100 70 60 100Z" fill="url(#miniGradRes)" filter="url(#miniShadowRes)" />
+        </svg>
+      </div>
+
       <div id="resultContent">
         <span class="result-emoji" id="resultEmoji">💕</span>
 
@@ -21,7 +38,11 @@
         </div>
         <div class="result-label" id="resultLabel">perguntas certas</div>
 
+        <div class="result-divider">✧ ✦ ✧</div>
+
         <div class="result-message" id="resultMessage"></div>
+
+        <div class="result-divider">✦ ♡ ✦</div>
 
         <div class="final-question" id="finalQuestion"></div>
 
@@ -35,16 +56,28 @@
 
   <script>
     const sessionId = window.location.pathname.split('/').pop();
-    const hearts = ['💕', '❤️', '💗', '💖', '💝', '💘', '🥰'];
+    const icons = ['💕', '❤️', '💗', '💖', '💝', '💘', '♡', '♥', '💓', '🐴', '🐎', '🫦', '🙈', '🐻', '🦊', '🦦', '🐆', '✨', '🪐', '🧜‍♀️'];
     const stars = ['✦', '★', '✧', '☆', '⋆'];
+
+    const fi = document.getElementById('floatingItems');
+    for (let i = 0; i < 12; i++) {
+      const s = document.createElement('span');
+      s.textContent = icons[i % icons.length];
+      s.style.left = (5 + Math.random() * 90) + '%';
+      s.style.top = (5 + Math.random() * 90) + '%';
+      s.style.animationDelay = (Math.random() * 6) + 's';
+      s.style.animationDuration = (7 + Math.random() * 5) + 's';
+      s.style.fontSize = (14 + Math.random() * 18) + 'px';
+      fi.appendChild(s);
+    }
 
     function startHeartsRain() {
       const container = document.getElementById('heartsRain');
-      for (let i = 0; i < 25; i++) {
+      for (let i = 0; i < 30; i++) {
         const span = document.createElement('span');
-        span.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+        span.textContent = icons[Math.floor(Math.random() * icons.length)];
         span.style.left = Math.random() * 100 + '%';
-        span.style.fontSize = (14 + Math.random() * 22) + 'px';
+        span.style.fontSize = (14 + Math.random() * 20) + 'px';
         span.style.animationDuration = (5 + Math.random() * 5) + 's';
         span.style.animationDelay = Math.random() * 4 + 's';
         container.appendChild(span);
@@ -53,7 +86,7 @@
 
     function addStars() {
       const container = document.getElementById('stars');
-      for (let i = 0; i < 15; i++) {
+      for (let i = 0; i < 12; i++) {
         const span = document.createElement('span');
         span.textContent = stars[i % stars.length];
         span.style.left = Math.random() * 100 + '%';
@@ -73,14 +106,19 @@
       document.getElementById('resultLabel').textContent =
         data.score === 1 ? 'pergunta certa' : 'perguntas certas';
 
+      const emoji = document.getElementById('resultEmoji');
+      const title = document.querySelector('title');
+
       if (data.percentage >= 80) {
-        document.getElementById('resultEmoji').textContent = '🥰';
-        document.title = 'Você me conhece! 💕';
+        emoji.textContent = '🥰';
+        title.textContent = 'Você me conhece! 💕';
         startHeartsRain();
       } else if (data.percentage >= 50) {
-        document.getElementById('resultEmoji').textContent = '😊';
+        emoji.textContent = '😊';
+        title.textContent = 'Quase lá! 💕';
       } else {
-        document.getElementById('resultEmoji').textContent = '😂';
+        emoji.textContent = '😂';
+        title.textContent = 'Ops! 😂';
       }
 
       document.getElementById('resultMessage').textContent = data.message;
@@ -92,34 +130,90 @@
       const content = document.getElementById('resultContent');
       content.innerHTML = `
         <div class="final-card-content">
-          <span style="font-size: 72px; display: block; margin-bottom: 8px; animation: bounce 2s ease-in-out infinite;">🥹💕</span>
-          <h1 class="title">ainda bem que você disse sim!</h1>
-          <p class="subtitle" style="font-size: 1.15rem;">
+          <div class="heart-character" id="heartCharacterResult">
+            <svg viewBox="-10 -10 140 130" width="100" height="100" id="heartSvgResult">
+              <defs>
+                <linearGradient id="heartGradR" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#ffb5c2" />
+                  <stop offset="100%" stop-color="#ff8fa0" />
+                </linearGradient>
+                <filter id="heartShadowR" x="-20%" y="-20%" width="140%" height="140%">
+                  <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#ff8fa0" flood-opacity="0.35" />
+                </filter>
+              </defs>
+              <path d="M60 100 C20 70 0 50 0 30 C0 12 15 0 30 0 C40 0 50 8 60 20 C70 8 80 0 90 0 C105 0 120 12 120 30 C120 50 100 70 60 100Z" fill="url(#heartGradR)" filter="url(#heartShadowR)" />
+              <ellipse cx="80" cy="25" rx="18" ry="10" fill="rgba(255,255,255,0.4)" transform="rotate(-20 80 25)" />
+              <circle cx="42" cy="42" r="8" fill="white" />
+              <g class="eye-group" data-origin-x="45" data-origin-y="44">
+                <circle class="pupil" cx="45" cy="44" r="4.5" fill="#4a3a5a" />
+                <circle cx="46.5" cy="42" r="1.8" fill="white" />
+              </g>
+              <circle cx="78" cy="42" r="8" fill="white" />
+              <g class="eye-group" data-origin-x="81" data-origin-y="44">
+                <circle class="pupil" cx="81" cy="44" r="4.5" fill="#4a3a5a" />
+                <circle cx="82.5" cy="42" r="1.8" fill="white" />
+              </g>
+              <ellipse cx="30" cy="56" rx="8" ry="4" fill="rgba(255,92,112,0.25)" />
+              <ellipse cx="90" cy="56" rx="8" ry="4" fill="rgba(255,92,112,0.25)" />
+              <path d="M48 58 Q60 68 72 58" stroke="#4a3a5a" stroke-width="2.5" fill="none" stroke-linecap="round" />
+            </svg>
+          </div>
+          <h1 class="title"><span class="title-highlight">SIM!!!</span></h1>
+          <div class="title-sub">💕 você disse sim! 💕</div>
+          <p class="subtitle" style="margin-top: 12px;">
             eu nunca parei de pensar em você.<br>
-            vamos escrever um novo capítulo juntos? 💕
+            vamos escrever um novo capítulo juntos?
           </p>
-          <p style="font-family: 'Fredoka One', cursive; font-size: 1.4rem; color: var(--pink-dark); margin-top: 16px;">
+          <p style="font-family: 'Press Start 2P', monospace; font-size: 9px; color: var(--pink-dark); margin-top: 16px; letter-spacing: 1px;">
             eu te amo ❤️
+          </p>
+          <p class="subtitle" style="margin-top: 16px; font-size: 0.85rem;">
+            ps: me manda um direct no <strong>@tvrsis</strong> 🫦<br>
+            só um "hey" mesmo pra gente voltar a se falar ✨
           </p>
         </div>
       `;
       startHeartsRain();
+      document.querySelector('title').textContent = 'Ela disse sim!!! 💕';
+
+      // mouse tracking for result heart
+      const heartResult = document.getElementById('heartCharacterResult');
+      const eyeGroups = heartResult.querySelectorAll('.eye-group');
+      document.addEventListener('mousemove', function track(e) {
+        const rect = heartResult.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        const dx = (e.clientX - cx) / rect.width;
+        const dy = (e.clientY - cy) / rect.height;
+        const maxMove = 3;
+        eyeGroups.forEach(g => {
+          const ox = parseFloat(g.dataset.originX);
+          const oy = parseFloat(g.dataset.originY);
+          const moveX = Math.max(-maxMove, Math.min(maxMove, dx * maxMove));
+          const moveY = Math.max(-maxMove, Math.min(maxMove, dy * maxMove));
+          g.setAttribute('transform', `translate(${moveX}, ${moveY})`);
+        });
+      });
     }
 
     function answerNo() {
       const content = document.getElementById('resultContent');
       content.innerHTML = `
         <div class="final-card-content">
-          <span style="font-size: 72px; display: block; margin-bottom: 8px;">😢💔</span>
+          <div style="font-size: 64px; margin-bottom: 12px;">😢💔</div>
           <h1 class="title">eu entendo...</h1>
-          <p class="subtitle" style="font-size: 1.1rem;">
+          <p class="subtitle" style="margin-top: 12px;">
             algumas histórias terminam,<br>
-            mas isso não apaga o que a gente viveu.<br><br>
+            mas isso não apaga o que a gente viveu.
+          </p>
+          <p class="subtitle" style="margin-top: 4px; font-size: 0.9rem;">
             obrigado por ter feito parte da minha vida.<br>
             se um dia mudar de ideia, eu vou estar aqui. 💕
           </p>
+          <div class="result-divider" style="margin-top: 16px;">✧ ♡ ✧</div>
         </div>
       `;
+      document.querySelector('title').textContent = '😢💔';
     }
 
     loadResult();

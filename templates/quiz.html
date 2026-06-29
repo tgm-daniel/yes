@@ -8,37 +8,159 @@
 </head>
 <body>
   <div class="confetti-container" id="confettiContainer"></div>
+  <div class="floating-bg"></div>
+  <div class="floating-items" id="floatingItems"></div>
+
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-box">
+      <div class="loading-spinner">✨</div>
+      <div class="loading-text" id="loadingText">preparando...</div>
+    </div>
+  </div>
+
+  <div class="pista-overlay" id="pistaOverlay">
+    <div class="pista-box">
+      <div class="pista-emoji">🔓</div>
+      <div class="pista-title">pista desbloqueada!</div>
+      <div class="pista-poem" id="pistaPoem"></div>
+      <button class="btn btn-primary" onclick="closePista()">continuar 💕</button>
+    </div>
+  </div>
 
   <div class="container">
     <div class="card">
+      <div class="card-heart" id="cardHeart">
+        <svg viewBox="-10 -10 140 130" width="28" height="28" id="miniHeartSvg">
+          <defs>
+            <linearGradient id="miniGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#ffb5c2" />
+              <stop offset="100%" stop-color="#ff8fa0" />
+            </linearGradient>
+            <filter id="miniShadow" x="-50%" y="-50%" width="200%" height="200%">
+              <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#ff8fa0" flood-opacity="0.3" />
+            </filter>
+          </defs>
+          <path d="M60 100 C20 70 0 50 0 30 C0 12 15 0 30 0 C40 0 50 8 60 20 C70 8 80 0 90 0 C105 0 120 12 120 30 C120 50 100 70 60 100Z" fill="url(#miniGrad)" filter="url(#miniShadow)" />
+        </svg>
+      </div>
+
       <div class="score-badge" id="scoreBadge"><span>❤️</span> 0</div>
 
       <div class="progress-section">
-        <div class="progress-bar">
-          <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        <div class="progress-label">caminho para desbloquear mais pistas</div>
+        <div class="progress-bar-outer">
+          <div class="progress-bar-inner" id="progressFill" style="width: 0%"></div>
+          <div class="progress-text" id="progressText">0 / 10</div>
         </div>
-        <span class="question-counter" id="questionCounter">1 / 10</span>
       </div>
 
-      <div class="question-text" id="questionText">carregando...</div>
+      <div class="question-card">
+        <div class="question-text" id="questionText"></div>
+      </div>
+
+      <div class="question-counter">
+        <span id="questionCounter">pergunta 1 / 10</span>
+      </div>
 
       <div class="options" id="optionsContainer"></div>
 
       <div class="feedback" id="feedback">
-        <span class="feedback-icon" id="feedbackIcon">✅</span>
+        <span class="feedback-icon" id="feedbackIcon">🎉</span>
         <div class="feedback-text" id="feedbackText"></div>
-        <div class="fun-fact" id="funFact"></div>
+      </div>
+
+      <div class="next-btn-wrap" id="nextBtnWrap">
+        <button class="btn btn-next" id="nextBtn" onclick="goNext()">
+          próxima ➜
+        </button>
       </div>
     </div>
   </div>
 
   <script>
+    // floating icons bg
+    const icons = ['💕', '❤️', '💗', '💖', '💝', '💘', '♡', '♥', '💓', '🐴', '🐎', '🫦', '🙈', '🐻', '🦊', '🦦', '🐆', '✨', '🪐', '🧜‍♀️'];
+    const fi = document.getElementById('floatingItems');
+    for (let i = 0; i < 10; i++) {
+      const s = document.createElement('span');
+      s.textContent = icons[i % icons.length];
+      s.style.left = (5 + Math.random() * 90) + '%';
+      s.style.top = (5 + Math.random() * 90) + '%';
+      s.style.animationDelay = (Math.random() * 6) + 's';
+      s.style.animationDuration = (7 + Math.random() * 5) + 's';
+      s.style.fontSize = (14 + Math.random() * 16) + 'px';
+      fi.appendChild(s);
+    }
+
     const LETTERS = ['A', 'B', 'C', 'D'];
     const sessionId = window.location.pathname.split('/').pop();
     let answered = false;
+    let correctCount = 0;
+    let pistaIndex = 0;
 
+    const pistas = [
+      ["temos um date marcado no cinema", "você escolhe o filme", "eu escolho você! 🎬💕"],
+      ["te ver mastigar uma massinha e ficando feliz", "é obviamente mais apaixonante", "que qualquer restaurante 5 estrelas 🍝💕"],
+      ["eu não queria mais nada além de", "uma grama molhada, um pãozinho de queijo mordido", "e o jeito que você ri com a boca cheia 🌳💕"],
+      ["eu e tu, museu de arte", "a gente rindo das obras esquisitas", "e você mais linda que qualquer exposição 🎨💕"],
+    ];
+
+    const carinhoMessages = [
+      "tudo bem, amor — nem todo mundo guarda cada detalhe na cabeça 💕",
+      "são tantas memórias, é normal confundir uma ou outra 🥰",
+      "relaxa, são muitos detalhes! a gente viveu tanta coisa boa ✨",
+      "não precisa saber tudo de cor — o importante é o que a gente sente 💗",
+      "acertar todas seria sorte demais... e a gente sempre foi mais que sorte 🍀",
+    ];
+
+    // ---- TYPEWRITER ----
+    function typeWriter(el, text, callback) {
+      el.textContent = '';
+      let i = 0;
+
+      function tick() {
+        if (i < text.length) {
+          el.textContent += text.charAt(i);
+          i++;
+          setTimeout(tick, 20 + Math.random() * 30);
+        } else if (callback) {
+          callback();
+        }
+      }
+      tick();
+    }
+
+    // ---- LOADING (mais rápido) ----
+    function showLoading(msg, callback) {
+      const overlay = document.getElementById('loadingOverlay');
+      document.getElementById('loadingText').textContent = msg || 'preparando...';
+      overlay.classList.add('show');
+      setTimeout(() => {
+        overlay.classList.remove('show');
+        if (callback) setTimeout(callback, 100);
+      }, 400);
+    }
+
+    // ---- PISTA ----
+    function showPista() {
+      if (pistaIndex >= pistas.length) return;
+      const pista = pistas[pistaIndex];
+      pistaIndex++;
+      document.getElementById('pistaPoem').innerHTML =
+        pista.map(line => `<div class="poem-line">${line}</div>`).join('');
+      document.getElementById('pistaOverlay').classList.add('show');
+    }
+
+    function closePista() {
+      document.getElementById('pistaOverlay').classList.remove('show');
+    }
+
+    // ---- LOAD QUESTION ----
     async function loadQuestion() {
       answered = false;
+      document.getElementById('nextBtnWrap').classList.remove('show');
+      document.getElementById('feedback').classList.remove('show');
+
       const res = await fetch(`/api/question/${sessionId}`);
       const data = await res.json();
 
@@ -47,61 +169,62 @@
         return;
       }
 
-      document.getElementById('questionCounter').textContent = `${data.current} / ${data.total}`;
-      document.getElementById('progressFill').style.width = `${((data.current - 1) / data.total) * 100}%`;
+      document.getElementById('questionCounter').textContent =
+        `pergunta ${data.current} / ${data.total}`;
+      document.getElementById('progressText').textContent = `${data.current - 1} / ${data.total}`;
+      document.getElementById('progressFill').style.width =
+        `${((data.current - 1) / data.total) * 100}%`;
 
-      // animate question
-      const qEl = document.getElementById('questionText');
-      qEl.style.animation = 'none';
-      qEl.offsetHeight; // trigger reflow
-      qEl.style.animation = 'fadeSlideIn 0.5s ease';
-      qEl.textContent = data.question;
+      const qCard = document.querySelector('.question-card');
+      qCard.style.animation = 'none';
+      qCard.offsetHeight;
+      qCard.style.animation = 'fadeSlideIn 0.35s ease';
+
+      typeWriter(document.getElementById('questionText'), data.question);
 
       const container = document.getElementById('optionsContainer');
       container.innerHTML = '';
       container.style.animation = 'none';
       container.offsetHeight;
-      container.style.animation = 'fadeSlideIn 0.5s ease';
+      container.style.animation = 'fadeSlideIn 0.35s ease';
 
       data.options.forEach((option, i) => {
         const btn = document.createElement('button');
         btn.className = 'option-btn';
-        btn.innerHTML = `<span class="letter">${LETTERS[i]}</span>${option}`;
+        btn.innerHTML = `<span class="letter">${LETTERS[i]}</span><span class="option-text">${option}</span>`;
         btn.dataset.index = i;
-        btn.onclick = () => selectAnswer(i, data.question_id);
+        btn.onclick = () => selectAnswer(i);
         container.appendChild(btn);
       });
-
-      document.getElementById('feedback').classList.remove('show');
     }
 
+    // ---- CONFETTI ----
     function fireConfetti() {
       const container = document.getElementById('confettiContainer');
-      const colors = ['#ff85a2', '#c8a8e9', '#85d9c0', '#ffd166', '#a8d8f0', '#ff6b8a'];
-      const shapes = ['●', '♥', '★', '♦', '✿'];
+      const emojis = ['🌸', '✨', '💕', '🌟', '🎀', '⭐', '♡', '🦋'];
+      const colors = ['#ffb5c2', '#d4b8e8', '#a8e0c8', '#ffe88a', '#b8d8f0'];
 
-      for (let i = 0; i < 40; i++) {
+      for (let i = 0; i < 20; i++) {
         const piece = document.createElement('div');
         piece.className = 'confetti-piece';
-        piece.textContent = shapes[Math.floor(Math.random() * shapes.length)];
+        piece.textContent = emojis[i % emojis.length];
         piece.style.left = (20 + Math.random() * 60) + '%';
         piece.style.top = '-10px';
-        piece.style.color = colors[Math.floor(Math.random() * colors.length)];
-        piece.style.fontSize = (8 + Math.random() * 14) + 'px';
-        piece.style.animationDuration = (1.5 + Math.random() * 1.5) + 's';
-        piece.style.animationDelay = Math.random() * 0.5 + 's';
+        piece.style.color = colors[i % colors.length];
+        piece.style.animationDuration = (1.5 + Math.random() * 1) + 's';
+        piece.style.animationDelay = Math.random() * 0.2 + 's';
         container.appendChild(piece);
-
-        setTimeout(() => piece.remove(), 3000);
+        setTimeout(() => piece.remove(), 2500);
       }
     }
 
+    // ---- SELECT ANSWER ----
     async function selectAnswer(index) {
       if (answered) return;
       answered = true;
 
       const buttons = document.querySelectorAll('.option-btn');
-      buttons.forEach(btn => btn.disabled = true);
+      buttons.forEach(btn => (btn.disabled = true));
       buttons[index].classList.add('selected');
 
       const res = await fetch(`/api/answer/${sessionId}`, {
@@ -112,35 +235,59 @@
 
       const data = await res.json();
 
-      // highlight correct/wrong
       buttons.forEach((btn, i) => {
         if (i === data.correct_answer) btn.classList.add('correct');
         if (i === index && !data.correct) btn.classList.add('wrong');
       });
 
-      if (data.correct) {
-        fireConfetti();
-      }
-
-      // feedback
       const feedback = document.getElementById('feedback');
       const isCorrect = data.correct;
-
       feedback.className = `feedback show ${isCorrect ? 'correct' : 'wrong'}`;
-      document.getElementById('feedbackIcon').textContent = isCorrect ? '🎉' : '😢';
-      document.getElementById('feedbackText').textContent = isCorrect ? 'ACERTOU!' : 'ERROU...';
-      document.getElementById('funFact').textContent = data.fun_fact;
+
+      if (isCorrect) {
+        correctCount++;
+        fireConfetti();
+        document.getElementById('feedbackIcon').textContent = '🎉';
+        document.getElementById('feedbackText').textContent = data.fun_fact;
+
+        if (correctCount % 2 === 0) {
+          setTimeout(() => showPista(), 600);
+        }
+      } else {
+        document.getElementById('feedbackIcon').textContent = '💗';
+        const msg = carinhoMessages[Math.floor(Math.random() * carinhoMessages.length)];
+        document.getElementById('feedbackText').textContent = msg;
+      }
 
       document.getElementById('scoreBadge').innerHTML = `<span>❤️</span> ${data.score}`;
-
-      setTimeout(() => {
-        if (data.finished) {
-          window.location.href = `/resultado/${sessionId}`;
-        } else {
-          loadQuestion();
-        }
-      }, 2200);
+      document.getElementById('nextBtnWrap').classList.add('show');
     }
+
+    // ---- GO NEXT ----
+    function goNext() {
+      document.getElementById('nextBtnWrap').classList.remove('show');
+      document.getElementById('feedback').classList.remove('show');
+      showLoading('preparando próxima pergunta...', () => {
+        loadQuestion();
+      });
+    }
+
+    // ---- mini heart mouse tracking ----
+    const miniHeart = document.getElementById('miniHeartSvg');
+    const miniGroups = miniHeart ? miniHeart.querySelectorAll('.eye-group') : [];
+    document.addEventListener('mousemove', (e) => {
+      if (miniGroups.length === 0) return;
+      const rect = document.getElementById('cardHeart').getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const dx = (e.clientX - cx) / 200;
+      const dy = (e.clientY - cy) / 200;
+      miniGroups.forEach(g => {
+        const ox = parseFloat(g.dataset.originX);
+        const oy = parseFloat(g.dataset.originY);
+        g.setAttribute('transform', `translate(${dx * 2}, ${dy * 2})`);
+      });
+    });
 
     loadQuestion();
   </script>
