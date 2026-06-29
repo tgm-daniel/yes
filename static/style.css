@@ -826,44 +826,6 @@ body {
   animation: fadeSlideIn 0.5s ease;
 }
 
-.pista-emoji {
-  font-size: 56px;
-  margin-bottom: 8px;
-  animation: bounce 0.8s steps(2) infinite;
-}
-
-.pista-title {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 10px;
-  color: var(--text);
-  margin-bottom: 16px;
-  letter-spacing: 1px;
-}
-
-.pista-poem {
-  background: var(--white);
-  border-radius: var(--radius-sm);
-  padding: 20px;
-  margin-bottom: 20px;
-  border: 2px solid var(--lavender-light);
-  text-wrap: pretty;
-}
-
-.poem-line {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--text);
-  line-height: 1.8;
-  text-wrap: pretty;
-  overflow-wrap: break-word;
-  word-break: break-word;
-}
-
-.poem-line:last-child {
-  color: var(--pink-dark);
-  margin-top: 10px;
-}
-
 /* ----- WELCOME OVERLAY ----- */
 .welcome-overlay {
   position: fixed;
@@ -912,6 +874,32 @@ body {
   margin-bottom: 24px;
   text-wrap: pretty;
   white-space: pre-line;
+}
+
+.welcome-horse {
+  margin-bottom: 12px;
+  display: inline-block;
+}
+
+.welcome-horse svg {
+  display: block;
+  width: 100px;
+  height: 110px;
+  overflow: visible;
+  filter: drop-shadow(0 4px 16px rgba(255, 165, 0, 0.15));
+}
+
+/* Flame flicker animation */
+.flame {
+  transform-origin: bottom center;
+  animation: flameFlicker 0.8s ease-in-out infinite;
+}
+
+@keyframes flameFlicker {
+  0%, 100% { transform: scaleY(1) translateY(0); opacity: 0.9; }
+  25% { transform: scaleY(1.06) translateY(-2px); opacity: 1; }
+  50% { transform: scaleY(0.94) translateY(1px); opacity: 0.75; }
+  75% { transform: scaleY(1.03) translateY(-1px); opacity: 0.95; }
 }
 
 /* ----- HEART CHARACTER (fixed shadow) ----- */
