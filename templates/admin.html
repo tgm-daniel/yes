@@ -251,7 +251,10 @@ function renderSessions() {
 
   let sessions = ALL_SESSIONS;
   if (filter) sessions = sessions.filter(s => s.profile_id === filter);
-  if (search) sessions = sessions.filter(s => s.session_id.toLowerCase().includes(search));
+    if (search) sessions = sessions.filter(s =>
+      s.session_id.toLowerCase().includes(search) ||
+      s.profile_id.toLowerCase().includes(search)
+    );
 
   // Stats
   const totalSessions = sessions.length;
@@ -274,17 +277,22 @@ function renderSessions() {
   sessions.forEach(s => {
     const pct = s.total > 0 ? Math.round((s.score / s.total) * 100) : 0;
     const cls = pct >= 70 ? 'high' : pct >= 40 ? 'mid' : 'low';
+    const faIcon = s.final_answer === 'yes' ? '✅' : s.final_answer === 'no' ? '❌' : '—';
     html += `<div class=session-card id="sc-${s.session_id}">
       <div class=session-hd onclick="toggleSession('${s.session_id}')">
         <span class=profile-tag>${s.profile_id}</span>
         <span class=date>${s.started_at || '—'} · ${s.session_id}</span>
         <span class="score-badge-admin ${cls}">${s.score}/${s.total} (${pct}%)</span>
+        <span style="font-size:0.75rem;color:var(--text-light);">${faIcon}</span>
         <span class=arrow>▾</span>
       </div>
-      <div class=session-bd>`;
+      <div class=session-bd>
+        ${s.final_answer ? `<div style="margin-bottom:8px;padding:6px 10px;background:rgba(255,181,194,0.08);border-radius:6px;font-size:0.82rem;"><strong>Resposta final:</strong> ${s.final_answer === 'yes' ? '✅ Sim' : '❌ Não'}</div>` : ''}
+        ${s.completed_at ? `<div style="margin-bottom:8px;font-size:0.75rem;color:var(--text-light);">Concluído em: ${esc(s.completed_at)}</div>` : ''}
+        <table style="width:100%;border-collapse:collapse;">`;
     (s.answers || []).forEach(a => {
       const rowCls = a.was_correct ? 'q-correct' : 'q-wrong';
-      html += `<tr class="${rowCls}"><td>${esc(a.question)}</td><td>${a.was_correct ? '✅ '+esc(a.fun_fact) : '❌ '+esc(a.selected)}</td></tr>`;
+      html += `<tr class="${rowCls}"><td style="width:38%;padding:6px;border-bottom:1px solid rgba(255,181,194,0.08);">${esc(a.question)}</td><td style="width:27%;padding:6px;border-bottom:1px solid rgba(255,181,194,0.08);font-size:0.75rem;">${a.was_correct ? '✅' : '❌ Escolheu: ' + esc(a.selected)}</td><td style="width:20%;padding:6px;border-bottom:1px solid rgba(255,181,194,0.08);font-size:0.75rem;color:#6b9e7a;">${a.was_correct ? '' : 'Correta: ' + esc(a.correct_answer)}</td><td style="width:15%;padding:6px;border-bottom:1px solid rgba(255,181,194,0.08);font-size:0.72rem;color:var(--text-light);">${esc(a.fun_fact)}</td></tr>`;
     });
     html += `</table></div></div>`;
   });
@@ -383,11 +391,19 @@ function renderProfileEditor(key) {
   html += `</div><button class=btn-add onclick="addPista()">+ Adicionar Pista</button></div>`;
 
   // Carinho Messages
-  html += `<div class=form-section><h4>Mensagens de Carinho</h4><textarea rows=4 style="width:100%;padding:8px 10px;border:2px solid rgba(255,181,194,0.15);border-radius:var(--radius-sm);font-size:0.82rem;font-family:inherit;box-sizing:border-box;" id="carinhoField" onchange="markDirty()">${esc(carinho.join('\n'))}</textarea></div>`;
+  html += `<div class=form-section><h4>Mensagens de Carinho</h4><div id="carinhoContainer">`;
+  carinho.forEach((c, i) => {
+    html += `<div style="display:flex;gap:6px;margin-bottom:6px;align-items:center;">
+      <textarea rows=2 style="flex:1;padding:6px 8px;border:2px solid rgba(255,181,194,0.15);border-radius:var(--radius-sm);font-size:0.8rem;font-family:inherit;" class="carinho_field" data-cidx="${i}">${esc(c)}</textarea>
+      <span style="cursor:pointer;color:var(--pink-dark);font-size:1.1rem;" onclick="deleteCarinho(${i})">✕</span>
+    </div>`;
+  });
+  html += `</div><button class=btn-add onclick="addCarinho()">+ Adicionar Mensagem de Carinho</button></div>`;
 
   // Save bar
   html += `<div class=save-bar>
     <button class="btn btn-secondary" onclick="selectProfile(SELECTED_PROFILE)">Cancelar</button>
+    <button class="btn-sm danger" onclick="confirmDeleteProfile()" style="margin-right:auto;">🗑 Excluir Perfil</button>
     <button class="btn btn-primary" onclick="saveProfile()">💾 Salvar</button>
   </div>`;
 
@@ -448,8 +464,13 @@ function collectProfileData() {
   p.pistas = pistas;
 
   // Carinho messages
-  const carinhoRaw = document.getElementById('carinhoField')?.value || '';
-  p.carinhoMessages = carinhoRaw.split('\n').map(s => s.trim()).filter(Boolean);
+  const carinhoEls = document.querySelectorAll('.carinho_field');
+  const carinho2 = [];
+  carinhoEls.forEach(el => {
+    const val = (el.value || '').trim();
+    if (val) carinho2.push(val);
+  });
+  p.carinhoMessages = carinho2;
 
   // Yes/No messages
   p.yesMessage = document.getElementById('pf_yesMsg')?.value || '';
@@ -543,6 +564,21 @@ function deletePista(idx) {
   if (el) el.closest('div').remove();
 }
 
+function addCarinho() {
+  const container = document.getElementById('carinhoContainer');
+  const idx = container.querySelectorAll('.carinho_field').length;
+  const div = document.createElement('div');
+  div.style.cssText = 'display:flex;gap:6px;margin-bottom:6px;align-items:center;';
+  div.innerHTML = `<textarea rows=2 style="flex:1;padding:6px 8px;border:2px solid rgba(255,181,194,0.15);border-radius:var(--radius-sm);font-size:0.8rem;font-family:inherit;" class="carinho_field"></textarea>
+    <span style="cursor:pointer;color:var(--pink-dark);font-size:1.1rem;" onclick="this.parentElement.remove()">✕</span>`;
+  container.appendChild(div);
+}
+
+function deleteCarinho(idx) {
+  const el = document.querySelector(`.carinho_field[data-cidx="${idx}"]`);
+  if (el) el.closest('div').remove();
+}
+
 function newProfile() {
   const tpl = window.NEW_PROFILE_TEMPLATE || {
     password: '', title: '', subtitle: '', emoji: '💕', instagram: '@',
@@ -567,6 +603,28 @@ function newProfile() {
   ALL_PROFILES[SELECTED_PROFILE] = JSON.parse(JSON.stringify(tpl));
   renderProfileList();
   renderProfileEditor(SELECTED_PROFILE);
+}
+
+function confirmDeleteProfile() {
+  const key = SELECTED_PROFILE;
+  if (!key || !ALL_PROFILES[key]) return;
+  if (!confirm(`Tem certeza que deseja excluir o perfil "${key}"?\n\nTodas as sessões deste perfil serão perdidas.`)) return;
+  deleteProfile(key);
+}
+
+async function deleteProfile(key) {
+  try {
+    const r = await fetch('/api/admin/profiles/delete', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ username: AUTH.username, password: AUTH.password, profile_id: key })
+    });
+    if (!r.ok) { const d = await r.json(); throw new Error(d.detail || 'Erro ao excluir'); }
+    showToast(`Perfil "${key}" excluído.`, 'success');
+    await loadAll();
+    selectProfile(Object.keys(ALL_PROFILES)[0] || null);
+  } catch(e) {
+    showToast('Erro: ' + e.message, 'error');
+  }
 }
 
 // ---- TABS ----

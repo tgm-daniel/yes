@@ -257,7 +257,7 @@ def api_answer(session_id: str, body: dict, db: Session = Depends(get_db)):
     if correct:
         session.score += 1
 
-    answers = session.answers or []
+    answers = list(session.answers or [])
     answers.append({
         "question_id": q["id"],
         "selected": selected,
@@ -292,7 +292,7 @@ def api_result_final(session_id: str, body: dict, db: Session = Depends(get_db))
     answer = body.get("answer")
     if answer not in ("yes", "no"):
         raise HTTPException(status_code=400, detail="Resposta inválida")
-    answers = session.answers or []
+    answers = list(session.answers or [])
     # Remove previous final_answer if any, then append new one
     answers = [a for a in answers if a.get("type") != "final_answer"]
     answers.append({"type": "final_answer", "value": answer})
@@ -379,16 +379,24 @@ def admin_results(body: dict, db: Session = Depends(get_db)):
             ans_data.append({
                 "question": q.get("question", "?"),
                 "selected": opts[a["selected"]] if a["selected"] < len(opts) else "?",
+                "correct_answer": opts[q["correct"]] if q.get("correct") is not None and q["correct"] < len(opts) else "?",
                 "was_correct": a["correct"],
                 "fun_fact": q.get("fun_fact", ""),
             })
+        final_answer = None
+        for a in (s.answers or []):
+            if a.get("type") == "final_answer":
+                final_answer = a.get("value")
+                break
         result.append({
             "session_id": s.id,
             "profile_id": s.profile_id,
             "score": s.score,
             "total": len(questions),
             "started_at": str(s.started_at)[:19] if s.started_at else "",
+            "completed_at": str(s.completed_at)[:19] if s.completed_at else "",
             "answers": ans_data,
+            "final_answer": final_answer,
         })
 
     return {"sessions": result}
@@ -412,6 +420,26 @@ def admin_save_profiles(body: dict):
         json.dump(current, f, indent=2, ensure_ascii=False)
     global PROFILES
     PROFILES = load_profiles()
+    return {"ok": True}
+
+
+@app.post("/api/admin/profiles/delete")
+def admin_delete_profile(body: dict, db: Session = Depends(get_db)):
+    global PROFILES
+    if body.get("username") != ADMIN_USER or body.get("password") != ADMIN_PASS:
+        raise HTTPException(status_code=401, detail="Credenciais inválidas")
+    profile_id = body.get("profile_id", "")
+    if not profile_id or profile_id not in PROFILES:
+        raise HTTPException(status_code=404, detail="Perfil não encontrado")
+
+    current = load_profiles()
+    del current[profile_id]
+    with open(PROFILES_PATH, "w") as f:
+        json.dump(current, f, indent=2, ensure_ascii=False)
+    PROFILES = load_profiles()
+
+    db.query(QuizSession).filter(QuizSession.profile_id == profile_id).delete()
+    db.commit()
     return {"ok": True}
 
 
