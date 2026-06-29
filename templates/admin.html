@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Admin — Nosso Quiz</title>
 <link rel="stylesheet" href="/static/style.css">
 <style>
@@ -152,46 +152,56 @@ body.dark .profile-list-item .add-icon { color: var(--pink); }
 /* Admin responsive */
 @media (max-width: 768px) {
   .admin-card { margin: 0 8px !important; padding: 24px 16px !important; }
-  .admin-card input { padding: 12px 12px !important; font-size: 9px !important; }
+  .admin-card input { padding: 14px 14px !important; font-size: 16px !important; }
   .admin-card .title { font-size: 12px !important; }
-  .tabs { gap: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .tabs { gap: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
   .tab-btn { padding: 10px 14px; font-size: 8px; white-space: nowrap; }
   .filter-row { flex-wrap: wrap; }
-  .filter-row select, .filter-row input { flex: 1; min-width: 100px; }
+  .filter-row select, .filter-row input { flex: 1; min-width: 100px; font-size: 16px; }
   .profiles-layout { flex-direction: column; }
   .profile-list { width: 100%; display: flex; flex-wrap: wrap; gap: 4px; }
-  .profile-list-item { flex: 1; min-width: 80px; text-align: center; font-size: 0.75rem; padding: 8px 10px; }
+  .profile-list-item { flex: 1; min-width: 80px; text-align: center; font-size: 0.75rem; padding: 8px 10px; word-break: break-all; }
   .stats-row .stat-card { min-width: 80px; padding: 12px 10px; }
   .profile-stat-card { min-width: 100px; }
+  .profile-editor { padding: 14px; }
+  .form-section { margin-bottom: 14px; }
   .form-grid { grid-template-columns: 1fr; }
-  .save-bar { flex-wrap: wrap; }
-  .save-bar .btn { min-width: 0; flex: 1; }
+  .form-grid input, .form-grid textarea { font-size: 16px; }
+  .save-bar { flex-wrap: wrap; gap: 6px; }
+  .save-bar .btn { min-width: 0; flex: 1; font-size: 0.75rem; padding: 12px 8px; }
+  .save-bar .btn-sm { font-size: 7px; padding: 6px 8px; }
   .session-hd { flex-wrap: wrap; gap: 6px; padding: 10px 12px; }
   .session-hd .profile-tag { font-size: 7px; }
   .session-hd .date { font-size: 0.65rem; width: 100%; order: 10; }
   .session-hd .score-badge-admin { font-size: 0.7rem; }
-  .session-bd { overflow-x: auto; }
+  .session-bd { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .session-bd table { font-size: 0.72rem; }
   .session-bd td:first-child { width: auto; }
-  .q-table { font-size: 0.72rem; }
-  .q-table .q-text { min-width: 100px; }
-  .q-table .q-opts { min-width: 120px; }
+  .q-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .q-table { font-size: 0.72rem; min-width: 500px; }
+  .q-table .q-text { min-width: 80px; }
+  .q-table .q-opts { min-width: 100px; }
+  .q-table .q-fact { min-width: 80px; }
+  .q-table .q-edit textarea { font-size: 16px; }
   .admin-log-item { flex-wrap: wrap; gap: 6px; }
   .admin-wrap { padding: 12px 10px 40px; }
   .admin-wrap h1 { font-size: 1rem !important; }
+  .admin-login-card input { font-size: 16px !important; }
+  #app input, #app textarea, #app select { font-size: 16px !important; }
 }
 
 @media (max-width: 400px) {
   .admin-card { padding: 20px 12px !important; }
-  .admin-card input { padding: 10px 10px !important; font-size: 8px !important; }
+  .admin-card input { padding: 14px 10px !important; font-size: 16px !important; }
   .admin-wrap { padding: 8px 6px 30px; }
   .admin-wrap h1 { font-size: 0.9rem !important; }
   .tab-btn { padding: 8px 10px; font-size: 7px; }
   .profile-list-item { min-width: 60px; font-size: 0.7rem; padding: 6px 8px; }
-  .form-grid input, .form-grid textarea { font-size: 0.75rem; }
+  .form-grid input, .form-grid textarea { font-size: 16px; }
   .q-table { font-size: 0.65rem; }
-  .q-table .q-edit textarea { font-size: 0.7rem; }
-  .stats-row .stat-card .num { font-size: 1.2rem; }
+  .q-table .q-edit textarea { font-size: 16px; }
+  .save-bar .btn { font-size: 0.7rem; padding: 10px 6px; }
 }
 
 /* Per-profile stats */
