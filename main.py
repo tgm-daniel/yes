@@ -1,6 +1,7 @@
 import json
 import os
 import random
+import sys
 
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.staticfiles import StaticFiles
@@ -17,8 +18,13 @@ Base.metadata.create_all(bind=engine)
 
 app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
 
-with open(os.path.join(BASE_DIR, "profiles.json")) as f:
-    PROFILES = json.load(f)
+PROFILES_PATH = os.path.join(BASE_DIR, "profiles.json")
+
+def load_profiles():
+    with open(PROFILES_PATH) as f:
+        return json.load(f)
+
+PROFILES = load_profiles()
 
 ADMIN_USER = "ttt"
 ADMIN_PASS = "sisrat"
@@ -266,91 +272,6 @@ def api_result(session_id: str, db: Session = Depends(get_db)):
     }
 
 
-# ---- ADMIN ----
-
-@app.get("/admin", response_class=HTMLResponse)
-async def admin_page():
-    html = """<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin</title>
-<link rel="stylesheet" href="/static/style.css">
-<style>
-.admin-card { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); padding: 32px 24px; max-width: 600px; margin: 40px auto; text-align: center; border: 2px solid rgba(255,181,194,0.3); }
-.admin-login { display: flex; flex-direction: column; gap: 14px; margin-top: 20px; }
-.admin-login input { width: 100%; padding: 14px 18px; font-family: 'Press Start 2P', monospace; font-size: 10px; color: var(--text); background: var(--cream); border: 2px solid rgba(255,181,194,0.3); border-radius: var(--radius-sm); outline: none; box-sizing: border-box; text-align: center; }
-.admin-login input:focus { border-color: var(--pink); box-shadow: 0 0 0 3px rgba(255,143,160,0.15); }
-.admin-login .btn { margin-top: 4px; }
-.admin-error { font-family: 'Press Start 2P', monospace; font-size: 8px; color: var(--pink-dark); min-height: 20px; }
-#resultsWrap { display: none; margin-top: 30px; text-align: left; }
-.session-card { background: var(--cream); border-radius: var(--radius-sm); padding: 16px 20px; margin-bottom: 16px; border: 2px solid rgba(255,181,194,0.2); }
-.session-card h3 { font-family: 'Press Start 2P', monospace; font-size: 9px; color: var(--pink-dark); margin: 0 0 8px; }
-.session-card .meta { font-size: 0.85rem; color: var(--text-light); margin-bottom: 8px; }
-.session-card table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-.session-card td { padding: 6px 4px; border-bottom: 1px solid rgba(255,181,194,0.15); vertical-align: top; }
-.session-card td:first-child { font-weight: 700; color: var(--text); width: 40%; }
-.session-card td:last-child { color: var(--text-light); }
-.correct-row td:last-child { color: #6b9e7a; }
-.wrong-row td:last-child { color: var(--pink-dark); }
-.no-sessions { text-align: center; color: var(--text-light); font-size: 0.9rem; padding: 40px 0; }
-</style>
-</head>
-<body>
-<div class="floating-bg"></div>
-<div class="container">
-  <div class="admin-card">
-    <div class="card-heart">
-      <svg viewBox="-10 -10 140 130" width="28" height="28">
-        <defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffb5c2"/><stop offset="100%" stop-color="#ff8fa0"/></linearGradient>
-        <filter id="s" x="-50%" y="-50%" width="200%" height="200%"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#ff8fa0" flood-opacity="0.3"/></filter></defs>
-        <path d="M60 100 C20 70 0 50 0 30 C0 12 15 0 30 0 C40 0 50 8 60 20 C70 8 80 0 90 0 C105 0 120 12 120 30 C120 50 100 70 60 100Z" fill="url(#g)" filter="url(#s)"/>
-      </svg>
-    </div>
-    <h1 class="title"><span class="title-highlight">Admin</span></h1>
-    <div class="title-sub">acesso restrito</div>
-    <div class="admin-login">
-      <input type="text" id="adminUser" placeholder="usuário" autocomplete="off">
-      <input type="password" id="adminPass" placeholder="senha">
-      <div class="admin-error" id="adminError"></div>
-      <button class="btn btn-primary" id="adminBtn" onclick="adminLogin()">entrar 🔐</button>
-    </div>
-    <div id="resultsWrap"></div>
-  </div>
-</div>
-<script>
-async function adminLogin() {
-  const u=document.getElementById('adminUser').value.trim();
-  const p=document.getElementById('adminPass').value;
-  const err=document.getElementById('adminError');
-  const btn=document.getElementById('adminBtn');
-  err.textContent=''; btn.innerHTML='<span class=spinner></span>'; btn.disabled=true;
-  try {
-    const r=await fetch('/api/admin/results',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});
-    if(!r.ok){const d=await r.json();throw new Error(d.detail||'Erro')}
-    const data=await r.json();
-    document.querySelector('.admin-login').style.display='none';
-    const w=document.getElementById('resultsWrap');
-    w.style.display='block';
-    if(data.sessions.length===0){w.innerHTML='<div class=no-sessions>Nenhum quiz respondido ainda.</div>';return}
-    let h='';
-    for(const s of data.sessions){
-      const pct=Math.round((s.score/(s.total||1))*100);
-      h+='<div class=session-card><h3>'+s.profile_id+'</h3><div class=meta>'+s.score+'/'+s.total+' ('+pct+'%) &mdash; '+s.started_at+'</div><table>';
-      for(const a of s.answers){
-        const cls=a.was_correct?'correct-row':'wrong-row';
-        h+='<tr class='+cls+'><td>'+a.question+'</td><td>'+(a.was_correct?'✅ '+a.fun_fact:'❌ '+a.selected)+'</td></tr>';
-      }
-      h+='</table></div>';
-    }
-    w.innerHTML=h;
-  } catch(e){err.textContent=e.message;btn.innerHTML='entrar 🔐';btn.disabled=false}
-}
-</script>
-</body>
-</html>"""
-    return HTMLResponse(html)
 
 
 @app.post("/api/admin/results")
@@ -384,3 +305,32 @@ def admin_results(body: dict, db: Session = Depends(get_db)):
         })
 
     return {"sessions": result}
+
+
+@app.post("/api/admin/profiles")
+def admin_get_profiles(body: dict):
+    if body.get("username") != ADMIN_USER or body.get("password") != ADMIN_PASS:
+        raise HTTPException(status_code=401, detail="Credenciais inválidas")
+    return {"profiles": load_profiles()}
+
+
+@app.post("/api/admin/profiles/save")
+def admin_save_profiles(body: dict):
+    if body.get("username") != ADMIN_USER or body.get("password") != ADMIN_PASS:
+        raise HTTPException(status_code=401, detail="Credenciais inválidas")
+    new_profiles = body.get("profiles", {})
+    current = load_profiles()
+    current.update(new_profiles)
+    with open(PROFILES_PATH, "w") as f:
+        json.dump(current, f, indent=2, ensure_ascii=False)
+    global PROFILES
+    PROFILES = load_profiles()
+    return {"ok": True}
+
+
+@app.get("/admin", response_class=HTMLResponse)
+async def admin_page():
+    html = _render("admin.html",
+        admin_user=ADMIN_USER,
+        admin_pass=ADMIN_PASS)
+    return HTMLResponse(html)
