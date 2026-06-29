@@ -7,8 +7,10 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
 
-from database import engine, Base, get_db, BASE_DIR
+from database import engine, Base, get_db
 from models import QuizSession
+
+BASE_DIR = os.getcwd()
 
 app = FastAPI(title="MultiQuiz")
 Base.metadata.create_all(bind=engine)
@@ -24,7 +26,9 @@ TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
 
 def _render(name: str, **kwargs) -> str:
     path = os.path.join(TEMPLATES_DIR, name)
-    with open(path) as f:
+    if not os.path.exists(path):
+        raise RuntimeError(f"Template not found: {path} (BASE_DIR={BASE_DIR})")
+    with open(path, encoding="utf-8") as f:
         html = f.read()
     for k, v in kwargs.items():
         html = html.replace("{{ " + k + " }}", v)
