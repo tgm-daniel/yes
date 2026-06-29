@@ -1,4 +1,5 @@
 import json
+import os
 import random
 
 from fastapi import FastAPI, Depends, HTTPException, Request
@@ -7,16 +8,16 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
-from database import engine, Base, get_db
+from database import engine, Base, get_db, BASE_DIR
 from models import QuizSession
 
 app = FastAPI(title="MultiQuiz")
 Base.metadata.create_all(bind=engine)
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
-templates = Jinja2Templates(directory="templates")
+app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
+templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 
-with open("profiles.json") as f:
+with open(os.path.join(BASE_DIR, "profiles.json")) as f:
     PROFILES = json.load(f)
 
 
