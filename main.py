@@ -90,10 +90,12 @@ async def quiz_page(session_id: str):
         if not session:
             raise HTTPException(status_code=404, detail="Sessão não encontrada")
         profile = get_profile(session.profile_id)
+        welcome = profile.get("welcomeMessage", "")
         return HTMLResponse(_render("quiz.html",
             pistas_json=json.dumps(profile["pistas"]),
             carinho_json=json.dumps(profile["carinhoMessages"]),
             emoji=profile["emoji"],
+            welcome_message=json.dumps(welcome),
         ))
     finally:
         db.close()

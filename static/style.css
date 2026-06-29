@@ -864,6 +864,56 @@ body {
   margin-top: 10px;
 }
 
+/* ----- WELCOME OVERLAY ----- */
+.welcome-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 250, 245, 0.92);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 110;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+
+.welcome-overlay.show {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.welcome-box {
+  background: var(--cream);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-hover);
+  padding: 40px 32px;
+  text-align: center;
+  max-width: 480px;
+  width: 90%;
+  border: 2px solid rgba(255, 181, 194, 0.3);
+  animation: fadeSlideIn 0.5s ease;
+}
+
+.welcome-emoji {
+  font-size: 48px;
+  margin-bottom: 12px;
+  animation: bounce 0.8s steps(2) infinite;
+}
+
+.welcome-text {
+  font-size: 0.95rem;
+  line-height: 1.9;
+  color: var(--text);
+  margin-bottom: 24px;
+  text-wrap: pretty;
+  white-space: pre-line;
+}
+
 /* ----- HEART CHARACTER (fixed shadow) ----- */
 .heart-character svg {
   display: block;

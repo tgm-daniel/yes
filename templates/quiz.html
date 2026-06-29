@@ -27,6 +27,14 @@
     </div>
   </div>
 
+  <div class="welcome-overlay" id="welcomeOverlay">
+    <div class="welcome-box">
+      <div class="welcome-emoji">💕</div>
+      <div class="welcome-text" id="welcomeText"></div>
+      <button class="btn btn-primary" onclick="closeWelcome()">começar o quiz 💖</button>
+    </div>
+  </div>
+
   <div class="container">
     <div class="card">
       <div class="card-heart" id="cardHeart">
@@ -100,6 +108,18 @@
 
     const pistas = {{ pistas_json|safe }};
     const carinhoMessages = {{ carinho_json|safe }};
+    const welcomeMessage = {{ welcome_message|safe }};
+
+    // ---- WELCOME OVERLAY ----
+    function showWelcome() {
+      if (!welcomeMessage) return;
+      document.getElementById('welcomeText').textContent = welcomeMessage;
+      document.getElementById('welcomeOverlay').classList.add('show');
+    }
+
+    function closeWelcome() {
+      document.getElementById('welcomeOverlay').classList.remove('show');
+    }
 
     // ---- TYPEWRITER ----
     function typeWriter(el, text, callback) {
@@ -277,7 +297,11 @@
       });
     });
 
-    loadQuestion();
+    if (welcomeMessage) {
+      showWelcome();
+    } else {
+      loadQuestion();
+    }
   </script>
 </body>
 </html>
