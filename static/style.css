@@ -826,6 +826,23 @@ body {
   animation: fadeSlideIn 0.5s ease;
 }
 
+.pista-poem {
+  margin-bottom: 28px;
+  padding: 8px 0;
+}
+
+.pista-poem .poem-line {
+  margin-bottom: 8px;
+  line-height: 1.7;
+  font-size: 0.95rem;
+  color: var(--text);
+  text-wrap: pretty;
+}
+
+.pista-btn {
+  margin-top: 4px;
+}
+
 /* ----- WELCOME OVERLAY ----- */
 .welcome-overlay {
   position: fixed;
@@ -876,17 +893,26 @@ body {
   white-space: pre-line;
 }
 
-.welcome-horse {
+.welcome-character {
   margin-bottom: 12px;
   display: inline-block;
 }
 
-.welcome-horse svg {
+.welcome-character svg {
   display: block;
+  overflow: visible;
+}
+
+.welcome-character .welcome-horse-svg {
   width: 100px;
   height: 110px;
-  overflow: visible;
   filter: drop-shadow(0 4px 16px rgba(255, 165, 0, 0.15));
+}
+
+.welcome-character .welcome-heart-svg {
+  width: 100px;
+  height: 100px;
+  filter: drop-shadow(0 4px 16px rgba(255, 143, 160, 0.35));
 }
 
 /* Flame flicker animation */

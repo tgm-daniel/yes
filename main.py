@@ -148,6 +148,7 @@ async def quiz_page(session_id: str):
             pistas_json=json.dumps(profile["pistas"]),
             carinho_json=json.dumps(profile["carinhoMessages"]),
             emoji=profile["emoji"],
+            profile_id=session.profile_id,
             welcome_message=json.dumps(welcome),
         ))
     finally:
