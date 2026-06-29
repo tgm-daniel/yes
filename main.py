@@ -119,7 +119,7 @@ def api_login(body: dict, db: Session = Depends(get_db)):
 
 @app.post("/api/start")
 def api_start(body: dict = {}, db: Session = Depends(get_db)):
-    profile_id = body.get("profile_id", "dani")
+    profile_id = body.get("profile_id", "vanessa")
     get_profile(profile_id)
     questions = get_profile_questions(profile_id)
     session = QuizSession(profile_id=profile_id)
