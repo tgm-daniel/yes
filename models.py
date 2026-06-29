@@ -17,3 +17,11 @@ class QuizSession(Base):
     score = Column(Integer, default=0)
     finished = Column(Boolean, default=False)
     question_order = Column(JSON, default=list)
+
+
+class LoginEvent(Base):
+    __tablename__ = "login_events"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    profile_id = Column(String, index=True, nullable=False)
+    timestamp = Column(DateTime, default=datetime.utcnow)

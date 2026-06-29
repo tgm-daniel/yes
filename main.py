@@ -4,13 +4,13 @@ import random
 import sys
 from datetime import datetime
 
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
 
 from database import engine, Base, get_db
-from models import QuizSession
+from models import QuizSession, LoginEvent
 
 BASE_DIR = os.getcwd()
 
@@ -159,11 +159,28 @@ async def quiz_page(session_id: str):
 async def result_page(session_id: str):
     return HTMLResponse(_render("result.html"))
 
+@app.get("/retry/{session_id}", response_class=HTMLResponse)
+async def retry_page(session_id: str):
+    db = next(get_db())
+    try:
+        session = db.query(QuizSession).filter(QuizSession.id == session_id).first()
+        if not session:
+            raise HTTPException(status_code=404, detail="Sessão não encontrada")
+        profile = get_profile(session.profile_id)
+        name = session.profile_id.capitalize()
+        return HTMLResponse(_render("retry.html",
+            profile_name=json.dumps(name),
+            session_id=session.id,
+            emoji=profile["emoji"],
+        ))
+    finally:
+        db.close()
+
 
 # ---- API ----
 
 @app.post("/api/login")
-def api_login(body: dict, db: Session = Depends(get_db)):
+def api_login(body: dict, request: Request, db: Session = Depends(get_db)):
     name = body.get("name", "").strip().lower()
     password = body.get("password", "")
 
@@ -171,13 +188,27 @@ def api_login(body: dict, db: Session = Depends(get_db)):
     if not profile or profile["password"] != password:
         raise HTTPException(status_code=401, detail="Nome ou senha incorretos")
 
-    existing = db.query(QuizSession).filter(
+    db.add(LoginEvent(profile_id=name))
+    db.commit()
+
+    # Check for incomplete session (user left mid-quiz)
+    incomplete = db.query(QuizSession).filter(
+        QuizSession.profile_id == name,
+        QuizSession.finished == False,
+        QuizSession.current_question > 0
+    ).order_by(QuizSession.started_at.desc()).first()
+
+    if incomplete:
+        return {"incomplete": True, "session_id": incomplete.id}
+
+    # Check for completed session
+    completed = db.query(QuizSession).filter(
         QuizSession.profile_id == name,
         QuizSession.finished == True
     ).order_by(QuizSession.started_at.desc()).first()
 
-    if existing:
-        return {"already_completed": True, "session_id": existing.id}
+    if completed:
+        return {"already_completed": True, "session_id": completed.id, "profile_name": name.capitalize()}
 
     return {
         "profile_id": name,
@@ -393,7 +424,7 @@ def admin_results(body: dict, db: Session = Depends(get_db)):
             "session_id": s.id,
             "profile_id": s.profile_id,
             "score": s.score,
-            "total": len(questions),
+            "total": len(s.question_order or questions),
             "started_at": str(s.started_at)[:19] if s.started_at else "",
             "completed_at": str(s.completed_at)[:19] if s.completed_at else "",
             "answers": ans_data,
@@ -401,6 +432,22 @@ def admin_results(body: dict, db: Session = Depends(get_db)):
         })
 
     return {"sessions": result}
+
+
+@app.post("/api/admin/login-history")
+def admin_login_history(body: dict, db: Session = Depends(get_db)):
+    if body.get("username") != ADMIN_USER or body.get("password") != ADMIN_PASS:
+        raise HTTPException(status_code=401, detail="Credenciais inválidas")
+    events = db.query(LoginEvent).order_by(LoginEvent.timestamp.desc()).limit(500).all()
+    return {
+        "events": [
+            {
+                "profile_id": e.profile_id,
+                "timestamp": str(e.timestamp)[:19] if e.timestamp else "",
+            }
+            for e in events
+        ]
+    }
 
 
 @app.post("/api/admin/profiles")
@@ -422,6 +469,19 @@ def admin_save_profiles(body: dict):
     global PROFILES
     PROFILES = load_profiles()
     return {"ok": True}
+
+
+@app.post("/api/admin/profiles/reset-sessions")
+def admin_reset_sessions(body: dict, db: Session = Depends(get_db)):
+    if body.get("username") != ADMIN_USER or body.get("password") != ADMIN_PASS:
+        raise HTTPException(status_code=401, detail="Credenciais inválidas")
+    profile_id = body.get("profile_id", "")
+    if not profile_id:
+        raise HTTPException(status_code=400, detail="profile_id é obrigatório")
+
+    deleted = db.query(QuizSession).filter(QuizSession.profile_id == profile_id).delete()
+    db.commit()
+    return {"ok": True, "deleted": deleted}
 
 
 @app.post("/api/admin/profiles/delete")

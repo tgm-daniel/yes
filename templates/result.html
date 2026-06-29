@@ -57,24 +57,24 @@
   <script>
     const sessionId = window.location.pathname.split('/').pop();
     let resultData = null;
-    const icons = ['💕', '❤️', '💗', '💖', '💝', '💘', '♡', '♥', '💓', '🐴', '🐎', '🫦', '🙈', '🐻', '🦊', '🦦', '🐆', '✨', '🪐', '🧜‍♀️'];
-    const stars = ['✦', '★', '✧', '☆', '⋆'];
+    const icons = ['💕', '❤️', '💗', '💖', '✨'];
+    const stars = ['✦', '★', '✧'];
 
     const fi = document.getElementById('floatingItems');
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < 6; i++) {
       const s = document.createElement('span');
       s.textContent = icons[i % icons.length];
-      s.style.left = (5 + Math.random() * 90) + '%';
-      s.style.top = (5 + Math.random() * 90) + '%';
-      s.style.animationDelay = (Math.random() * 6) + 's';
-      s.style.animationDuration = (7 + Math.random() * 5) + 's';
-      s.style.fontSize = (14 + Math.random() * 18) + 'px';
+      s.style.left = (10 + Math.random() * 80) + '%';
+      s.style.top = (10 + Math.random() * 80) + '%';
+      s.style.animationDelay = (Math.random() * 4) + 's';
+      s.style.animationDuration = (8 + Math.random() * 4) + 's';
+      s.style.fontSize = (16 + Math.random() * 14) + 'px';
       fi.appendChild(s);
     }
 
     function startHeartsRain() {
       const container = document.getElementById('heartsRain');
-      for (let i = 0; i < 30; i++) {
+      for (let i = 0; i < 15; i++) {
         const span = document.createElement('span');
         span.textContent = icons[Math.floor(Math.random() * icons.length)];
         span.style.left = Math.random() * 100 + '%';
@@ -87,7 +87,7 @@
 
     function addStars() {
       const container = document.getElementById('stars');
-      for (let i = 0; i < 12; i++) {
+      for (let i = 0; i < 6; i++) {
         const span = document.createElement('span');
         span.textContent = stars[i % stars.length];
         span.style.left = Math.random() * 100 + '%';

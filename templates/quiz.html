@@ -30,7 +30,7 @@
   <div class="welcome-overlay" id="welcomeOverlay">
     <div class="welcome-box">
       <div class="welcome-character" id="welcomeCharacter">
-        <svg viewBox="0 0 120 130" width="100" height="110" id="welcomeSvg" class="welcome-horse-svg">
+        <svg viewBox="0 0 120 130" width="100" height="110" id="welcomeHorseSvg" class="welcome-horse-svg">
           <defs>
             <linearGradient id="horseBody" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stop-color="#ffdec2" />
@@ -98,6 +98,32 @@
           <ellipse cx="92" cy="68" rx="8" ry="4" fill="rgba(255,92,112,0.2)" />
           <path d="M50 94 Q60 102 70 94" stroke="#4a3a5a" stroke-width="2.5" fill="none" stroke-linecap="round" />
         </svg>
+        <svg viewBox="-15 -15 150 150" width="100" height="100" id="welcomeHeartSvg" class="welcome-heart-svg" style="display:none">
+          <defs>
+            <linearGradient id="welcomeHeartGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#ffb5c2" />
+              <stop offset="100%" stop-color="#ff8fa0" />
+            </linearGradient>
+            <filter id="welcomeHeartShadow" x="-50%" y="-50%" width="200%" height="200%">
+              <feDropShadow dx="0" dy="5" stdDeviation="8" flood-color="#ff8fa0" flood-opacity="0.35" />
+            </filter>
+          </defs>
+          <path d="M60 100 C20 70 0 50 0 30 C0 12 15 0 30 0 C40 0 50 8 60 20 C70 8 80 0 90 0 C105 0 120 12 120 30 C120 50 100 70 60 100Z" fill="url(#welcomeHeartGrad)" filter="url(#welcomeHeartShadow)" />
+          <ellipse cx="80" cy="25" rx="18" ry="10" fill="rgba(255,255,255,0.4)" transform="rotate(-20 80 25)" />
+          <circle cx="42" cy="42" r="8" fill="white" />
+          <g class="eye-group" data-origin-x="45" data-origin-y="44">
+            <circle class="pupil" cx="45" cy="44" r="4.5" fill="#4a3a5a" />
+            <circle cx="46.5" cy="42" r="1.8" fill="white" />
+          </g>
+          <circle cx="78" cy="42" r="8" fill="white" />
+          <g class="eye-group" data-origin-x="81" data-origin-y="44">
+            <circle class="pupil" cx="81" cy="44" r="4.5" fill="#4a3a5a" />
+            <circle cx="82.5" cy="42" r="1.8" fill="white" />
+          </g>
+          <ellipse cx="30" cy="56" rx="8" ry="4" fill="rgba(255,92,112,0.2)" />
+          <ellipse cx="90" cy="56" rx="8" ry="4" fill="rgba(255,92,112,0.2)" />
+          <path d="M48 58 Q60 68 72 58" stroke="#4a3a5a" stroke-width="2.5" fill="none" stroke-linecap="round" />
+        </svg>
       </div>
       <div class="welcome-text" id="welcomeText"></div>
       <button class="btn btn-primary" onclick="closeWelcome()">Começar</button>
@@ -156,16 +182,16 @@
 
   <script>
     // floating icons bg
-    const icons = ['💕', '❤️', '💗', '💖', '💝', '💘', '♡', '♥', '💓', '🐴', '🐎', '🫦', '🙈', '🐻', '🦊', '🦦', '🐆', '✨', '🪐', '🧜‍♀️'];
+    const flowIcons = ['💕','❤️','💗','💖','✨'];
     const fi = document.getElementById('floatingItems');
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 5; i++) {
       const s = document.createElement('span');
-      s.textContent = icons[i % icons.length];
-      s.style.left = (5 + Math.random() * 90) + '%';
-      s.style.top = (5 + Math.random() * 90) + '%';
-      s.style.animationDelay = (Math.random() * 6) + 's';
-      s.style.animationDuration = (7 + Math.random() * 5) + 's';
-      s.style.fontSize = (14 + Math.random() * 16) + 'px';
+      s.textContent = flowIcons[i % flowIcons.length];
+      s.style.left = (10 + Math.random() * 80) + '%';
+      s.style.top = (10 + Math.random() * 80) + '%';
+      s.style.animationDelay = (Math.random() * 4) + 's';
+      s.style.animationDuration = (8 + Math.random() * 4) + 's';
+      s.style.fontSize = (16 + Math.random() * 14) + 'px';
       fi.appendChild(s);
     }
 
@@ -186,105 +212,36 @@
       document.getElementById('welcomeText').textContent = welcomeMessage;
       document.getElementById('welcomeOverlay').classList.add('show');
 
-      // Replace horse SVG with heart SVG for non-Vanessa profiles
+      // Show the right SVG
       if (profileId !== 'vanessa') {
-        const charEl = document.getElementById('welcomeCharacter');
-        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        svg.setAttribute('viewBox', '-10 -10 140 130');
-        svg.setAttribute('width', '100');
-        svg.setAttribute('height', '100');
-        svg.setAttribute('id', 'welcomeSvg');
-        svg.classList.add('welcome-heart-svg');
-
-        const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-        const grad = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
-        grad.setAttribute('id', 'welcomeHeartGrad');
-        grad.setAttribute('x1', '0%'); grad.setAttribute('y1', '0%');
-        grad.setAttribute('x2', '100%'); grad.setAttribute('y2', '100%');
-        const stop1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
-        stop1.setAttribute('offset', '0%'); stop1.setAttribute('stop-color', '#ffb5c2');
-        const stop2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
-        stop2.setAttribute('offset', '100%'); stop2.setAttribute('stop-color', '#ff8fa0');
-        grad.append(stop1, stop2);
-        defs.appendChild(grad);
-
-        const filter = document.createElementNS('http://www.w3.org/2000/svg', 'filter');
-        filter.setAttribute('id', 'welcomeHeartShadow');
-        filter.setAttribute('x', '-50%'); filter.setAttribute('y', '-50%');
-        filter.setAttribute('width', '200%'); filter.setAttribute('height', '200%');
-        const feDrop = document.createElementNS('http://www.w3.org/2000/svg', 'feDropShadow');
-        feDrop.setAttribute('dx', '0'); feDrop.setAttribute('dy', '4');
-        feDrop.setAttribute('stdDeviation', '6');
-        feDrop.setAttribute('flood-color', '#ff8fa0'); feDrop.setAttribute('flood-opacity', '0.3');
-        filter.appendChild(feDrop);
-        defs.appendChild(filter);
-
-        const heartPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        heartPath.setAttribute('d', 'M60 100 C20 70 0 50 0 30 C0 12 15 0 30 0 C40 0 50 8 60 20 C70 8 80 0 90 0 C105 0 120 12 120 30 C120 50 100 70 60 100Z');
-        heartPath.setAttribute('fill', 'url(#welcomeHeartGrad)');
-        heartPath.setAttribute('filter', 'url(#welcomeHeartShadow)');
-
-        // Add eyes on the heart
-        const leftEyeBg = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        leftEyeBg.setAttribute('cx', '40'); leftEyeBg.setAttribute('cy', '42');
-        leftEyeBg.setAttribute('r', '9'); leftEyeBg.setAttribute('fill', 'white');
-        const leftGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-        leftGroup.setAttribute('class', 'eye-group');
-        leftGroup.setAttribute('data-origin-x', '44');
-        leftGroup.setAttribute('data-origin-y', '43');
-        const leftPupil = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        leftPupil.setAttribute('class', 'pupil');
-        leftPupil.setAttribute('cx', '44'); leftPupil.setAttribute('cy', '43');
-        leftPupil.setAttribute('r', '5'); leftPupil.setAttribute('fill', '#4a3a5a');
-        const leftShine = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        leftShine.setAttribute('cx', '45.5'); leftShine.setAttribute('cy', '41');
-        leftShine.setAttribute('r', '2'); leftShine.setAttribute('fill', 'white');
-        leftGroup.append(leftPupil, leftShine);
-
-        const rightEyeBg = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        rightEyeBg.setAttribute('cx', '80'); rightEyeBg.setAttribute('cy', '42');
-        rightEyeBg.setAttribute('r', '9'); rightEyeBg.setAttribute('fill', 'white');
-        const rightGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-        rightGroup.setAttribute('class', 'eye-group');
-        rightGroup.setAttribute('data-origin-x', '76');
-        rightGroup.setAttribute('data-origin-y', '43');
-        const rightPupil = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        rightPupil.setAttribute('class', 'pupil');
-        rightPupil.setAttribute('cx', '76'); rightPupil.setAttribute('cy', '43');
-        rightPupil.setAttribute('r', '5'); rightPupil.setAttribute('fill', '#4a3a5a');
-        const rightShine = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        rightShine.setAttribute('cx', '74.5'); rightShine.setAttribute('cy', '41');
-        rightShine.setAttribute('r', '2'); rightShine.setAttribute('fill', 'white');
-        rightGroup.append(rightPupil, rightShine);
-
-        svg.append(defs, heartPath, leftEyeBg, leftGroup, rightEyeBg, rightGroup);
-
-        charEl.innerHTML = '';
-        charEl.appendChild(svg);
+        document.getElementById('welcomeHorseSvg').style.display = 'none';
+        document.getElementById('welcomeHeartSvg').style.display = 'block';
       }
 
-      // character eye tracking
+      // character eye tracking (throttled)
       const charEl = document.getElementById('welcomeCharacter');
       const eyes = charEl.querySelectorAll('.eye-group');
-      document.addEventListener('mousemove', function trackChar(e) {
+      let eyeTick = false;
+      const trackChar = (e) => {
         if (!document.getElementById('welcomeOverlay').classList.contains('show')) {
           document.removeEventListener('mousemove', trackChar);
           return;
         }
-        const rect = charEl.getBoundingClientRect();
-        const cx = rect.left + rect.width / 2;
-        const cy = rect.top + rect.height / 2;
-        const dx = (e.clientX - cx) / rect.width;
-        const dy = (e.clientY - cy) / rect.height;
-        const maxMove = 3;
-        eyes.forEach(g => {
-          const ox = parseFloat(g.dataset.originX);
-          const oy = parseFloat(g.dataset.originY);
-          const moveX = Math.max(-maxMove, Math.min(maxMove, dx * maxMove));
-          const moveY = Math.max(-maxMove, Math.min(maxMove, dy * maxMove));
-          g.setAttribute('transform', `translate(${moveX}, ${moveY})`);
+        if (eyeTick) return; eyeTick = true;
+        requestAnimationFrame(() => {
+          const rect = charEl.getBoundingClientRect();
+          const cx = rect.left + rect.width / 2;
+          const cy = rect.top + rect.height / 2;
+          const dx = (e.clientX - cx) / Math.max(rect.width, 1);
+          const dy = (e.clientY - cy) / Math.max(rect.height, 1);
+          const maxMove = 3;
+          eyes.forEach(g => {
+            g.setAttribute('transform', `translate(${Math.max(-maxMove,Math.min(maxMove,dx*maxMove))}, ${Math.max(-maxMove,Math.min(maxMove,dy*maxMove))})`);
+          });
+          eyeTick = false;
         });
-      });
+      };
+      document.addEventListener('mousemove', trackChar);
     }
 
     function closeWelcome() {
@@ -451,24 +408,29 @@
       });
     }
 
-    // ---- mini heart mouse tracking ----
+    // ---- mini heart mouse tracking (throttled) ----
     const miniHeart = document.getElementById('miniHeartSvg');
     const miniGroups = miniHeart ? miniHeart.querySelectorAll('.eye-group') : [];
+    let miniTick = false;
     document.addEventListener('mousemove', (e) => {
-      if (miniGroups.length === 0) return;
-      const rect = document.getElementById('cardHeart').getBoundingClientRect();
-      const cx = rect.left + rect.width / 2;
-      const cy = rect.top + rect.height / 2;
-      const dx = (e.clientX - cx) / 200;
-      const dy = (e.clientY - cy) / 200;
-      miniGroups.forEach(g => {
-        const ox = parseFloat(g.dataset.originX);
-        const oy = parseFloat(g.dataset.originY);
-        g.setAttribute('transform', `translate(${dx * 2}, ${dy * 2})`);
+      if (miniGroups.length === 0 || miniTick) return; miniTick = true;
+      requestAnimationFrame(() => {
+        const rect = document.getElementById('cardHeart').getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        const dx = (e.clientX - cx) / Math.max(rect.width * 2, 1);
+        const dy = (e.clientY - cy) / Math.max(rect.height * 2, 1);
+        miniGroups.forEach(g => {
+          g.setAttribute('transform', `translate(${dx * 2}, ${dy * 2})`);
+        });
+        miniTick = false;
       });
     });
 
-    if (welcomeMessage) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const isResume = urlParams.get('resume') === '1';
+
+    if (welcomeMessage && !isResume) {
       showWelcome();
     } else {
       loadQuestion();

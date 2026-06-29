@@ -79,46 +79,50 @@
   </div>
 
   <script>
-    const heartVars = ['💕', '❤️', '💗', '💖', '💝', '💘', '♡', '♥', '💓', '🐴', '🐎', '🫦', '🙈', '🐻', '🦊', '🦦', '🐆', '✨', '🪐', '🧜‍♀️'];
-    const floatingContainer = document.getElementById('floatingItems');
-    for (let i = 0; i < 16; i++) {
-      const span = document.createElement('span');
-      span.textContent = heartVars[i % heartVars.length];
-      span.style.left = (5 + Math.random() * 90) + '%';
-      span.style.top = (5 + Math.random() * 90) + '%';
-      span.style.animationDelay = (Math.random() * 6) + 's';
-      span.style.animationDuration = (7 + Math.random() * 5) + 's';
-      span.style.fontSize = (14 + Math.random() * 18) + 'px';
-      floatingContainer.appendChild(span);
+    // minimal decorations
+    const flowEmoji = ['💕','❤️','💗','💖'];
+    const fc = document.getElementById('floatingItems');
+    for (let i = 0; i < 6; i++) {
+      const s = document.createElement('span');
+      s.textContent = flowEmoji[i % flowEmoji.length];
+      s.style.left = (10 + Math.random() * 80) + '%';
+      s.style.top = (10 + Math.random() * 80) + '%';
+      s.style.animationDelay = (Math.random() * 4) + 's';
+      s.style.animationDuration = (8 + Math.random() * 4) + 's';
+      s.style.fontSize = (16 + Math.random() * 14) + 'px';
+      fc.appendChild(s);
     }
-
-    const starChars = ['✦', '★', '✧'];
-    for (let i = 0; i < 15; i++) {
-      const span = document.createElement('span');
-      span.textContent = starChars[i % starChars.length];
-      span.style.left = Math.random() * 100 + '%';
-      span.style.top = Math.random() * 100 + '%';
-      span.style.animationDelay = Math.random() * 3 + 's';
-      span.style.fontSize = (10 + Math.random() * 10) + 'px';
-      document.getElementById('stars').appendChild(span);
+    const starChars = ['✦','★','✧'];
+    const st = document.getElementById('stars');
+    for (let i = 0; i < 6; i++) {
+      const s = document.createElement('span');
+      s.textContent = starChars[i % starChars.length];
+      s.style.left = Math.random() * 100 + '%';
+      s.style.top = Math.random() * 100 + '%';
+      s.style.animationDelay = (Math.random() * 3) + 's';
+      s.style.fontSize = (12 + Math.random() * 8) + 'px';
+      st.appendChild(s);
     }
 
     const heart = document.getElementById('heartCharacter');
     const svg = document.getElementById('heartSvg');
     const eyeGroups = document.querySelectorAll('.eye-group');
+    let eyeTicking = false;
     document.addEventListener('mousemove', (e) => {
-      const rect = heart.getBoundingClientRect();
-      const cx = rect.left + rect.width / 2;
-      const cy = rect.top + rect.height / 2;
-      const dx = (e.clientX - cx) / rect.width;
-      const dy = (e.clientY - cy) / rect.height;
-      const maxMove = 3;
-      eyeGroups.forEach(g => {
-        const ox = parseFloat(g.dataset.originX);
-        const oy = parseFloat(g.dataset.originY);
-        const moveX = Math.max(-maxMove, Math.min(maxMove, dx * maxMove));
-        const moveY = Math.max(-maxMove, Math.min(maxMove, dy * maxMove));
-        g.setAttribute('transform', `translate(${moveX}, ${moveY})`);
+      if (eyeTicking) return; eyeTicking = true;
+      requestAnimationFrame(() => {
+        const rect = heart.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        const dx = (e.clientX - cx) / Math.max(rect.width, 1);
+        const dy = (e.clientY - cy) / Math.max(rect.height, 1);
+        const maxMove = 3;
+        eyeGroups.forEach(g => {
+          const ox = parseFloat(g.dataset.originX);
+          const oy = parseFloat(g.dataset.originY);
+          g.setAttribute('transform', `translate(${Math.max(-maxMove, Math.min(maxMove, dx * maxMove))}, ${Math.max(-maxMove, Math.min(maxMove, dy * maxMove))})`);
+        });
+        eyeTicking = false;
       });
     });
 
@@ -184,8 +188,10 @@
 
         const data = await res.json();
 
-        if (data.already_completed) {
-          window.location.href = `/resultado/${data.session_id}`;
+        if (data.incomplete) {
+          window.location.href = `/quiz/${data.session_id}?resume=1`;
+        } else if (data.already_completed) {
+          window.location.href = `/retry/${data.session_id}`;
         } else {
           window.location.href = `/start/${name}`;
         }

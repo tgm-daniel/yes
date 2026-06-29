@@ -7,6 +7,24 @@
 <link rel="stylesheet" href="/static/style.css">
 <style>
 :root { --radius: 14px; --radius-sm: 8px; }
+body.dark,
+body.dark .admin-wrap { --bg: #1a1620; --bg2: #231e2c; --surface: #2a2438; --surface2: #332d44; --text: #e0d8e8; --text-light: #9a8aaa; --cream: #231e2c; --white: #2a2438; --shadow: 0 8px 30px rgba(0,0,0,0.3); --shadow-hover: 0 12px 40px rgba(0,0,0,0.4); }
+body.dark { background: var(--bg); }
+body.dark .admin-wrap { color: var(--text); }
+body.dark .filter-row select, body.dark .filter-row input, body.dark .session-card, body.dark .profile-editor, body.dark .stat-card, body.dark .sort-btn { background: var(--surface); color: var(--text); border-color: rgba(255,181,194,0.08); }
+body.dark .profile-list-item:hover { background: rgba(255,181,194,0.05); }
+body.dark .profile-list-item.active { background: var(--surface2); }
+body.dark .session-hd:hover { background: rgba(255,181,194,0.03); }
+body.dark .form-grid input, body.dark .form-grid textarea, body.dark .form-grid select,
+body.dark .q-table .q-edit input, body.dark .q-table .q-edit textarea { background: var(--bg2); color: var(--text); border-color: rgba(255,181,194,0.1); }
+body.dark .session-bd td { border-color: rgba(255,181,194,0.05); }
+body.dark .admin-msg.success { background: rgba(107,158,122,0.15); }
+body.dark .admin-msg.error { background: rgba(255,92,112,0.15); }
+body.dark .preview-overlay { background: rgba(26,22,32,0.95); }
+body.dark .preview-box, body.dark .preview-box .preview-text { background: var(--surface); color: var(--text); }
+body.dark .admin-log-item { background: var(--surface); border-color: rgba(255,181,194,0.06); }
+body.dark .admin-log-item .log-time { color: var(--text-light); }
+body.dark .profile-list-item .add-icon { color: var(--pink); }
 
 /* layout */
 .admin-wrap { max-width: 1100px; margin: 0 auto; padding: 20px 16px 60px; }
@@ -115,6 +133,81 @@
 .toast.success { background: #6b9e7a; color: white; }
 .toast.error { background: var(--pink-dark); color: white; }
 @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Preview modal */
+.preview-overlay { position: fixed; inset: 0; background: rgba(255,250,245,0.92); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 300; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+.preview-overlay.show { opacity: 1; pointer-events: all; }
+.preview-box { background: var(--cream); border-radius: var(--radius); box-shadow: var(--shadow-hover); padding: 40px 32px; text-align: center; max-width: 480px; width: 90%; border: 2px solid rgba(255,181,194,0.3); animation: fadeSlideIn 0.4s ease; }
+.preview-box .preview-svg { display: inline-block; margin-bottom: 12px; }
+.preview-box .preview-svg svg { display: block; overflow: visible; }
+.preview-box .preview-svg.horse svg { width: 100px; height: 110px; filter: drop-shadow(0 4px 16px rgba(255,165,0,0.15)); }
+.preview-box .preview-svg.heart svg { width: 100px; height: 100px; filter: drop-shadow(0 4px 16px rgba(255,143,160,0.35)); }
+.preview-box .preview-text { font-size: 0.95rem; line-height: 1.9; color: var(--text); margin-bottom: 24px; white-space: pre-line; text-wrap: pretty; }
+.preview-close { margin-top: 8px; }
+
+/* Sort button */
+.sort-btn { font-family: inherit; padding: 8px 14px; border: 2px solid rgba(255,181,194,0.2); border-radius: var(--radius-sm); background: var(--white); font-size: 0.75rem; cursor: pointer; transition: all 0.15s; color: var(--text-light); }
+.sort-btn:hover { border-color: var(--pink); color: var(--pink-dark); }
+
+/* Admin responsive */
+@media (max-width: 768px) {
+  .admin-card { margin: 0 8px !important; padding: 24px 16px !important; }
+  .admin-card input { padding: 12px 12px !important; font-size: 9px !important; }
+  .admin-card .title { font-size: 12px !important; }
+  .tabs { gap: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .tab-btn { padding: 10px 14px; font-size: 8px; white-space: nowrap; }
+  .filter-row { flex-wrap: wrap; }
+  .filter-row select, .filter-row input { flex: 1; min-width: 100px; }
+  .profiles-layout { flex-direction: column; }
+  .profile-list { width: 100%; display: flex; flex-wrap: wrap; gap: 4px; }
+  .profile-list-item { flex: 1; min-width: 80px; text-align: center; font-size: 0.75rem; padding: 8px 10px; }
+  .stats-row .stat-card { min-width: 80px; padding: 12px 10px; }
+  .profile-stat-card { min-width: 100px; }
+  .form-grid { grid-template-columns: 1fr; }
+  .save-bar { flex-wrap: wrap; }
+  .save-bar .btn { min-width: 0; flex: 1; }
+  .session-hd { flex-wrap: wrap; gap: 6px; padding: 10px 12px; }
+  .session-hd .profile-tag { font-size: 7px; }
+  .session-hd .date { font-size: 0.65rem; width: 100%; order: 10; }
+  .session-hd .score-badge-admin { font-size: 0.7rem; }
+  .session-bd { overflow-x: auto; }
+  .session-bd table { font-size: 0.72rem; }
+  .session-bd td:first-child { width: auto; }
+  .q-table { font-size: 0.72rem; }
+  .q-table .q-text { min-width: 100px; }
+  .q-table .q-opts { min-width: 120px; }
+  .admin-log-item { flex-wrap: wrap; gap: 6px; }
+  .admin-wrap { padding: 12px 10px 40px; }
+  .admin-wrap h1 { font-size: 1rem !important; }
+}
+
+@media (max-width: 400px) {
+  .admin-card { padding: 20px 12px !important; }
+  .admin-card input { padding: 10px 10px !important; font-size: 8px !important; }
+  .admin-wrap { padding: 8px 6px 30px; }
+  .admin-wrap h1 { font-size: 0.9rem !important; }
+  .tab-btn { padding: 8px 10px; font-size: 7px; }
+  .profile-list-item { min-width: 60px; font-size: 0.7rem; padding: 6px 8px; }
+  .form-grid input, .form-grid textarea { font-size: 0.75rem; }
+  .q-table { font-size: 0.65rem; }
+  .q-table .q-edit textarea { font-size: 0.7rem; }
+  .stats-row .stat-card .num { font-size: 1.2rem; }
+}
+
+/* Per-profile stats */
+.profile-stats-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
+.profile-stat-card { background: var(--white); border-radius: var(--radius-sm); padding: 12px 16px; border: 1px solid rgba(255,181,194,0.1); flex: 1; min-width: 130px; display: flex; flex-direction: column; gap: 4px; }
+.profile-stat-card .ps-header { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; font-weight: 700; color: var(--text-light); }
+.profile-stat-card .ps-header .ps-tag { font-family:'Press Start 2P',monospace; font-size:7px; background:var(--pink); color:white; padding:2px 6px; border-radius:4px; }
+.profile-stat-card .ps-bar { height: 6px; background: rgba(255,181,194,0.1); border-radius: 4px; overflow: hidden; margin-top: 2px; }
+.profile-stat-card .ps-bar-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--pink), #ff8fa0); transition: width 0.5s ease; }
+.profile-stat-card .ps-footer { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-light); }
+
+/* Log tab */
+.admin-log-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 16px; background: var(--white); border-radius: var(--radius-sm); margin-bottom: 6px; border: 1px solid rgba(255,181,194,0.08); }
+.admin-log-item .log-icon { font-size: 1.2rem; width: 28px; text-align: center; }
+.admin-log-item .log-body { flex: 1; font-size: 0.82rem; }
+.admin-log-item .log-time { font-size: 0.7rem; color: var(--text-light); white-space: nowrap; }
 </style>
 </head>
 <body>
@@ -148,25 +241,56 @@
       <h1 style="margin:0;font-size:1.1rem;">Painel de Controle</h1>
       <div style="font-size:0.75rem;color:var(--text-light);margin-top:4px;">visualize resultados e gerencie perfis</div>
     </div>
-    <button class="btn-sm secondary" onclick="adminLogout()">sair</button>
+    <div style="display:flex;gap:6px;align-items:center;">
+      <button class="btn-sm secondary" id="darkToggle" onclick="toggleDark()" style="font-size:10px;">🌙</button>
+      <button class="btn-sm secondary" onclick="adminLogout()">sair</button>
+    </div>
   </div>
 
   <!-- TABS -->
   <div class="tabs">
     <button class="tab-btn active" data-tab="sessions">📊 Sessões</button>
     <button class="tab-btn" data-tab="profiles">👤 Perfis</button>
+    <button class="tab-btn" data-tab="log">📋 Log</button>
   </div>
 
   <!-- SESSIONS TAB -->
   <div class="tab-content active" id="tabSessions">
     <div class="stats-row" id="statsRow"></div>
+    <div class="profile-stats-row" id="profileStatsRow"></div>
     <div class="filter-row">
       <select id="profileFilter" onchange="renderSessions()">
         <option value="">Todos os perfis</option>
       </select>
-      <input type="text" id="sessionSearch" placeholder="buscar por ID..." oninput="renderSessions()">
+      <input type="text" id="sessionSearch" placeholder="buscar por ID ou nome..." oninput="renderSessions()">
+      <button class="sort-btn" id="sortBtn" onclick="toggleSort()">📅 mais recentes</button>
+      <button class="sort-btn" onclick="exportCSV()">📥 CSV</button>
     </div>
     <div id="sessionList"></div>
+  </div>
+
+  <!-- LOG TAB -->
+  <div class="tab-content" id="tabLog">
+    <div style="margin-bottom:20px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div><span style="font-weight:700;font-size:0.95rem;">Histórico de Logins</span><div style="font-size:0.75rem;color:var(--text-light);">registro de todos os acessos dos perfis</div></div>
+      </div>
+      <div class="filter-row">
+        <select id="loginFilter" onchange="renderLoginHistory()">
+          <option value="">Todos os perfis</option>
+        </select>
+        <span style="font-size:0.78rem;color:var(--text-light);" id="loginCount"></span>
+      </div>
+      <div id="loginHistoryList"></div>
+    </div>
+
+    <hr style="border:none;border-top:1px solid rgba(255,181,194,0.15);margin:28px 0;">
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div><span style="font-weight:700;font-size:0.95rem;">Atividades do Admin</span><div style="font-size:0.75rem;color:var(--text-light);">alterações feitas nos perfis pelo painel</div></div>
+      <button class="btn-sm secondary" onclick="clearLog()">🧹 Limpar</button>
+    </div>
+    <div id="logList"></div>
   </div>
 
   <!-- PROFILES TAB -->
@@ -179,12 +303,189 @@
   </div>
 </div>
 
+<!-- PREVIEW MODAL -->
+<div class="preview-overlay" id="previewOverlay" onclick="if(event.target===this)closePreview()">
+  <div class="preview-box">
+    <div class="preview-svg horse" id="previewSvgHorse">
+      <svg viewBox="0 0 120 130" width="100" height="110">
+        <defs>
+          <linearGradient id="previewHorseBody" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffdec2"/><stop offset="100%" stop-color="#f5c6a0"/></linearGradient>
+          <linearGradient id="previewEarInner" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffb5c2"/><stop offset="100%" stop-color="#ff8fa0"/></linearGradient>
+          <linearGradient id="previewFlameGrad" x1="0%" y1="100%" x2="0%" y2="0%"><stop offset="0%" stop-color="#ff4500"/><stop offset="40%" stop-color="#ff6b00"/><stop offset="70%" stop-color="#ffa500"/><stop offset="100%" stop-color="#ffd700"/></linearGradient>
+          <linearGradient id="previewFlameGrad2" x1="0%" y1="100%" x2="0%" y2="0%"><stop offset="0%" stop-color="#ff6347"/><stop offset="50%" stop-color="#ff8c00"/><stop offset="100%" stop-color="#ffe44d"/></linearGradient>
+          <filter id="previewFlameGlow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        </defs>
+        <ellipse cx="60" cy="65" rx="50" ry="50" fill="rgba(255,165,0,0.08)"/>
+        <g filter="url(#previewFlameGlow)">
+          <path d="M60 5 Q50 15 48 25 Q46 35 52 30 Q50 40 55 45 Q58 48 60 50 Q62 48 65 45 Q70 40 68 30 Q74 35 72 25 Q70 15 60 5Z" fill="url(#previewFlameGrad)" class="flame"/>
+          <path d="M35 15 Q25 22 22 30 Q20 38 28 35 Q25 42 30 48 Q33 50 35 50 Q37 50 40 48 Q45 42 42 35 Q50 38 48 30 Q45 22 35 15Z" fill="url(#previewFlameGrad2)" class="flame" style="animation-delay:0.2s"/>
+          <path d="M85 15 Q95 22 98 30 Q100 38 92 35 Q95 42 90 48 Q87 50 85 50 Q83 50 80 48 Q75 42 78 35 Q70 38 72 30 Q75 22 85 15Z" fill="url(#previewFlameGrad2)" class="flame" style="animation-delay:0.4s"/>
+        </g>
+        <path d="M60 25 C78 25 95 38 95 58 C95 78 82 95 60 100 C38 95 25 78 25 58 C25 38 42 25 60 25Z" fill="url(#previewHorseBody)"/>
+        <ellipse cx="60" cy="86" rx="24" ry="16" fill="#ffd4c4"/>
+      </svg>
+    </div>
+    <div class="preview-svg heart" id="previewSvgHeart" style="display:none">
+      <svg viewBox="-15 -15 150 150" width="100" height="100">
+        <defs><linearGradient id="previewHeartGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffb5c2"/><stop offset="100%" stop-color="#ff8fa0"/></linearGradient></defs>
+        <path d="M60 100 C20 70 0 50 0 30 C0 12 15 0 30 0 C40 0 50 8 60 20 C70 8 80 0 90 0 C105 0 120 12 120 30 C120 50 100 70 60 100Z" fill="url(#previewHeartGrad)" filter="drop-shadow(0 5px 8px rgba(255,143,160,0.35))"/>
+        <ellipse cx="80" cy="25" rx="18" ry="10" fill="rgba(255,255,255,0.4)" transform="rotate(-20 80 25)"/>
+        <ellipse cx="30" cy="56" rx="8" ry="4" fill="rgba(255,92,112,0.2)"/>
+        <ellipse cx="90" cy="56" rx="8" ry="4" fill="rgba(255,92,112,0.2)"/>
+        <path d="M48 58 Q60 68 72 58" stroke="#4a3a5a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="preview-text" id="previewText"></div>
+    <button class="btn btn-primary preview-close" onclick="closePreview()">Fechar</button>
+  </div>
+</div>
+
 <script>
 // ---- STATE ----
 let ALL_SESSIONS = [];
 let ALL_PROFILES = {};
 let SELECTED_PROFILE = null;
 let AUTH = { username: '', password: '' };
+let SORT_DESC = true;
+let ACTIVITY_LOG = [];
+let ALL_LOGIN_EVENTS = [];
+
+function loadLog() {
+  try { ACTIVITY_LOG = JSON.parse(localStorage.getItem('admin_activity_log') || '[]'); } catch(e) { ACTIVITY_LOG = []; }
+}
+function saveLog() {
+  localStorage.setItem('admin_activity_log', JSON.stringify(ACTIVITY_LOG));
+}
+function logActivity(action, detail) {
+  const icons = { save: '💾', delete: '🗑', duplicate: '📋', create: '➕' };
+  ACTIVITY_LOG.unshift({ time: new Date().toISOString().slice(0,19).replace('T',' '), action, detail, icon: icons[action] || '📝' });
+  if (ACTIVITY_LOG.length > 200) ACTIVITY_LOG = ACTIVITY_LOG.slice(0,200);
+  saveLog();
+}
+function renderLog() {
+  const el = document.getElementById('logList');
+  if (!ACTIVITY_LOG.length) {
+    el.innerHTML = '<div style="text-align:center;color:var(--text-light);padding:40px 0;">Nenhuma atividade registrada ainda.</div>';
+    return;
+  }
+  el.innerHTML = ACTIVITY_LOG.map(l => `<div class="admin-log-item"><span class=log-icon>${l.icon}</span><div class=log-body><strong>${l.action}</strong> — ${esc(l.detail)}</div><span class=log-time>${l.time}</span></div>`).join('');
+}
+function clearLog() {
+  if (!confirm('Limpar todas as atividades do log?')) return;
+  ACTIVITY_LOG = [];
+  saveLog();
+  renderLog();
+}
+
+// ---- LOGIN HISTORY ----
+async function loadLoginEvents() {
+  try {
+    const r = await fetch('/api/admin/login-history', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(AUTH)
+    });
+    if (!r.ok) return;
+    const d = await r.json();
+    ALL_LOGIN_EVENTS = d.events || [];
+    populateLoginFilter();
+    renderLoginHistory();
+  } catch(e) { /* silent */ }
+}
+
+function populateLoginFilter() {
+  const sel = document.getElementById('loginFilter');
+  sel.innerHTML = '<option value="">Todos os perfis</option>';
+  const seen = new Set();
+  ALL_LOGIN_EVENTS.forEach(e => { if (!seen.has(e.profile_id)) { seen.add(e.profile_id); sel.innerHTML += `<option value="${e.profile_id}">${e.profile_id}</option>`; } });
+}
+
+function renderLoginHistory() {
+  const filter = document.getElementById('loginFilter').value;
+  let events = [...ALL_LOGIN_EVENTS];
+  if (filter) events = events.filter(e => e.profile_id === filter);
+
+  document.getElementById('loginCount').textContent = `${events.length} login${events.length !== 1 ? 's' : ''}`;
+
+  if (!events.length) {
+    document.getElementById('loginHistoryList').innerHTML = '<div style="text-align:center;color:var(--text-light);padding:40px 0;">Nenhum login registrado.</div>';
+    return;
+  }
+
+  const byDay = {};
+  events.forEach(e => {
+    const day = e.timestamp ? e.timestamp.slice(0,10) : '?';
+    if (!byDay[day]) byDay[day] = [];
+    byDay[day].push(e);
+  });
+
+  let html = '';
+  Object.keys(byDay).forEach(day => {
+    html += `<div style="margin-bottom:12px;"><div style="font-size:0.75rem;font-weight:700;color:var(--text-light);margin-bottom:6px;">${day}</div>`;
+    byDay[day].forEach(e => {
+      html += `<div class="session-card">
+        <div class="session-hd" style="cursor:default;">
+          <span class=profile-tag>${e.profile_id}</span>
+          <span class=date>${e.timestamp ? e.timestamp.slice(11,19) : '—'}</span>
+          <span style="font-size:0.7rem;color:var(--text-light);">🔑 login</span>
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+  });
+  document.getElementById('loginHistoryList').innerHTML = html;
+}
+
+// ---- DARK MODE ----
+function toggleDark() {
+  document.body.classList.toggle('dark');
+  localStorage.setItem('admin_dark', document.body.classList.contains('dark') ? '1' : '');
+  document.getElementById('darkToggle').textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
+}
+
+// ---- CSV EXPORT ----
+function csvEsc(s) { return '"' + (s||'').replace(/"/g,'""') + '"'; }
+
+function exportCSV() {
+  const filter = document.getElementById('profileFilter').value;
+  const search = document.getElementById('sessionSearch').value.toLowerCase().trim();
+  let sessions = [...ALL_SESSIONS];
+  if (filter) sessions = sessions.filter(s => s.profile_id === filter);
+  if (search) sessions = sessions.filter(s => s.session_id.toLowerCase().includes(search) || s.profile_id.toLowerCase().includes(search));
+  if (!sessions.length) { showToast('Nenhuma sessão para exportar.', 'error'); return; }
+
+  let csv = '\uFEFF'; // BOM for Excel
+  csv += 'Sessão,Perfil,Data,Acertos,Total,%,Resposta Final\n';
+  sessions.forEach(s => {
+    const pct = s.total > 0 ? Math.round((s.score / s.total) * 100) : 0;
+    const fa = s.final_answer === 'yes' ? 'Sim' : s.final_answer === 'no' ? 'Não' : '—';
+    csv += `${s.session_id},${s.profile_id},${s.started_at || ''},${s.score},${s.total},${pct}%,${fa}\n`;
+  });
+  csv += '\n\nSessão,Perfil,Pergunta,Acertou?,Escolheu,Correta,Fun Fact\n';
+  sessions.forEach(s => {
+    (s.answers || []).forEach(a => {
+      csv += `${s.session_id},${s.profile_id},${csvEsc(a.question||'')},${a.was_correct ? 'Sim' : 'Não'},${csvEsc(a.selected||'')},${csvEsc(a.correct_answer||'')},${csvEsc(a.fun_fact||'')}\n`;
+    });
+  });
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `quiz-sessoes-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast(`CSV exportado: ${sessions.length} sessões ✅`, 'success');
+}
+
+// ---- TEST QUIZ ----
+function testQuiz() {
+  const key = SELECTED_PROFILE;
+  if (!key) return;
+  const url = `/start/${key}`;
+  // Fetch to create session, then open
+  fetch(url).then(r => {
+    if (r.redirected) window.open(r.url, '_blank');
+    else window.open(url, '_blank');
+  }).catch(() => window.open(url, '_blank'));
+}
 
 // ---- LOGIN ----
 async function adminLogin() {
@@ -239,6 +540,7 @@ async function loadAll() {
     renderSessions();
     renderProfileList();
     selectProfile(Object.keys(ALL_PROFILES)[0] || null);
+    loadLoginEvents();
   } catch(e) {
     showToast('Erro ao carregar dados: ' + e.message, 'error');
   }
@@ -249,12 +551,13 @@ function renderSessions() {
   const filter = document.getElementById('profileFilter').value;
   const search = document.getElementById('sessionSearch').value.toLowerCase().trim();
 
-  let sessions = ALL_SESSIONS;
+  let sessions = [...ALL_SESSIONS];
   if (filter) sessions = sessions.filter(s => s.profile_id === filter);
-    if (search) sessions = sessions.filter(s =>
-      s.session_id.toLowerCase().includes(search) ||
-      s.profile_id.toLowerCase().includes(search)
-    );
+  if (search) sessions = sessions.filter(s =>
+    s.session_id.toLowerCase().includes(search) ||
+    s.profile_id.toLowerCase().includes(search)
+  );
+  if (!SORT_DESC) sessions.reverse();
 
   // Stats
   const totalSessions = sessions.length;
@@ -267,6 +570,26 @@ function renderSessions() {
     <div class=stat-card><div class=num>${overallPct}%</div><div class=label>Acerto geral</div></div>
     <div class=stat-card><div class=num>${totalCorrect}/${totalQuestions}</div><div class=label>Corretas</div></div>
   `;
+
+  // Per-profile stats
+  const profileMap = {};
+  ALL_SESSIONS.forEach(s => {
+    if (!profileMap[s.profile_id]) profileMap[s.profile_id] = { count:0, correct:0, total:0 };
+    profileMap[s.profile_id].count++;
+    profileMap[s.profile_id].correct += s.score;
+    profileMap[s.profile_id].total += s.total;
+  });
+  const pStatsHtml = Object.keys(profileMap).sort().map(k => {
+    const d = profileMap[k];
+    const pct = d.total > 0 ? Math.round((d.correct / d.total) * 100) : 0;
+    const isActive = filter === k;
+    return `<div class="profile-stat-card" onclick="document.getElementById('profileFilter').value='${k}';renderSessions();" style="cursor:pointer;${isActive?'border-color:var(--pink);':''}">
+      <div class=ps-header><span class=ps-tag>${k}</span> <span>${d.count} sessões</span></div>
+      <div class=ps-bar><div class=ps-bar-fill style="width:${pct}%"></div></div>
+      <div class=ps-footer><span>${pct}% acerto</span><span>${d.correct}/${d.total}</span></div>
+    </div>`;
+  }).join('');
+  document.getElementById('profileStatsRow').innerHTML = pStatsHtml;
 
   if (sessions.length === 0) {
     document.getElementById('sessionList').innerHTML = '<div style="text-align:center;color:var(--text-light);padding:40px 0;">Nenhuma sessão encontrada.</div>';
@@ -304,13 +627,22 @@ function toggleSession(id) {
   if (card) card.classList.toggle('open');
 }
 
+function toggleSort() {
+  SORT_DESC = !SORT_DESC;
+  document.getElementById('sortBtn').textContent = SORT_DESC ? '📅 mais recentes' : '📅 mais antigos';
+  renderSessions();
+}
+
 // ---- PROFILES TAB ----
 function renderProfileList() {
   const keys = Object.keys(ALL_PROFILES);
   let html = '';
   keys.forEach(k => {
     const active = SELECTED_PROFILE === k ? 'active' : '';
-    html += `<div class="profile-list-item ${active}" onclick="selectProfile('${k}')">${k}</div>`;
+    const s = ALL_SESSIONS.filter(x => x.profile_id === k);
+    const completed = s.filter(x => x.final_answer);
+    const dot = completed.length ? '<span style="color:#6b9e7a;margin-right:4px;">●</span>' : s.length ? '<span style="color:#d4a040;margin-right:4px;">●</span>' : '<span style="color:var(--text-light);margin-right:4px;opacity:0.3;">○</span>';
+    html += `<div class="profile-list-item ${active}" onclick="selectProfile('${k}')">${dot}${k}</div>`;
   });
   html += `<div class="profile-list-item" onclick="newProfile()"><span class=add-icon>+</span> Novo Perfil</div>`;
   document.getElementById('profileList').innerHTML = html;
@@ -343,7 +675,7 @@ function renderProfileEditor(key) {
       <div><label>Subtítulo</label><input value="${esc(p.subtitle||'')}" id="pf_subtitle" onchange="markDirty()"></div>
       <div><label>Emoji</label><input value="${esc(p.emoji||'')}" id="pf_emoji" onchange="markDirty()"></div>
       <div><label>Instagram</label><input value="${esc(p.instagram||'')}" id="pf_instagram" onchange="markDirty()"></div>
-      <div class=full><label>Mensagem de Boas-Vindas</label><textarea rows=3 id="pf_welcome" onchange="markDirty()">${esc(p.welcomeMessage||'')}</textarea></div>
+      <div class=full><label>Mensagem de Boas-Vindas</label><div style="display:flex;gap:6px;"><textarea rows=3 id="pf_welcome" onchange="markDirty()" style="flex:1;">${esc(p.welcomeMessage||'')}</textarea><button class="btn-sm secondary" onclick="previewWelcome()" style="align-self:flex-end;white-space:nowrap;">👁 Preview</button></div></div>
       <div class=full><label>Mensagem "Sim"</label><textarea rows=2 id="pf_yesMsg" onchange="markDirty()">${esc(p.yesMessage||'')}</textarea></div>
       <div class=full><label>Footer "Sim"</label><textarea rows=1 id="pf_yesFooter" onchange="markDirty()">${esc(p.yesFooter||'')}</textarea></div>
       <div class=full><label>Mensagem "Não"</label><textarea rows=2 id="pf_noMsg" onchange="markDirty()">${esc(p.noMessage||'')}</textarea></div>
@@ -400,10 +732,27 @@ function renderProfileEditor(key) {
   });
   html += `</div><button class=btn-add onclick="addCarinho()">+ Adicionar Mensagem de Carinho</button></div>`;
 
+  // Session status
+  const sessForProfile = ALL_SESSIONS.filter(s => s.profile_id === key);
+  const completedCount = sessForProfile.filter(s => s.final_answer).length;
+  const inProgressCount = sessForProfile.filter(s => !s.final_answer).length;
+  html += `<div class=form-section><h4>Sessões</h4>
+    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+      ${sessForProfile.length ? `
+        <span style="font-size:0.85rem;color:var(--text);">📊 <strong>${sessForProfile.length}</strong> sessão${sessForProfile.length !== 1 ? 'ens' : ''}</span>
+        <span style="font-size:0.85rem;color:#6b9e7a;">✅ <strong>${completedCount}</strong> concluída${completedCount !== 1 ? 's' : ''}</span>
+        ${inProgressCount ? `<span style="font-size:0.85rem;color:#d4a040;">⏳ <strong>${inProgressCount}</strong> em andamento</span>` : ''}
+        <button class="btn-sm danger" onclick="confirmResetSessions('${key}')">🔄 Resetar respostas</button>
+      ` : `<span style="font-size:0.85rem;color:var(--text-light);">Nenhuma sessão para este perfil.</span>`}
+    </div>
+  </div>`;
+
   // Save bar
   html += `<div class=save-bar>
     <button class="btn btn-secondary" onclick="selectProfile(SELECTED_PROFILE)">Cancelar</button>
-    <button class="btn-sm danger" onclick="confirmDeleteProfile()" style="margin-right:auto;">🗑 Excluir Perfil</button>
+    <button class="btn-sm secondary" onclick="testQuiz()">🚀 Testar</button>
+    <button class="btn-sm secondary" onclick="duplicateProfile()">📋 Duplicar</button>
+    <button class="btn-sm danger" onclick="confirmDeleteProfile()">🗑 Excluir Perfil</button>
     <button class="btn btn-primary" onclick="saveProfile()">💾 Salvar</button>
   </div>`;
 
@@ -508,6 +857,7 @@ async function saveProfile() {
         body: JSON.stringify(delPayload)
       });
     }
+    logActivity('save', `"${data.oldKey}" → "${data.newKey}"`);
     showToast('Perfil salvo com sucesso! ✅', 'success');
     await loadAll();
     selectProfile(data.newKey);
@@ -601,6 +951,7 @@ function newProfile() {
     SELECTED_PROFILE = key;
   }
   ALL_PROFILES[SELECTED_PROFILE] = JSON.parse(JSON.stringify(tpl));
+  logActivity('create', `"${SELECTED_PROFILE}"`);
   renderProfileList();
   renderProfileEditor(SELECTED_PROFILE);
 }
@@ -612,6 +963,30 @@ function confirmDeleteProfile() {
   deleteProfile(key);
 }
 
+function confirmResetSessions(key) {
+  const sessForProfile = ALL_SESSIONS.filter(s => s.profile_id === key);
+  const total = sessForProfile.length;
+  if (!total) { showToast('Nenhuma sessão para resetar.', 'error'); return; }
+  if (!confirm(`Tem certeza? Isso vai deletar todas as ${total} sessão${total !== 1 ? 'ens' : ''} do perfil "${key}".\n\nO usuário poderá responder o quiz novamente do zero.`)) return;
+  resetProfileSessions(key);
+}
+
+async function resetProfileSessions(key) {
+  try {
+    const r = await fetch('/api/admin/profiles/reset-sessions', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ username: AUTH.username, password: AUTH.password, profile_id: key })
+    });
+    if (!r.ok) { const d = await r.json(); throw new Error(d.detail || 'Erro ao resetar'); }
+    const data = await r.json();
+    showToast(`${data.deleted} sessão${data.deleted !== 1 ? 'ens' : ''} deletada${data.deleted !== 1 ? 's' : ''} para "${key}" ✅`, 'success');
+    await loadAll();
+    selectProfile(key);
+  } catch(e) {
+    showToast('Erro: ' + e.message, 'error');
+  }
+}
+
 async function deleteProfile(key) {
   try {
     const r = await fetch('/api/admin/profiles/delete', {
@@ -619,6 +994,7 @@ async function deleteProfile(key) {
       body: JSON.stringify({ username: AUTH.username, password: AUTH.password, profile_id: key })
     });
     if (!r.ok) { const d = await r.json(); throw new Error(d.detail || 'Erro ao excluir'); }
+    logActivity('delete', `"${key}"`);
     showToast(`Perfil "${key}" excluído.`, 'success');
     await loadAll();
     selectProfile(Object.keys(ALL_PROFILES)[0] || null);
@@ -627,13 +1003,54 @@ async function deleteProfile(key) {
   }
 }
 
+// ---- PREVIEW ----
+function previewWelcome() {
+  const msg = document.getElementById('pf_welcome')?.value || '';
+  document.getElementById('previewText').textContent = msg || '(sem mensagem de boas-vindas)';
+
+  const key = SELECTED_PROFILE;
+  const isVanessa = key === 'vanessa';
+  document.getElementById('previewSvgHorse').style.display = isVanessa ? 'inline-block' : 'none';
+  document.getElementById('previewSvgHeart').style.display = isVanessa ? 'none' : 'inline-block';
+
+  document.getElementById('previewOverlay').classList.add('show');
+}
+
+function closePreview() {
+  document.getElementById('previewOverlay').classList.remove('show');
+}
+
+// ---- DUPLICATE PROFILE ----
+function duplicateProfile() {
+  const key = SELECTED_PROFILE;
+  if (!key || !ALL_PROFILES[key]) return;
+  const baseName = key.replace(/_copy\d*$/, '');
+  let newKey = baseName + '_copy';
+  let i = 1;
+  while (ALL_PROFILES[newKey]) { i++; newKey = baseName + '_copy' + i; }
+  ALL_PROFILES[newKey] = JSON.parse(JSON.stringify(ALL_PROFILES[key]));
+  logActivity('duplicate', `"${key}" → "${newKey}"`);
+  showToast(`Perfil "${key}" duplicado como "${newKey}"`, 'success');
+  renderProfileList();
+  selectProfile(newKey);
+}
+
+// ---- INIT ----
+loadLog();
+if (localStorage.getItem('admin_dark')) {
+  document.body.classList.add('dark');
+  document.getElementById('darkToggle').textContent = '☀️';
+}
+
 // ---- TABS ----
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     btn.classList.add('active');
-    document.getElementById('tab' + btn.dataset.tab.charAt(0).toUpperCase() + btn.dataset.tab.slice(1)).classList.add('active');
+    const tabName = btn.dataset.tab;
+    document.getElementById('tab' + tabName.charAt(0).toUpperCase() + tabName.slice(1)).classList.add('active');
+    if (tabName === 'log') { renderLog(); renderLoginHistory(); }
   });
 });
 
