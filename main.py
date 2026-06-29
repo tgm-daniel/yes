@@ -2,6 +2,7 @@ import json
 import os
 import random
 import sys
+from datetime import datetime
 
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.staticfiles import StaticFiles
@@ -13,7 +14,7 @@ from models import QuizSession
 
 BASE_DIR = os.getcwd()
 
-app = FastAPI(title="MultiQuiz")
+app = FastAPI(title="Quiz pra ti")
 Base.metadata.create_all(bind=engine)
 
 app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
@@ -28,6 +29,51 @@ PROFILES = load_profiles()
 
 ADMIN_USER = "ttt"
 ADMIN_PASS = "sisrat"
+
+GENERIC_QUESTIONS = [
+    {"id": 1, "question": "Qual seria seu destino dos sonhos pra viajar?", "options": ["Paris — romance e charme", "Tóquio — tecnologia e cultura", "Nova York — cidade que nunca dorme", "Uma praia paradisíaca — sol e mar"], "correct": 3, "fun_fact": "Praia paradisíaca! Bora sonhar juntos 🏖️"},
+    {"id": 2, "question": "O que mais te atrai em alguém?", "options": ["Humor que faz qualquer dia ficar leve", "Inteligência que prende a atenção", "Gentileza com todo mundo", "Confiança sem arrogância"], "correct": 0, "fun_fact": "Humor é o caminho mais curto pro coração 😄"},
+    {"id": 3, "question": "Qual seu estilo musical favorito?", "options": ["Pop — pra cantar no chuveiro", "MPB — pra alma e dias cinzas", "Eletrônica — dançar até o chão", "Sertanejo — modão e coração na mão"], "correct": 1, "fun_fact": "MPB! Já temos playlist pra fazer juntos 🎵"},
+    {"id": 4, "question": "O que você mais valoriza numa amizade?", "options": ["Lealdade — tamo junto até o fim", "Bom humor — rir até chorar", "Sinceridade — mesmo que doa", "Aventura — vamos fazer loucura juntos"], "correct": 2, "fun_fact": "Sinceridade é a base de tudo 💕"},
+    {"id": 5, "question": "Fim de semana ideal pra você?", "options": ["Explorar um lugar novo", "Maratona de série com delivery", "Rolê com os amigos até altas horas", "Sofá, cobertor e um livro"], "correct": 0, "fun_fact": "Aventura e descoberta! A vida é curta 🌟"},
+    {"id": 6, "question": "O que te faz sentir especial de verdade?", "options": ["Um elogio sincero do nada", "Uma surpresa inesperada", "Uma conversa profunda de madrugada", "Um gesto simples cheio de significado"], "correct": 3, "fun_fact": "São as pequenas coisas que constroem grandes sentimentos ✨"},
+    {"id": 7, "question": "Qual seria seu date ideal?", "options": ["Jantar romântico à luz de velas", "Café gostoso com conversa boa", "Um piquenique no parque", "Algo espontâneo e sem roteiro"], "correct": 1, "fun_fact": "Café e conversa — melhor forma de começo ☕"},
+    {"id": 8, "question": "O que te conquista de verdade?", "options": ["Presentes (sem julgamentos)", "Atenção genuína — lembrar dos detalhes", "Uma aventura radical", "Simplicidade — pequenas coisas"], "correct": 1, "fun_fact": "Atenção genuína — nada mais bonito 💝"},
+    {"id": 9, "question": "Qual seu jeito de recarregar as energias?", "options": ["Uma soneca estratégica", "Um tempo sozinha com seus pensamentos", "Sair rodeada de gente", "Exercício — endorfina é tudo"], "correct": 0, "fun_fact": "Dormir é sempre uma boa ideia 😂"},
+    {"id": 10, "question": "Se você fosse um emoji, qual seria?", "options": ["😎 — descolada e confiante", "🤗 — abraço e afeto", "🔥 — intensa e apaixonada", "🌙 — calma, misteriosa e sonhadora"], "correct": 0, "fun_fact": "😎 Descolada! Já tô imaginando nosso rolê 🚀"}
+]
+
+NEW_PROFILE_TEMPLATE = {
+    "password": "senha123",
+    "title": "",
+    "subtitle": "vamos nos conhecer melhor :)",
+    "emoji": "💕",
+    "instagram": "@",
+    "welcomeMessage": "Oiiii! Que bom que você está aqui! Vamos nos conhecer melhor? 💕",
+    "yesMessage": "mal posso esperar pra te conhecer melhor. vai ser incrível!",
+    "yesFooter": "💕 ansioso pelo nosso encontro",
+    "noMessage": "tudo bem! a vida é sobre encontros e desencontros.",
+    "noFooter": "se um dia mudar de ideia, é só chamar. 😊",
+    "resultMessages": {
+        "high": {"message": "Nossa compatibilidade é incrível! ✨ Parece que já nos entendemos. Que tal a gente descobrir se é verdade?", "final_question": "Você aceita sair comigo? 💕", "emoji": "🥰", "title": "Compatibilidade máxima! ✨"},
+        "mid": {"message": "Já temos uma boa conexão! 😊 Ainda temos o que descobrir, e essa é a melhor parte.", "final_question": "Que tal a gente se conhecer melhor? 🌟", "emoji": "😊", "title": "Quase lá! 🌟"},
+        "low": {"message": "Ainda temos o que descobrir um sobre o outro! 😂 E essa é a parte mais divertida.", "final_question": "Me dá uma chance de te conhecer? 😅", "emoji": "😂", "title": "Ainda temos o que descobrir 😂"}
+    },
+    "questions": GENERIC_QUESTIONS,
+    "pistas": [
+        ["primeiro encontro marcado", "um café bem quentinho", "e aquele frio na barriga ☕💕"],
+        ["conversa boa e sincera", "risada solta e gostosa", "o melhor jeito de começar algo ✨"],
+        ["um passeio no parque", "o vento no rosto", "e a descoberta de um novo sorriso 🌳💕"],
+        ["noite estrelada", "planos pro futuro", "e a certeza de que tô no lugar certo 🌟💕"]
+    ],
+    "carinhoMessages": [
+        "tudo bem, a gente mal se conhece! ainda dá tempo de descobrir 💕",
+        "palpite errado, mas a intenção foi boa 😊",
+        "imagina se a gente já soubesse tudo um do outro? não teria graça! ✨",
+        "relaxa, o importante é a gente se conhecer de verdade 💗",
+        "errar faz parte — e a melhor parte é aprender juntos 🍀"
+    ]
+}
 
 
 TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
@@ -77,8 +123,9 @@ async def start_redirect(profile_id: str):
     db = next(get_db())
     try:
         questions = get_profile_questions(profile_id)
-        session = QuizSession(profile_id=profile_id)
         random.shuffle(questions)
+        questions = questions[:10]
+        session = QuizSession(profile_id=profile_id)
         session.question_order = [q["id"] for q in questions]
         db.add(session)
         db.commit()
@@ -123,6 +170,14 @@ def api_login(body: dict, db: Session = Depends(get_db)):
     if not profile or profile["password"] != password:
         raise HTTPException(status_code=401, detail="Nome ou senha incorretos")
 
+    existing = db.query(QuizSession).filter(
+        QuizSession.profile_id == name,
+        QuizSession.finished == True
+    ).order_by(QuizSession.started_at.desc()).first()
+
+    if existing:
+        return {"already_completed": True, "session_id": existing.id}
+
     return {
         "profile_id": name,
         "title": profile["title"],
@@ -136,8 +191,9 @@ def api_start(body: dict = {}, db: Session = Depends(get_db)):
     profile_id = body.get("profile_id", "vanessa")
     get_profile(profile_id)
     questions = get_profile_questions(profile_id)
-    session = QuizSession(profile_id=profile_id)
     random.shuffle(questions)
+    questions = questions[:10]
+    session = QuizSession(profile_id=profile_id)
     session.question_order = [q["id"] for q in questions]
     db.add(session)
     db.commit()
@@ -155,14 +211,15 @@ def api_question(session_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Sessão não encontrada")
 
     questions = get_profile_questions(session.profile_id)
-    total = len(questions)
+    order = session.question_order or [q["id"] for q in questions[:10]]
+    total = len(order)
 
     if session.finished:
         return {"finished": True, "score": session.score, "total": total}
 
-    order = session.question_order or [q["id"] for q in questions]
     if session.current_question >= len(order):
         session.finished = True
+        session.completed_at = datetime.utcnow()
         db.commit()
         return {"finished": True, "score": session.score, "total": total}
 
@@ -186,13 +243,13 @@ def api_answer(session_id: str, body: dict, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Sessão não encontrada")
 
     questions = get_profile_questions(session.profile_id)
-    total = len(questions)
+    order = session.question_order or [q["id"] for q in questions[:10]]
+    total = len(order)
 
     if session.finished:
         return {"finished": True, "score": session.score, "total": total}
 
     selected = body.get("answer")
-    order = session.question_order or [q["id"] for q in questions]
     qid = order[session.current_question]
     q = next(q for q in questions if q["id"] == qid)
 
@@ -211,6 +268,7 @@ def api_answer(session_id: str, body: dict, db: Session = Depends(get_db)):
 
     if session.current_question >= len(order):
         session.finished = True
+        session.completed_at = datetime.utcnow()
 
     db.commit()
 
@@ -226,6 +284,23 @@ def api_answer(session_id: str, body: dict, db: Session = Depends(get_db)):
     }
 
 
+@app.post("/api/result/final/{session_id}")
+def api_result_final(session_id: str, body: dict, db: Session = Depends(get_db)):
+    session = db.query(QuizSession).filter(QuizSession.id == session_id).first()
+    if not session:
+        raise HTTPException(status_code=404, detail="Sessão não encontrada")
+    answer = body.get("answer")
+    if answer not in ("yes", "no"):
+        raise HTTPException(status_code=400, detail="Resposta inválida")
+    answers = session.answers or []
+    # Remove previous final_answer if any, then append new one
+    answers = [a for a in answers if a.get("type") != "final_answer"]
+    answers.append({"type": "final_answer", "value": answer})
+    session.answers = answers
+    db.commit()
+    return {"ok": True}
+
+
 @app.get("/api/result/{session_id}")
 def api_result(session_id: str, db: Session = Depends(get_db)):
     session = db.query(QuizSession).filter(QuizSession.id == session_id).first()
@@ -234,14 +309,21 @@ def api_result(session_id: str, db: Session = Depends(get_db)):
 
     profile = get_profile(session.profile_id)
     questions = get_profile_questions(session.profile_id)
-    total = len(questions)
+    order = session.question_order or [q["id"] for q in questions[:10]]
+    total = len(order)
     score = session.score
     answers = session.answers or []
     percentage = (score / total) * 100
 
     details = []
+    final_answer = None
     for ans in answers:
-        q = next(q for q in questions if q["id"] == ans["question_id"])
+        if ans.get("type") == "final_answer":
+            final_answer = ans.get("value")
+            continue
+        q = next((q for q in questions if q["id"] == ans["question_id"]), None)
+        if not q:
+            continue
         details.append({
             "question": q["question"],
             "selected": q["options"][ans["selected"]],
@@ -269,6 +351,8 @@ def api_result(session_id: str, db: Session = Depends(get_db)):
         "noMessage": profile["noMessage"],
         "noFooter": profile["noFooter"],
         "profile_emoji": profile["emoji"],
+        "final_answer": final_answer,
+        "already_completed": True,
     }
 
 
@@ -288,10 +372,13 @@ def admin_results(body: dict, db: Session = Depends(get_db)):
         answers = s.answers or []
         ans_data = []
         for a in answers:
+            if a.get("type") == "final_answer":
+                continue
             q = qmap.get(a["question_id"], {})
+            opts = q.get("options", [])
             ans_data.append({
                 "question": q.get("question", "?"),
-                "selected": (q.get("options", []) + ["?"])[a["selected"]] if a["selected"] < len(q.get("options", [])) else "?",
+                "selected": opts[a["selected"]] if a["selected"] < len(opts) else "?",
                 "was_correct": a["correct"],
                 "fun_fact": q.get("fun_fact", ""),
             })
@@ -311,7 +398,7 @@ def admin_results(body: dict, db: Session = Depends(get_db)):
 def admin_get_profiles(body: dict):
     if body.get("username") != ADMIN_USER or body.get("password") != ADMIN_PASS:
         raise HTTPException(status_code=401, detail="Credenciais inválidas")
-    return {"profiles": load_profiles()}
+    return {"profiles": load_profiles(), "template": NEW_PROFILE_TEMPLATE}
 
 
 @app.post("/api/admin/profiles/save")

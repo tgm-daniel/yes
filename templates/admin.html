@@ -227,6 +227,7 @@ async function loadAll() {
     const profData = await profRes.json();
     ALL_SESSIONS = sessData.sessions || [];
     ALL_PROFILES = profData.profiles || {};
+    window.NEW_PROFILE_TEMPLATE = profData.template || null;
 
     // Populate profile filter
     const sel = document.getElementById('profileFilter');
@@ -543,15 +544,7 @@ function deletePista(idx) {
 }
 
 function newProfile() {
-  const key = 'novo_perfil';
-  if (ALL_PROFILES[key]) {
-    let i = 1;
-    while (ALL_PROFILES[`novo_perfil_${i}`]) i++;
-    SELECTED_PROFILE = `novo_perfil_${i}`;
-  } else {
-    SELECTED_PROFILE = key;
-  }
-  ALL_PROFILES[SELECTED_PROFILE] = {
+  const tpl = window.NEW_PROFILE_TEMPLATE || {
     password: '', title: '', subtitle: '', emoji: '💕', instagram: '@',
     welcomeMessage: '', yesMessage: '', yesFooter: '', noMessage: '', noFooter: '',
     resultMessages: {
@@ -563,6 +556,15 @@ function newProfile() {
     pistas: [],
     carinhoMessages: []
   };
+  const key = 'novo_perfil';
+  if (ALL_PROFILES[key]) {
+    let i = 1;
+    while (ALL_PROFILES[`novo_perfil_${i}`]) i++;
+    SELECTED_PROFILE = `novo_perfil_${i}`;
+  } else {
+    SELECTED_PROFILE = key;
+  }
+  ALL_PROFILES[SELECTED_PROFILE] = JSON.parse(JSON.stringify(tpl));
   renderProfileList();
   renderProfileEditor(SELECTED_PROFILE);
 }

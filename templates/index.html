@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MultiQuiz 💕</title>
+  <title>Quiz pra ti 💕</title>
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
@@ -182,7 +182,13 @@
           throw new Error(err.detail || 'Erro ao entrar');
         }
 
-        window.location.href = `/start/${name}`;
+        const data = await res.json();
+
+        if (data.already_completed) {
+          window.location.href = `/resultado/${data.session_id}`;
+        } else {
+          window.location.href = `/start/${name}`;
+        }
       } catch (err) {
         error.textContent = err.message;
         btn.innerHTML = 'entrar! 💖';

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Resultado 💕</title>
+  <title>Quiz pra ti 💕</title>
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
@@ -118,10 +118,27 @@
       document.getElementById('resultMessage').textContent = data.message;
       document.getElementById('finalQuestion').textContent = data.final_question;
       addStars();
+
+      // If already answered before, show that state
+      if (data.final_answer === 'yes') {
+        showYesAnswer(data);
+      } else if (data.final_answer === 'no') {
+        document.getElementById('finalButtons').innerHTML = `
+          <div style="margin-bottom:12px;color:var(--text-light);font-size:0.85rem;">Você já respondeu esse quiz 💕</div>
+          <button class="btn btn-yes" onclick="answerYes()">mudar de ideia? sim! 💕</button>
+        `;
+      }
     }
 
-    function answerYes() {
-      const d = resultData;
+    async function saveFinalAnswer(answer) {
+      await fetch(`/api/result/final/${sessionId}`, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({answer})
+      });
+    }
+
+    function showYesAnswer(d) {
       const profileEmoji = d.profile_emoji || '💕';
       const content = document.getElementById('resultContent');
       content.innerHTML = `
@@ -171,8 +188,12 @@
       startHeartsRain();
       document.querySelector('title').textContent = 'Ela disse sim!!! 💕';
 
-      // mouse tracking for result heart
+      setupHeartTracking();
+    }
+
+    function setupHeartTracking() {
       const heartResult = document.getElementById('heartCharacterResult');
+      if (!heartResult) return;
       const eyeGroups = heartResult.querySelectorAll('.eye-group');
       document.addEventListener('mousemove', function track(e) {
         const rect = heartResult.getBoundingClientRect();
@@ -191,7 +212,13 @@
       });
     }
 
+    function answerYes() {
+      saveFinalAnswer('yes');
+      showYesAnswer(resultData);
+    }
+
     function answerNo() {
+      saveFinalAnswer('no');
       const d = resultData;
       const content = document.getElementById('resultContent');
       content.innerHTML = `
@@ -204,7 +231,10 @@
           <p class="subtitle" style="margin-top: 4px; font-size: 0.9rem;">
             ${d.noFooter}
           </p>
-          <div class="result-divider" style="margin-top: 16px;">✧ ♡ ✧</div>
+          <div class="result-divider" style="margin-top: 12px;">✧ ♡ ✧</div>
+          <p style="margin-top: 16px;">
+            <button class="btn btn-yes" onclick="answerYes()">mudar de ideia? 💕</button>
+          </p>
         </div>
       `;
       document.querySelector('title').textContent = '😢💔';
