@@ -56,6 +56,7 @@
 
   <script>
     const sessionId = window.location.pathname.split('/').pop();
+    let resultData = null;
     const icons = ['💕', '❤️', '💗', '💖', '💝', '💘', '♡', '♥', '💓', '🐴', '🐎', '🫦', '🙈', '🐻', '🦊', '🦦', '🐆', '✨', '🪐', '🧜‍♀️'];
     const stars = ['✦', '★', '✧', '☆', '⋆'];
 
@@ -100,25 +101,18 @@
     async function loadResult() {
       const res = await fetch(`/api/result/${sessionId}`);
       const data = await res.json();
+      resultData = data;
 
       document.getElementById('resultScore').textContent = data.score;
       document.getElementById('resultTotal').textContent = `/${data.total}`;
       document.getElementById('resultLabel').textContent =
         data.score === 1 ? 'pergunta certa' : 'perguntas certas';
 
-      const emoji = document.getElementById('resultEmoji');
-      const title = document.querySelector('title');
+      document.getElementById('resultEmoji').textContent = data.emoji;
+      document.querySelector('title').textContent = data.title;
 
       if (data.percentage >= 80) {
-        emoji.textContent = '🥰';
-        title.textContent = 'Você me conhece! 💕';
         startHeartsRain();
-      } else if (data.percentage >= 50) {
-        emoji.textContent = '😊';
-        title.textContent = 'Quase lá! 💕';
-      } else {
-        emoji.textContent = '😂';
-        title.textContent = 'Ops! 😂';
       }
 
       document.getElementById('resultMessage').textContent = data.message;
@@ -127,6 +121,8 @@
     }
 
     function answerYes() {
+      const d = resultData;
+      const profileEmoji = d.profile_emoji || '💕';
       const content = document.getElementById('resultContent');
       content.innerHTML = `
         <div class="final-card-content">
@@ -159,16 +155,15 @@
             </svg>
           </div>
           <h1 class="title"><span class="title-highlight">SIM!!!</span></h1>
-          <div class="title-sub">💕 você disse sim! 💕</div>
+          <div class="title-sub">${profileEmoji} você disse sim! ${profileEmoji}</div>
           <p class="subtitle" style="margin-top: 12px;">
-            eu nunca parei de pensar em você.<br>
-            vamos escrever um novo capítulo juntos?
+            ${d.yesMessage}
           </p>
           <p style="font-family: 'Press Start 2P', monospace; font-size: 9px; color: var(--pink-dark); margin-top: 16px; letter-spacing: 1px;">
-            eu te amo ❤️
+            ${d.yesFooter}
           </p>
           <p class="subtitle" style="margin-top: 16px; font-size: 0.85rem;">
-            ps: me manda um direct no <strong>@tvrsis</strong> 🫦<br>
+            ps: me manda um direct no <strong>${d.instagram}</strong> 🫦<br>
             só um "hey" mesmo pra gente voltar a se falar ✨
           </p>
         </div>
@@ -197,18 +192,17 @@
     }
 
     function answerNo() {
+      const d = resultData;
       const content = document.getElementById('resultContent');
       content.innerHTML = `
         <div class="final-card-content">
           <div style="font-size: 64px; margin-bottom: 12px;">😢💔</div>
           <h1 class="title">eu entendo...</h1>
           <p class="subtitle" style="margin-top: 12px;">
-            algumas histórias terminam,<br>
-            mas isso não apaga o que a gente viveu.
+            ${d.noMessage}
           </p>
           <p class="subtitle" style="margin-top: 4px; font-size: 0.9rem;">
-            obrigado por ter feito parte da minha vida.<br>
-            se um dia mudar de ideia, eu vou estar aqui. 💕
+            ${d.noFooter}
           </p>
           <div class="result-divider" style="margin-top: 16px;">✧ ♡ ✧</div>
         </div>

@@ -1,0 +1,234 @@
+{
+  "dani": {
+    "password": "dani123",
+    "title": "Nosso Quiz 💕",
+    "subtitle": "✦ edição especial ✦",
+    "emoji": "💕",
+    "instagram": "@tvrsis",
+    "yesMessage": "eu nunca parei de pensar em você.<br>vamos escrever um novo capítulo juntos?",
+    "yesFooter": "eu te amo ❤️",
+    "noMessage": "algumas histórias terminam,<br>mas isso não apaga o que a gente viveu.",
+    "noFooter": "obrigado por ter feito parte da minha vida.<br>se um dia mudar de ideia, eu vou estar aqui. 💕",
+    "resultMessages": {
+      "high": {
+        "message": "Você me conhece mais do que ninguém! 💕 A gente sempre teve algo especial, e você acabou de provar que nossa conexão é única. Será que a gente não merece uma segunda chance?",
+        "final_question": "Você quer voltar comigo? 💍",
+        "emoji": "🥰",
+        "title": "Você me conhece! 💕"
+      },
+      "mid": {
+        "message": "Você lembra de bastante coisa! 😊 Nossa história foi linda, e mesmo com o tempo, ainda guardamos memórias especiais. Que tal a gente criar novas?",
+        "final_question": "Você quer tentar de novo comigo? 🌟",
+        "emoji": "😊",
+        "title": "Quase lá! 💕"
+      },
+      "low": {
+        "message": "Que vergonha, hein? 😂 Brincadeira! O importante é que a gente tem histórias pra contar. E se a gente escrever um novo capítulo juntos?",
+        "final_question": "Vamos dar um jeito de voltar? 😅",
+        "emoji": "😂",
+        "title": "Ops! 😂"
+      }
+    },
+    "questions": [
+      {
+        "id": 1,
+        "question": "Onde foi nosso primeiro encontro?",
+        "options": ["Cinema", "Praça", "Restaurante", "Shopping"],
+        "correct": 1,
+        "fun_fact": "Você lembra! Aquele dia na praça foi perfeito 🌳"
+      },
+      {
+        "id": 2,
+        "question": "Qual meu apelido carinhoso pra você?",
+        "options": ["Amor", "Princesa", "Vida", "Gata"],
+        "correct": 1,
+        "fun_fact": "Você sempre será minha princesa 👑"
+      },
+      {
+        "id": 3,
+        "question": "Qual filme a gente assistiu junto no nosso primeiro mês?",
+        "options": ["Comédia romântica", "Terror", "Ação", "Desenho"],
+        "correct": 0,
+        "fun_fact": "A gente riu tanto naquele filme 🎬"
+      },
+      {
+        "id": 4,
+        "question": "O que eu mais gosto em você?",
+        "options": ["Seu sorriso", "Seu cabelo", "Seu jeito", "Tudo em você"],
+        "correct": 3,
+        "fun_fact": "Acertou! É tudo em você, não tem como escolher uma coisa só 💕"
+      },
+      {
+        "id": 5,
+        "question": "Qual nosso lugar favorito pra ir juntos?",
+        "options": ["Praia", "Parque", "Sorveteria", "Nossa rua"],
+        "correct": 3,
+        "fun_fact": "Aquela rua guarda tantas memórias nossas 🌆"
+      },
+      {
+        "id": 6,
+        "question": "Qual música marcou a gente?",
+        "options": ["Sertanejo", "Pop", "MPB", "Funk"],
+        "correct": 2,
+        "fun_fact": "Toda vez que toca, eu penso em você 🎵"
+      },
+      {
+        "id": 7,
+        "question": "O que eu fazia que te tirava do sério (de forma divertida)?",
+        "options": ["Cantar errado", "Fazer cosquinha", "Contar piada ruim", "Te provocar"],
+        "correct": 1,
+        "fun_fact": "Sua risada quando eu fazia cosquinha era a melhor coisa do mundo 😄"
+      },
+      {
+        "id": 8,
+        "question": "Qual sobremesa a gente sempre dividia?",
+        "options": ["Sorvete", "Petit gâteau", "Açaí", "Bolo"],
+        "correct": 1,
+        "fun_fact": "Dividir petit gâteau com você era minha parte favorita do jantar 🍰"
+      },
+      {
+        "id": 9,
+        "question": "Como eu demonstrava que me importava com você?",
+        "options": ["Mensagem de bom dia", "Café na cama", "Abraço apertado", "Todas as acima"],
+        "correct": 3,
+        "fun_fact": "Era tudo isso e muito mais. Você merecia o mundo 🌎"
+      },
+      {
+        "id": 10,
+        "question": "Qual seu maior medo quando a gente terminou?",
+        "options": ["Ficar sozinha", "Não achar alguém melhor", "Perder nossa história", "Nunca mais me ver"],
+        "correct": 2,
+        "fun_fact": "Eu também tive esse medo. Nossa história é única 📖"
+      }
+    ],
+    "pistas": [
+      ["temos um date marcado no cinema", "você escolhe o filme", "eu escolho você! 🎬💕"],
+      ["te ver mastigar uma massinha e ficando feliz", "é obviamente mais apaixonante", "que qualquer restaurante 5 estrelas 🍝💕"],
+      ["eu não queria mais nada além de", "uma grama molhada, um pãozinho de queijo mordido", "e o jeito que você ri com a boca cheia 🌳💕"],
+      ["eu e tu, museu de arte", "a gente rindo das obras esquisitas", "e você mais linda que qualquer exposição 🎨💕"]
+    ],
+    "carinhoMessages": [
+      "tudo bem, amor — nem todo mundo guarda cada detalhe na cabeça 💕",
+      "são tantas memórias, é normal confundir uma ou outra 🥰",
+      "relaxa, são muitos detalhes! a gente viveu tanta coisa boa ✨",
+      "não precisa saber tudo de cor — o importante é o que a gente sente 💗",
+      "acertar todas seria sorte demais... e a gente sempre foi mais que sorte 🍀"
+    ]
+  },
+  "ana": {
+    "password": "ana123",
+    "title": "Gostaria de sair comigo?",
+    "subtitle": "Vamos nos conhecer melhor :)",
+    "emoji": "☕",
+    "instagram": "@tvrsis",
+    "yesMessage": "mal posso esperar pra te conhecer melhor.<br>vai ser incrível!",
+    "yesFooter": "💕 ansioso pelo nosso encontro",
+    "noMessage": "tudo bem!<br>a vida é sobre encontros e desencontros.",
+    "noFooter": "se um dia mudar de ideia, é só chamar. 😊",
+    "resultMessages": {
+      "high": {
+        "message": "Nossa compatibilidade é incrível! ✨ Parece que já nos entendemos mesmo sem nos conhecer direito. Que tal a gente descobrir se é verdade?",
+        "final_question": "Você aceita sair comigo? ☕",
+        "emoji": "🥰",
+        "title": "Compatibilidade máxima! ✨"
+      },
+      "mid": {
+        "message": "Já temos uma boa conexão! 😊 Alguns palpites errados, mas no geral a sintonia é promissora. Imagina quando a gente se conhecer de verdade?",
+        "final_question": "Que tal a gente se conhecer melhor? 🌟",
+        "emoji": "😊",
+        "title": "Quase lá! 🌟"
+      },
+      "low": {
+        "message": "Bom, ainda temos o que descobrir um sobre o outro! 😂 E essa é a parte mais divertida — não saber tudo de alguém e poder descobrir aos poucos.",
+        "final_question": "Me dá uma chance de te conhecer? 😅",
+        "emoji": "😂",
+        "title": "Ainda temos o que descobrir 😂"
+      }
+    },
+    "questions": [
+      {
+        "id": 1,
+        "question": "Qual seria seu destino dos sonhos pra viajar?",
+        "options": ["Paris — croissant, romance e charme", "Tóquio — tecnologia e cultura", "Nova York — a cidade que nunca dorme", "Uma praia paradisíaca — sol e mar"],
+        "correct": 3,
+        "fun_fact": "Praia paradisíaca! Já estamos sonhando juntos 🏖️"
+      },
+      {
+        "id": 2,
+        "question": "O que mais te atrai em alguém?",
+        "options": ["Um humor que faz qualquer dia ficar leve", "Inteligência que prende a atenção", "Gentileza com todo mundo (até com o garçom)", "Confiança sem ser arrogância"],
+        "correct": 0,
+        "fun_fact": "Humor é o caminho mais curto pro coração — e eu concordo totalmente 😄"
+      },
+      {
+        "id": 3,
+        "question": "Qual seu estilo musical pra chamar de favorito?",
+        "options": ["Pop — pra cantar no chuveiro", "MPB — pra alma e pros dias cinzas", "Eletrônica — pra dançar até o chão", "Sertanejo — modão e coração na mão"],
+        "correct": 1,
+        "fun_fact": "MPB! Já temos uma boa playlist pela frente 🎵"
+      },
+      {
+        "id": 4,
+        "question": "O que você mais valoriza numa amizade?",
+        "options": ["Lealdade — tamo junto até o fim", "Bom humor — rir até chorar", "Sinceridade — mesmo que doa", "Aventura — vamos fazer loucura?"],
+        "correct": 2,
+        "fun_fact": "Sinceridade é a base de tudo — e a gente já começou bem 💕"
+      },
+      {
+        "id": 5,
+        "question": "Fim de semana ideal pra você é?",
+        "options": ["Explorar um lugar novo", "Maratona de série com delivery", "Rolê com os amigos até altas horas", "Sofá, cobertor e um livro"],
+        "correct": 0,
+        "fun_fact": "Aventura e descoberta — a vida é curta pra ficar parado 🌟"
+      },
+      {
+        "id": 6,
+        "question": "O que te faz sentir especial de verdade?",
+        "options": ["Um elogio sincero do nada", "Uma surpresa inesperada", "Uma conversa profunda de madrugada", "Um gesto simples mas cheio de significado"],
+        "correct": 3,
+        "fun_fact": "São as pequenas coisas que constroem os grandes sentimentos ✨"
+      },
+      {
+        "id": 7,
+        "question": "Qual seria seu date ideal?",
+        "options": ["Jantar romântico à luz de velas", "Café gostoso com conversa boa", "Um piquenique no parque", "Algo espontâneo e sem roteiro"],
+        "correct": 1,
+        "fun_fact": "Café e conversa — melhor forma de começar algo especial ☕"
+      },
+      {
+        "id": 8,
+        "question": "O que te conquista de verdade?",
+        "options": ["Presentes caros (sem julgamentos)", "Atenção genuína — lembrar dos detalhes", "Uma aventura radical juntos", "Simplicidade — as pequenas coisas"],
+        "correct": 1,
+        "fun_fact": "Atenção genuína — nada mais bonito que isso 💝"
+      },
+      {
+        "id": 9,
+        "question": "Qual seu jeito de recarregar as energias?",
+        "options": ["Uma soneca estratégica", "Um tempo sozinha com seus pensamentos", "Sair e estar rodeada de gente", "Exercício — endorfina é tudo"],
+        "correct": 0,
+        "fun_fact": "Dormir é sempre uma boa ideia — e olha que a gente mal se conhece 😂"
+      },
+      {
+        "id": 10,
+        "question": "Se você fosse um emoji, qual seria?",
+        "options": ["😎 — descolada e confiante", "🤗 — abraço e afeto", "🔥 — intensa e apaixonada", "🌙 — calma, misteriosa e sonhadora"],
+        "correct": 0,
+        "fun_fact": "😎 Descolada — adorei! Já tô até imaginando nosso rolê 🚀"
+      }
+    ],
+    "pistas": [
+      ["primeiro encontro marcado", "um café bem quentinho", "e aquele frio na barriga ☕💕"],
+      ["conversa boa e sincera", "risada solta e gostosa", "o melhor jeito de começar algo ✨"],
+      ["um passeio no parque", "o vento no rosto", "e a descoberta de um novo sorriso 🌳💕"],
+      ["noite estrelada", "planos pro futuro", "e a certeza de que tô no lugar certo 🌟💕"]
+    ],
+    "carinhoMessages": [
+      "tudo bem, a gente mal se conhece! ainda dá tempo de descobrir 💕",
+      "palpite errado, mas a intenção foi boa 😊",
+      "imagina se a gente já soubesse tudo um do outro? não teria graça! ✨",
+      "relaxa, o importante é a gente se conhecer de verdade 💗",
+      "errar faz parte — e a melhor parte é aprender juntos 🍀"
+    ]
+  }
+}

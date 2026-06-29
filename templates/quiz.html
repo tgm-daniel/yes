@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quiz 💕</title>
+  <title>Quiz {{ emoji }}</title>
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
@@ -98,20 +98,8 @@
     let correctCount = 0;
     let pistaIndex = 0;
 
-    const pistas = [
-      ["temos um date marcado no cinema", "você escolhe o filme", "eu escolho você! 🎬💕"],
-      ["te ver mastigar uma massinha e ficando feliz", "é obviamente mais apaixonante", "que qualquer restaurante 5 estrelas 🍝💕"],
-      ["eu não queria mais nada além de", "uma grama molhada, um pãozinho de queijo mordido", "e o jeito que você ri com a boca cheia 🌳💕"],
-      ["eu e tu, museu de arte", "a gente rindo das obras esquisitas", "e você mais linda que qualquer exposição 🎨💕"],
-    ];
-
-    const carinhoMessages = [
-      "tudo bem, amor — nem todo mundo guarda cada detalhe na cabeça 💕",
-      "são tantas memórias, é normal confundir uma ou outra 🥰",
-      "relaxa, são muitos detalhes! a gente viveu tanta coisa boa ✨",
-      "não precisa saber tudo de cor — o importante é o que a gente sente 💗",
-      "acertar todas seria sorte demais... e a gente sempre foi mais que sorte 🍀",
-    ];
+    const pistas = {{ pistas_json|safe }};
+    const carinhoMessages = {{ carinho_json|safe }};
 
     // ---- TYPEWRITER ----
     function typeWriter(el, text, callback) {

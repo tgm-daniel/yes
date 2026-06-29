@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nosso Quiz 💕</title>
+  <title>MultiQuiz 💕</title>
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
@@ -39,56 +39,46 @@
               <feDropShadow dx="0" dy="5" stdDeviation="8" flood-color="#ff8fa0" flood-opacity="0.35" />
             </filter>
           </defs>
-
-          <!-- heart body -->
-          <path d="M60 100 C20 70 0 50 0 30 C0 12 15 0 30 0 C40 0 50 8 60 20 C70 8 80 0 90 0 C105 0 120 12 120 30 C120 50 100 70 60 100Z"
-                fill="url(#heartGrad)" filter="url(#heartShadow)" />
-
-          <!-- shine -->
+          <path d="M60 100 C20 70 0 50 0 30 C0 12 15 0 30 0 C40 0 50 8 60 20 C70 8 80 0 90 0 C105 0 120 12 120 30 C120 50 100 70 60 100Z" fill="url(#heartGrad)" filter="url(#heartShadow)" />
           <ellipse cx="80" cy="25" rx="18" ry="10" fill="rgba(255,255,255,0.4)" transform="rotate(-20 80 25)" />
-
-          <!-- left eye -->
           <circle cx="42" cy="42" r="8" fill="white" />
           <g class="eye-group" data-origin-x="45" data-origin-y="44">
             <circle class="pupil" cx="45" cy="44" r="4.5" fill="#4a3a5a" />
             <circle cx="46.5" cy="42" r="1.8" fill="white" />
           </g>
-
-          <!-- right eye -->
           <circle cx="78" cy="42" r="8" fill="white" />
           <g class="eye-group" data-origin-x="81" data-origin-y="44">
             <circle class="pupil" cx="81" cy="44" r="4.5" fill="#4a3a5a" />
             <circle cx="82.5" cy="42" r="1.8" fill="white" />
           </g>
-
-          <!-- blushes -->
           <ellipse cx="30" cy="56" rx="8" ry="4" fill="rgba(255,92,112,0.2)" />
           <ellipse cx="90" cy="56" rx="8" ry="4" fill="rgba(255,92,112,0.2)" />
-
-          <!-- smile -->
           <path d="M48 58 Q60 68 72 58" stroke="#4a3a5a" stroke-width="2.5" fill="none" stroke-linecap="round" />
         </svg>
         <div class="heart-sparkles" id="heartSparkles"></div>
       </div>
 
       <h1 class="title">
-        NOSSO <span class="title-highlight">QUIZ</span>
+        <span class="title-highlight">Nosso Quiz</span>
       </h1>
-      <div class="title-sub">✦ edição especial ✦</div>
+      <div class="title-sub">✦ entre para continuar ✦</div>
 
-      <p class="subtitle">
-        será que você ainda me conhece?<br>
-        vem descobrir! 💕
-      </p>
-
-      <button class="btn btn-primary" onclick="startQuiz()">
-        começar! 💖
-      </button>
+      <form id="loginForm" class="login-form" onsubmit="handleLogin(event)">
+        <div class="input-group">
+          <input type="text" id="loginName" class="login-input" placeholder="seu nome" autocomplete="off" required>
+        </div>
+        <div class="input-group">
+          <input type="password" id="loginPassword" class="login-input" placeholder="senha" required>
+        </div>
+        <div class="login-error" id="loginError"></div>
+        <button type="submit" class="btn btn-primary" id="loginBtn">
+          entrar! 💖
+        </button>
+      </form>
     </div>
   </div>
 
   <script>
-    // ---- floating items ----
     const heartVars = ['💕', '❤️', '💗', '💖', '💝', '💘', '♡', '♥', '💓', '🐴', '🐎', '🫦', '🙈', '🐻', '🦊', '🦦', '🐆', '✨', '🪐', '🧜‍♀️'];
     const floatingContainer = document.getElementById('floatingItems');
     for (let i = 0; i < 16; i++) {
@@ -102,7 +92,6 @@
       floatingContainer.appendChild(span);
     }
 
-    // ---- stars ----
     const starChars = ['✦', '★', '✧'];
     for (let i = 0; i < 15; i++) {
       const span = document.createElement('span');
@@ -114,12 +103,8 @@
       document.getElementById('stars').appendChild(span);
     }
 
-    // ---- interactive heart ----
     const heart = document.getElementById('heartCharacter');
     const svg = document.getElementById('heartSvg');
-    const pupils = document.querySelectorAll('.pupil');
-
-    // mouse tracking for eyes
     const eyeGroups = document.querySelectorAll('.eye-group');
     document.addEventListener('mousemove', (e) => {
       const rect = heart.getBoundingClientRect();
@@ -137,14 +122,12 @@
       });
     });
 
-    // click reaction
     heart.addEventListener('click', () => {
       heart.style.transform = 'scale(1.2)';
       setTimeout(() => { heart.style.transform = 'scale(1)'; }, 300);
       spawnSparkles();
     });
 
-    // hover glow
     heart.addEventListener('mouseenter', () => {
       svg.querySelector('path').style.filter = 'drop-shadow(0 0 12px rgba(255,143,160,0.5))';
     });
@@ -152,7 +135,6 @@
       svg.querySelector('path').style.filter = '';
     });
 
-    // sparkle generator
     function spawnSparkles() {
       const container = document.getElementById('heartSparkles');
       const sparkles = ['✨', '🌸', '💕', '⭐', '♥'];
@@ -170,7 +152,6 @@
       }
     }
 
-    // inject sparkle animation
     const style = document.createElement('style');
     style.textContent = `@keyframes sparklePop {
       0% { opacity: 1; transform: translateY(0) scale(0.5) rotate(0deg); }
@@ -178,18 +159,33 @@
     }`;
     document.head.appendChild(style);
 
-    async function startQuiz() {
-      const btn = document.querySelector('.btn-primary');
+    async function handleLogin(e) {
+      e.preventDefault();
+      const btn = document.getElementById('loginBtn');
+      const error = document.getElementById('loginError');
+      const name = document.getElementById('loginName').value.trim().toLowerCase();
+      const password = document.getElementById('loginPassword').value;
+
       btn.innerHTML = '<span class="spinner"></span>';
       btn.disabled = true;
+      error.textContent = '';
 
       try {
-        const res = await fetch('/api/start', { method: 'POST' });
-        const data = await res.json();
-        window.location.href = `/quiz/${data.session_id}`;
-      } catch {
-        alert('Ops! Tenta de novo 💕');
-        btn.innerHTML = 'começar! 💖';
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, password }),
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || 'Erro ao entrar');
+        }
+
+        window.location.href = `/start/${name}`;
+      } catch (err) {
+        error.textContent = err.message;
+        btn.innerHTML = 'entrar! 💖';
         btn.disabled = false;
       }
     }

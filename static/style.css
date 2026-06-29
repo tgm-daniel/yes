@@ -888,6 +888,53 @@ body {
   to { transform: rotate(360deg); }
 }
 
+/* ----- LOGIN FORM ----- */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 24px;
+}
+
+.input-group {
+  width: 100%;
+}
+
+.login-input {
+  width: 100%;
+  padding: 14px 18px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  color: var(--text);
+  background: var(--cream);
+  border: 2px solid rgba(255, 181, 194, 0.3);
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  box-sizing: border-box;
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
+.login-input::placeholder {
+  color: var(--text-light);
+  opacity: 0.6;
+}
+
+.login-input:focus {
+  border-color: var(--pink);
+  box-shadow: 0 0 0 3px rgba(255, 143, 160, 0.15);
+}
+
+.login-error {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  color: var(--pink-dark);
+  min-height: 20px;
+  line-height: 1.6;
+  letter-spacing: 0.3px;
+}
+
 /* ----- RESPONSIVE ----- */
 @media (max-width: 480px) {
   .card { padding: 28px 18px; }
