@@ -160,8 +160,13 @@ body {
   transition: box-shadow 0.3s ease, transform 0.25s var(--ease-bounce);
   animation: cardIn 0.4s ease both;
   position: relative;
-  overflow: hidden;
 }
+.card .card-heart {
+  position: absolute; top: -14px; left: 50%; transform: translateX(-50%); z-index: 3;
+  filter: drop-shadow(0 2px 6px rgba(255, 143, 160, 0.3));
+  cursor: pointer;
+}
+.card .card-heart:hover svg { filter: drop-shadow(0 0 12px rgba(255,143,160,0.5)); }
 .card:nth-child(2) { animation-delay: 0.06s; }
 .card:nth-child(3) { animation-delay: 0.12s; }
 .card:nth-child(4) { animation-delay: 0.18s; }
@@ -408,6 +413,18 @@ input[type="datetime-local"] { font-family: 'Nunito', sans-serif; font-size: 14p
 
 .hidden { display: none !important; }
 
+.more-card {
+  background: rgba(255,255,255,0.6);
+  border: 2px solid rgba(255,181,194,0.15);
+  border-radius: var(--radius-sm);
+  padding: 18px 12px;
+  cursor: pointer;
+  transition: all 0.25s var(--ease-bounce);
+  text-align: center;
+}
+.more-card:hover { background: white; border-color: var(--pink); transform: translateY(-3px) scale(1.02); box-shadow: 0 6px 20px rgba(255,143,160,0.15); }
+.more-card:active { transform: scale(0.97); }
+
 .loading { text-align: center; padding: 60px 20px; color: var(--text-light); display: flex; flex-direction: column; align-items: center; gap: 14px; }
 .spinner { display: inline-block; width: 24px; height: 24px; border: 3px solid rgba(255, 181, 194, 0.2); border-top-color: var(--pink); border-radius: 50%; animation: spin 0.6s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -471,19 +488,35 @@ input[type="datetime-local"] { font-family: 'Nunito', sans-serif; font-size: 14p
 
 <div class="modal-overlay" id="moreModal" onclick="if(event.target===this)closeMoreMenu()">
   <div class="modal-box" style="text-align:center;">
-    <div class="card-heart" style="position:static;margin:0 auto 12px;transform:none;">
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <div class="card-heart" style="position:static;margin:0 auto 10px;transform:none;">
+      <svg width="24" height="24" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M14 24.5L5.25 15.75C3.25 13.75 2.5 10.5 4.5 7.75C6.5 5 10 4.5 12.5 7L14 8.5L15.5 7C18 4.5 21.5 5 23.5 7.75C25.5 10.5 24.75 13.75 22.75 15.75L14 24.5Z"
-          fill="url(#heartGrad2)" stroke="var(--pink-dark)" stroke-width="0.8"/>
-        <defs><linearGradient id="heartGrad2" x1="14" y1="4.5" x2="14" y2="24.5"><stop stop-color="var(--pink)"/><stop offset="1" stop-color="var(--pink-dark)"/></linearGradient></defs>
+          fill="url(#mh1)" stroke="var(--pink-dark)" stroke-width="0.8"/>
+        <defs><linearGradient id="mh1" x1="14" y1="4.5" x2="14" y2="24.5"><stop stop-color="var(--pink)"/><stop offset="1" stop-color="var(--pink-dark)"/></linearGradient></defs>
       </svg>
     </div>
-    <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--text);margin-bottom:14px;">Still Learning 💕</div>
-    <div style="display:flex;flex-direction:column;gap:10px;">
-      <button class="btn btn-outline" onclick="showSection('agenda');closeMoreMenu()">📅 Agenda</button>
-      <button class="btn btn-outline" onclick="showSection('todos');closeMoreMenu()">📋 Listas</button>
-      <button class="btn btn-outline" onclick="showSection('review');closeMoreMenu()">📖 Revisão Semanal</button>
-      <button class="btn btn-ghost" style="margin-top:10px;font-size:0.8rem;" onclick="logout()">🚪 Sair</button>
+    <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--text);margin-bottom:16px;">Still Learning</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div class="more-card" onclick="showSection('agenda');closeMoreMenu()">
+        <div style="font-size:2rem;">📅</div>
+        <div style="font-weight:700;font-size:0.85rem;margin-top:4px;">Agenda</div>
+        <div style="font-size:0.7rem;color:var(--text-light);margin-top:2px;" data-i18n="more_agenda">Eventos do casal</div>
+      </div>
+      <div class="more-card" onclick="showSection('todos');closeMoreMenu()">
+        <div style="font-size:2rem;">📋</div>
+        <div style="font-weight:700;font-size:0.85rem;margin-top:4px;">Listas</div>
+        <div style="font-size:0.7rem;color:var(--text-light);margin-top:2px;" data-i18n="more_todos">Tarefas juntos</div>
+      </div>
+      <div class="more-card" onclick="showSection('review');closeMoreMenu()">
+        <div style="font-size:2rem;">📖</div>
+        <div style="font-weight:700;font-size:0.85rem;margin-top:4px;">Revisão</div>
+        <div style="font-size:0.7rem;color:var(--text-light);margin-top:2px;" data-i18n="more_review">Semanal</div>
+      </div>
+      <div class="more-card" onclick="logout()">
+        <div style="font-size:2rem;">🚪</div>
+        <div style="font-weight:700;font-size:0.85rem;margin-top:4px;">Sair</div>
+        <div style="font-size:0.7rem;color:var(--text-light);margin-top:2px;" data-i18n="more_logout">Desconectar</div>
+      </div>
     </div>
   </div>
 </div>
@@ -557,9 +590,38 @@ function updateNavLang() {
     const labels = { dashboard: isEn ? 'Home' : 'Início', question: isEn ? 'Question' : 'Pergunta', diary: isEn ? 'Diary' : 'Diário', challenge: isEn ? 'Challenge' : 'Desafio', more: isEn ? 'More' : 'Mais' };
     el.childNodes[el.childNodes.length - 1].textContent = labels[nav] || nav;
   });
+  // More menu i18n
+  const moreLabels = {
+    'more_agenda': isEn ? 'Couple events' : 'Eventos do casal',
+    'more_todos': isEn ? 'Tasks together' : 'Tarefas juntos',
+    'more_review': isEn ? 'Weekly' : 'Semanal',
+    'more_logout': isEn ? 'Disconnect' : 'Desconectar'
+  };
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (moreLabels[key]) el.textContent = moreLabels[key];
+  });
+  // More menu titles
+  document.querySelectorAll('.more-card').forEach(el => {
+    const titleEl = el.querySelector('div:nth-child(2)');
+    if (!titleEl) return;
+    const txt = titleEl.textContent;
+    const map = {
+      'Agenda': isEn ? 'Agenda' : 'Agenda',
+      'Listas': isEn ? 'Lists' : 'Listas',
+      'Revisão': isEn ? 'Review' : 'Revisão',
+      'Sair': isEn ? 'Exit' : 'Sair'
+    };
+    if (map[txt]) titleEl.textContent = map[txt];
+  });
 }
 function toggleMoreMenu() { document.getElementById('moreModal').classList.toggle('show'); }
 function closeMoreMenu() { document.getElementById('moreModal').classList.remove('show'); }
+
+function backLink() {
+  const isEn = getLang() === 'en';
+  return `<a onclick="showSection('dashboard')" style="margin-left:auto;font-family:'Press Start 2P',monospace;font-size:8px;color:var(--pink-dark);text-decoration:none;cursor:pointer;transition:all 0.2s var(--ease-bounce);display:flex;align-items:center;gap:4px;">← ${isEn ? 'Back' : 'Voltar'}</a>`;
+}
 
 function showSection(name) {
   state.section = name;
@@ -587,7 +649,7 @@ function loadDashboard() {
     let html = `<div class="section">`;
 
     html += `<div class="card">
-      <div class="card-heart" style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);filter:drop-shadow(0 2px 6px rgba(255,143,160,0.3));">
+      <div class="card-heart">
         <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M14 24.5L5.25 15.75C3.25 13.75 2.5 10.5 4.5 7.75C6.5 5 10 4.5 12.5 7L14 8.5L15.5 7C18 4.5 21.5 5 23.5 7.75C25.5 10.5 24.75 13.75 22.75 15.75L14 24.5Z" fill="url(#h1)" stroke="var(--pink-dark)" stroke-width="0.8"/>
           <defs><linearGradient id="h1" x1="14" y1="4.5" x2="14" y2="24.5"><stop stop-color="var(--pink)"/><stop offset="1" stop-color="var(--pink-dark)"/></linearGradient></defs>
@@ -666,8 +728,8 @@ function loadQuestion() {
       return;
     }
     const q = esc(d.question);
-    let html = `<div class="section"><div class="section-title">${isEn ? "Today's Question" : 'Pergunta de Hoje'}</div>`;
-    html += `<div class="card"><div class="card-heart" style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);filter:drop-shadow(0 2px 6px rgba(255,143,160,0.3));">
+    let html = `<div class="section"><div class="section-title">${isEn ? "Today's Question" : 'Pergunta de Hoje'}${backLink()}</div>`;
+    html += `<div class="card"><div class="card-heart">
       <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M14 24.5L5.25 15.75C3.25 13.75 2.5 10.5 4.5 7.75C6.5 5 10 4.5 12.5 7L14 8.5L15.5 7C18 4.5 21.5 5 23.5 7.75C25.5 10.5 24.75 13.75 22.75 15.75L14 24.5Z" fill="url(#hq)" stroke="var(--pink-dark)" stroke-width="0.8"/>
         <defs><linearGradient id="hq" x1="14" y1="4.5" x2="14" y2="24.5"><stop stop-color="var(--pink)"/><stop offset="1" stop-color="var(--pink-dark)"/></linearGradient></defs>
@@ -712,9 +774,9 @@ function loadDiary() {
   const main = document.getElementById('mainContent');
   const isEn = getLang() === 'en';
   api('/api/couple/diary').then(d => {
-    let html = `<div class="section"><div class="section-title">📖 ${isEn ? 'Our Diary' : 'Nosso Diário'}</div>`;
+    let html = `<div class="section"><div class="section-title">📖 ${isEn ? 'Our Diary' : 'Nosso Diário'}${backLink()}</div>`;
 
-    html += `<div class="card"><div class="card-heart" style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);filter:drop-shadow(0 2px 6px rgba(255,143,160,0.3));">
+    html += `<div class="card"><div class="card-heart">
       <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M14 24.5L5.25 15.75C3.25 13.75 2.5 10.5 4.5 7.75C6.5 5 10 4.5 12.5 7L14 8.5L15.5 7C18 4.5 21.5 5 23.5 7.75C25.5 10.5 24.75 13.75 22.75 15.75L14 24.5Z" fill="url(#hd)" stroke="var(--pink-dark)" stroke-width="0.8"/>
         <defs><linearGradient id="hd" x1="14" y1="4.5" x2="14" y2="24.5"><stop stop-color="var(--pink)"/><stop offset="1" stop-color="var(--pink-dark)"/></linearGradient></defs>
@@ -770,8 +832,8 @@ function loadChallenge() {
   const main = document.getElementById('mainContent');
   const isEn = getLang() === 'en';
   api('/api/couple/challenge').then(d => {
-    let html = `<div class="section"><div class="section-title">🎯 ${isEn ? "Today's Challenge" : 'Desafio de Hoje'}</div><div class="card">
-    <div class="card-heart" style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);filter:drop-shadow(0 2px 6px rgba(255,143,160,0.3));">
+    let html = `<div class="section"><div class="section-title">🎯 ${isEn ? "Today's Challenge" : 'Desafio de Hoje'}${backLink()}</div><div class="card">
+    <div class="card-heart">
       <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M14 24.5L5.25 15.75C3.25 13.75 2.5 10.5 4.5 7.75C6.5 5 10 4.5 12.5 7L14 8.5L15.5 7C18 4.5 21.5 5 23.5 7.75C25.5 10.5 24.75 13.75 22.75 15.75L14 24.5Z" fill="url(#hc)" stroke="var(--pink-dark)" stroke-width="0.8"/>
         <defs><linearGradient id="hc" x1="14" y1="4.5" x2="14" y2="24.5"><stop stop-color="var(--pink)"/><stop offset="1" stop-color="var(--pink-dark)"/></linearGradient></defs>
@@ -831,7 +893,7 @@ function loadAgenda() {
   const main = document.getElementById('mainContent');
   const isEn = getLang() === 'en';
   api('/api/couple/agenda').then(d => {
-    let html = `<div class="section"><div class="section-title">📅 ${isEn ? 'Our Agenda' : 'Nossa Agenda'}</div>`;
+    let html = `<div class="section"><div class="section-title">📅 ${isEn ? 'Our Agenda' : 'Nossa Agenda'}${backLink()}</div>`;
     html += `<div class="card" style="text-align:center;padding:18px;">
       <button class="btn btn-primary" onclick="showAddAgenda()">+ ${isEn ? 'Add Event' : 'Adicionar Evento'}</button>
     </div>`;
@@ -889,7 +951,7 @@ function loadTodos() {
   const main = document.getElementById('mainContent');
   const isEn = getLang() === 'en';
   api('/api/couple/todos').then(d => {
-    let html = `<div class="section"><div class="section-title">📋 ${isEn ? 'To-Do List' : 'Lista de Tarefas'}</div>`;
+    let html = `<div class="section"><div class="section-title">📋 ${isEn ? 'To-Do List' : 'Lista de Tarefas'}${backLink()}</div>`;
     html += `<div class="card" style="text-align:center;padding:18px;">
       <button class="btn btn-primary" onclick="showAddTodo()">+ ${isEn ? 'Add Item' : 'Adicionar Item'}</button>
     </div>`;
@@ -953,10 +1015,10 @@ function loadReview() {
   const main = document.getElementById('mainContent');
   const isEn = getLang() === 'en';
   api('/api/couple/review').then(d => {
-    let html = `<div class="section"><div class="section-title">📖 ${isEn ? 'Weekly Review' : 'Revisão Semanal'}</div>`;
+    let html = `<div class="section"><div class="section-title">📖 ${isEn ? 'Weekly Review' : 'Revisão Semanal'}${backLink()}</div>`;
 
     const cur = d.current || {};
-    html += `<div class="card"><div class="card-heart" style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);filter:drop-shadow(0 2px 6px rgba(255,143,160,0.3));">
+    html += `<div class="card"><div class="card-heart">
       <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M14 24.5L5.25 15.75C3.25 13.75 2.5 10.5 4.5 7.75C6.5 5 10 4.5 12.5 7L14 8.5L15.5 7C18 4.5 21.5 5 23.5 7.75C25.5 10.5 24.75 13.75 22.75 15.75L14 24.5Z" fill="url(#hr)" stroke="var(--pink-dark)" stroke-width="0.8"/>
         <defs><linearGradient id="hr" x1="14" y1="4.5" x2="14" y2="24.5"><stop stop-color="var(--pink)"/><stop offset="1" stop-color="var(--pink-dark)"/></linearGradient></defs>
