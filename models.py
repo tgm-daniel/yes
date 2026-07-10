@@ -1,13 +1,12 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Column, String, Integer, Boolean, DateTime, Text, JSON
+from sqlalchemy import Column, String, Integer, Boolean, DateTime, Text, JSON, Date
 from database import Base
 
 
 class QuizSession(Base):
     __tablename__ = "quiz_sessions"
-
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4())[:8])
     profile_id = Column(String, default="vanessa")
     started_at = Column(DateTime, default=datetime.utcnow)
@@ -21,7 +20,81 @@ class QuizSession(Base):
 
 class LoginEvent(Base):
     __tablename__ = "login_events"
-
     id = Column(Integer, primary_key=True, autoincrement=True)
     profile_id = Column(String, index=True, nullable=False)
     timestamp = Column(DateTime, default=datetime.utcnow)
+
+
+class Couple(Base):
+    __tablename__ = "couples"
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4())[:8])
+    user1_id = Column(String, nullable=False)
+    user2_id = Column(String, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class DiaryEntry(Base):
+    __tablename__ = "diary_entries"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    couple_id = Column(String, index=True, nullable=False)
+    author_id = Column(String, nullable=False)
+    date = Column(Date, nullable=False)
+    content = Column(Text, default="")
+    mood = Column(String, default="")
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class DailyQuestion(Base):
+    __tablename__ = "daily_questions"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    couple_id = Column(String, index=True, nullable=False)
+    date = Column(Date, nullable=False)
+    question_pt = Column(String, nullable=False)
+    question_en = Column(String, nullable=False)
+    answer_a = Column(Text, nullable=True)
+    answer_b = Column(Text, nullable=True)
+    seen_by_a = Column(Boolean, default=False)
+    seen_by_b = Column(Boolean, default=False)
+
+
+class Challenge(Base):
+    __tablename__ = "challenges"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    couple_id = Column(String, index=True, nullable=False)
+    date = Column(Date, nullable=False)
+    type = Column(String, nullable=False)
+    data = Column(JSON, default=dict)
+    done_a = Column(Boolean, default=False)
+    done_b = Column(Boolean, default=False)
+
+
+class AgendaEvent(Base):
+    __tablename__ = "agenda_events"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    couple_id = Column(String, index=True, nullable=False)
+    title = Column(String, nullable=False)
+    date = Column(DateTime, nullable=False)
+    description = Column(Text, default="")
+    created_by = Column(String, nullable=False)
+
+
+class TodoItem(Base):
+    __tablename__ = "todo_items"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    couple_id = Column(String, index=True, nullable=False)
+    title = Column(String, nullable=False)
+    description = Column(Text, default="")
+    done = Column(Boolean, default=False)
+    done_by = Column(String, nullable=True)
+    created_by = Column(String, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class WeeklyReview(Base):
+    __tablename__ = "weekly_reviews"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    couple_id = Column(String, index=True, nullable=False)
+    week_start = Column(Date, nullable=False)
+    reflection_a = Column(Text, nullable=True)
+    reflection_b = Column(Text, nullable=True)
+    completed = Column(Boolean, default=False)

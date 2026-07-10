@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Still Learning 💕</title>
+<link rel="stylesheet" href="/static/style.css">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root { --pink: #ffb5c2; --pink-dark: #ff8fa0; --cream: #fffaf5; --text: #5a4a6a; --text-light: #9a8aaa; --radius: 24px; --radius-sm: 16px; }
+body { font-family: 'Nunito', sans-serif; background: var(--cream); color: var(--text); min-height: 100vh; padding-bottom: 80px; overflow-x: hidden; }
+.app-header { background: linear-gradient(135deg, #ffb5c2, #d4b8e8); padding: 48px 20px 24px; text-align: center; position: relative; }
+.app-header h1 { font-family: 'Press Start 2P', monospace; font-size: 11px; color: white; text-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.app-header .subtitle { font-size: 0.85rem; color: rgba(255,255,255,0.85); margin-top: 6px; font-weight: 600; }
+.lang-toggle { position: absolute; top: 12px; right: 14px; background: rgba(255,255,255,0.3); border: none; border-radius: 20px; padding: 6px 14px; font-size: 11px; font-weight: 700; cursor: pointer; color: white; font-family: 'Press Start 2P', monospace; backdrop-filter: blur(4px); }
+.lang-toggle:hover { background: rgba(255,255,255,0.5); }
+.user-greeting { padding: 16px 20px 4px; font-size: 1.1rem; font-weight: 700; }
+.user-greeting small { font-weight: 400; font-size: 0.85rem; color: var(--text-light); display: block; margin-top: 2px; }
+
+.section { padding: 16px 20px; }
+.section-title { font-size: 0.85rem; font-weight: 700; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+.section-title a { margin-left: auto; font-size: 0.75rem; text-decoration: none; color: var(--pink-dark); font-weight: 600; text-transform: none; }
+.card { background: white; border-radius: var(--radius-sm); padding: 18px; margin-bottom: 12px; box-shadow: 0 2px 12px rgba(180,150,200,0.08); border: 1px solid rgba(255,181,194,0.12); }
+.card-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 6px; }
+.card-text { font-size: 0.85rem; color: var(--text-light); line-height: 1.6; }
+.card-action { display: inline-block; margin-top: 10px; padding: 8px 20px; background: var(--pink); color: white; border: none; border-radius: var(--radius-sm); font-weight: 700; font-size: 0.85rem; cursor: pointer; text-decoration: none; }
+.card-action:hover { background: var(--pink-dark); }
+.card-action.small { padding: 6px 14px; font-size: 0.75rem; }
+.empty-state { text-align: center; padding: 30px 0; color: var(--text-light); font-size: 0.9rem; }
+.mood-selector { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
+.mood-btn { font-size: 1.5rem; padding: 6px 10px; border: 2px solid transparent; border-radius: 12px; cursor: pointer; background: var(--cream); transition: all 0.15s; }
+.mood-btn.selected { border-color: var(--pink); background: white; transform: scale(1.1); }
+textarea { width: 100%; padding: 12px 14px; border: 2px solid rgba(255,181,194,0.2); border-radius: var(--radius-sm); font-family: 'Nunito', sans-serif; font-size: 16px; resize: vertical; min-height: 80px; outline: none; transition: border-color 0.2s; }
+textarea:focus { border-color: var(--pink); }
+
+.nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; border-top: 1px solid rgba(255,181,194,0.15); padding: 6px 0 env(safe-area-inset-bottom, 6px) 0; z-index: 100; box-shadow: 0 -2px 12px rgba(0,0,0,0.04); }
+.nav-item { flex: 1; text-align: center; padding: 6px 2px; cursor: pointer; color: var(--text-light); font-size: 9px; font-weight: 600; transition: color 0.15s; font-family: 'Press Start 2P', monospace; }
+.nav-item .nav-icon { font-size: 1.3rem; display: block; margin-bottom: 2px; }
+.nav-item.active { color: var(--pink-dark); }
+.nav-item:hover { color: var(--pink); }
+
+.diary-entry { border-left: 3px solid var(--pink); padding: 12px 14px; margin-bottom: 8px; background: white; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+.diary-entry .meta { font-size: 0.75rem; color: var(--text-light); margin-bottom: 4px; display: flex; gap: 8px; }
+.diary-entry .content { font-size: 0.9rem; line-height: 1.6; white-space: pre-line; }
+
+.challenge-box { text-align: center; padding: 20px; }
+.challenge-box .challenge-word { font-family: 'Press Start 2P', monospace; font-size: 1.5rem; letter-spacing: 8px; padding: 16px; background: var(--cream); border-radius: var(--radius-sm); display: inline-block; margin: 12px 0; }
+.challenge-box .challenge-riddle { font-size: 1rem; font-style: italic; padding: 16px; line-height: 1.6; }
+
+.agenda-item { display: flex; gap: 12px; align-items: flex-start; padding: 12px 0; border-bottom: 1px solid rgba(255,181,194,0.1); }
+.agenda-item:last-child { border: none; }
+.agenda-date { min-width: 50px; text-align: center; }
+.agenda-date .day { font-size: 1.3rem; font-weight: 700; line-height: 1; }
+.agenda-date .mon { font-size: 0.65rem; color: var(--text-light); text-transform: uppercase; }
+.agenda-info { flex: 1; }
+.agenda-info .title { font-weight: 700; font-size: 0.9rem; }
+.agenda-info .desc { font-size: 0.8rem; color: var(--text-light); margin-top: 2px; }
+
+.todo-item { display: flex; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,181,194,0.08); }
+.todo-item:last-child { border: none; }
+.todo-check { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--pink); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.7rem; transition: all 0.15s; }
+.todo-check.done { background: var(--pink); color: white; border-color: var(--pink); }
+.todo-check:hover { background: rgba(255,181,194,0.2); }
+.todo-content { flex: 1; }
+.todo-content .title { font-weight: 600; font-size: 0.9rem; }
+.todo-content .title.done-text { text-decoration: line-through; color: var(--text-light); }
+.todo-content .meta { font-size: 0.7rem; color: var(--text-light); }
+.add-form { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.add-form input { padding: 12px 14px; border: 2px solid rgba(255,181,194,0.2); border-radius: var(--radius-sm); font-family: 'Nunito', sans-serif; font-size: 16px; outline: none; }
+.add-form input:focus { border-color: var(--pink); }
+
+.review-box { background: white; border-radius: var(--radius-sm); padding: 18px; margin-bottom: 12px; }
+.review-box .review-header { font-weight: 700; margin-bottom: 8px; }
+.review-box .review-text { font-size: 0.9rem; line-height: 1.7; color: var(--text); white-space: pre-line; padding: 10px 14px; background: var(--cream); border-radius: var(--radius-sm); }
+.review-box .review-empty { color: var(--text-light); font-style: italic; }
+
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px; }
+.modal-overlay.show { display: flex; }
+.modal-box { background: white; border-radius: var(--radius); padding: 24px; width: 100%; max-width: 400px; max-height: 80vh; overflow-y: auto; }
+
+.hidden { display: none !important; }
+.btn { padding: 12px 24px; background: var(--pink); color: white; border: none; border-radius: var(--radius-sm); font-weight: 700; font-size: 0.9rem; cursor: pointer; }
+.btn:hover { background: var(--pink-dark); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-outline { background: transparent; border: 2px solid var(--pink); color: var(--pink-dark); }
+.loading { text-align: center; padding: 40px; color: var(--text-light); }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.fade-in { animation: fadeIn 0.3s ease; }
+
+@media (max-width: 600px) {
+  .app-header { padding: 44px 16px 20px; }
+  .app-header h1 { font-size: 9px; }
+  .section { padding: 12px 14px; }
+  .card { padding: 14px; }
+  .nav-item { font-size: 7px; }
+  .nav-item .nav-icon { font-size: 1.1rem; }
+}
+@media (max-width: 400px) {
+  .app-header { padding: 40px 12px 16px; }
+  .app-header h1 { font-size: 8px; }
+  .section { padding: 8px 10px; }
+  .card { padding: 12px; margin-bottom: 8px; }
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="app-header">
+    <button class="lang-toggle" onclick="toggleLang()" id="langBtn">EN</button>
+    <h1>Still Learning 💕</h1>
+    <div class="subtitle" id="headerSub">Aprendendo um ao outro, um dia de cada vez</div>
+  </div>
+  <div id="userGreeting" class="user-greeting"></div>
+  <div id="mainContent"></div>
+</div>
+
+<div class="nav-bar" id="navBar">
+  <div class="nav-item active" data-nav="dashboard" onclick="showSection('dashboard')"><span class="nav-icon">🏠</span>Início</div>
+  <div class="nav-item" data-nav="question" onclick="showSection('question')"><span class="nav-icon">💭</span>Pergunta</div>
+  <div class="nav-item" data-nav="diary" onclick="showSection('diary')"><span class="nav-icon">📖</span>Diário</div>
+  <div class="nav-item" data-nav="challenge" onclick="showSection('challenge')"><span class="nav-icon">🎯</span>Desafio</div>
+  <div class="nav-item" data-nav="more" onclick="toggleMoreMenu()"><span class="nav-icon">📋</span>Mais</div>
+</div>
+
+<div class="modal-overlay" id="moreModal" onclick="if(event.target===this)closeMoreMenu()">
+  <div class="modal-box" style="text-align:center;">
+    <div style="font-weight:700;margin-bottom:16px;font-size:1rem;">Still Learning 💕</div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <button class="btn btn-outline" onclick="showSection('agenda');closeMoreMenu()">📅 Agenda</button>
+      <button class="btn btn-outline" onclick="showSection('todos');closeMoreMenu()">📋 Listas</button>
+      <button class="btn btn-outline" onclick="showSection('review');closeMoreMenu()">📖 Revisão Semanal</button>
+      <button class="btn" style="margin-top:8px;background:none;color:var(--text-light);" onclick="logout()">🚪 Sair</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const _t = {};
+const _lang = '{{ lang }}' || 'pt';
+const COUPLE_ID = localStorage.getItem('couple_id') || '';
+const USER_NAME = localStorage.getItem('user_name') || '';
+const USER_DISPLAY = localStorage.getItem('user_display') || '';
+const PARTNER_NAME = localStorage.getItem('partner_name') || '';
+
+let state = { section: 'dashboard', data: {} };
+
+async function api(path, opts = {}) {
+  opts.headers = opts.headers || {};
+  if (COUPLE_ID) opts.headers['X-Couple-Id'] = COUPLE_ID;
+  if (USER_NAME) opts.headers['X-User-Name'] = USER_NAME;
+  if (PARTNER_NAME) opts.headers['X-Partner-Name'] = PARTNER_NAME;
+  if (opts.body && typeof opts.body === 'object') opts.body = JSON.stringify(opts.body);
+  opts.headers['Content-Type'] = 'application/json';
+  const r = await fetch(path, opts);
+  if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.detail || 'Request failed'); }
+  return r.json();
+}
+
+function toggleLang() {
+  document.cookie = 'lang=' + (getLang() === 'pt' ? 'en' : 'pt') + ';path=/;max-age=31536000';
+  location.reload();
+}
+
+function getLang() {
+  const m = document.cookie.match(/lang=([^;]+)/);
+  return m ? m[1] : 'pt';
+}
+
+function t(key) {
+  return _t[key] || (typeof LANG_DATA !== 'undefined' && LANG_DATA[key]) || key;
+}
+
+function esc(s) {
+  if (!s) return '';
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function logout() {
+  localStorage.clear();
+  window.location.href = '/';
+}
+
+function updateNavLang() {
+  const isEn = getLang() === 'en';
+  document.getElementById('langBtn').textContent = isEn ? 'PT' : 'EN';
+  document.getElementById('headerSub').textContent = isEn ? 'Learning each other, one day at a time' : 'Aprendendo um ao outro, um dia de cada vez';
+  document.querySelectorAll('[data-nav]').forEach(el => {
+    const nav = el.dataset.nav;
+    const labels = { dashboard: isEn ? 'Home' : 'Início', question: isEn ? 'Question' : 'Pergunta', diary: isEn ? 'Diary' : 'Diário', challenge: isEn ? 'Challenge' : 'Desafio', more: isEn ? 'More' : 'Mais' };
+    el.childNodes[el.childNodes.length - 1].textContent = labels[nav] || nav;
+  });
+}
+
+function toggleMoreMenu() {
+  document.getElementById('moreModal').classList.toggle('show');
+}
+function closeMoreMenu() {
+  document.getElementById('moreModal').classList.remove('show');
+}
+
+function showSection(name) {
+  state.section = name;
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.nav === name));
+  closeMoreMenu();
+  renderSection(name);
+}
+
+function renderSection(name) {
+  const main = document.getElementById('mainContent');
+  main.innerHTML = '<div class="loading">' + (getLang() === 'en' ? 'Loading...' : 'Carregando...') + '</div>';
+  if (name === 'dashboard') loadDashboard();
+  else if (name === 'question') loadQuestion();
+  else if (name === 'diary') loadDiary();
+  else if (name === 'challenge') loadChallenge();
+  else if (name === 'agenda') loadAgenda();
+  else if (name === 'todos') loadTodos();
+  else if (name === 'review') loadReview();
+}
+
+function loadDashboard() {
+  const main = document.getElementById('mainContent');
+  const u = USER_DISPLAY || USER_NAME;
+  const isEn = getLang() === 'en';
+  api('/api/couple/dashboard').then(d => {
+    let html = `<div class="user-greeting" style="padding:16px 20px 4px;"><span style="font-size:1.1rem;font-weight:700;">${isEn ? 'Hello' : 'Olá'}, ${esc(u)} 💕</span><small>${isEn ? 'What shall we do today?' : 'O que vamos fazer hoje?'}</small></div>`;
+
+    // Daily Question
+    html += `<div class="section"><div class="section-title">${isEn ? 'Daily Question' : 'Pergunta do Dia'} <a href="#" onclick="event.preventDefault();showSection('question')">${isEn ? 'See all' : 'Ver tudo'}</a></div><div class="card">`;
+    if (d.question && d.question.exists) {
+      html += `<div class="card-text">${isEn ? 'Answer today\'s question and see what your love wrote' : 'Responda a pergunta de hoje e veja o que seu amor escreveu'}</div>`;
+      html += `<button class="card-action" onclick="showSection('question')">${isEn ? (d.question.my_answer ? 'View' : 'Answer') : (d.question.my_answer ? 'Ver' : 'Responder')} 💕</button>`;
+    } else {
+      html += `<div class="empty-state">${isEn ? 'No question for today yet' : 'Nenhuma pergunta hoje ainda'}</div>`;
+    }
+    html += `</div></div>`;
+
+    // Diary
+    html += `<div class="section"><div class="section-title">${isEn ? 'Yesterday\'s Diary' : 'Diário'} <a href="#" onclick="event.preventDefault();showSection('diary')">${isEn ? 'See all' : 'Ver tudo'}</a></div><div class="card">`;
+    if (d.diary_count > 0) {
+      html += `<div class="card-text">📖 ${d.diary_count} ${isEn ? 'entry today' : 'registro hoje'}</div>`;
+    } else {
+      html += `<div class="empty-state">💭 ${isEn ? 'No diary entries yet' : 'Nenhum registro ainda'}</div>`;
+    }
+    html += `<button class="card-action" onclick="showSection('diary')">${isEn ? 'Write' : 'Escrever'} 📝</button></div></div>`;
+
+    // Challenge
+    html += `<div class="section"><div class="section-title">${isEn ? 'Today\'s Challenge' : 'Desafio de Hoje'} <a href="#" onclick="event.preventDefault();showSection('challenge')">${isEn ? 'See all' : 'Ver tudo'}</a></div><div class="card">`;
+    if (d.challenge && d.challenge.exists) {
+      const done = d.challenge.done;
+      html += `<div class="card-text">${done ? '✅ ' + (isEn ? 'Done!' : 'Feito!') : '🎯 ' + (isEn ? 'Challenge pending' : 'Desafio pendente')}</div>`;
+    } else {
+      html += `<div class="empty-state">${isEn ? 'No challenge today' : 'Nenhum desafio hoje'}</div>`;
+    }
+    html += `<button class="card-action" onclick="showSection('challenge')">${isEn ? 'Start' : 'Começar'} 🎯</button></div></div>`;
+
+    // Upcoming Events
+    html += `<div class="section"><div class="section-title">${isEn ? 'Upcoming Events' : 'Próximos Eventos'} <a href="#" onclick="event.preventDefault();showSection('agenda')">${isEn ? 'See all' : 'Ver tudo'}</a></div><div class="card">`;
+    if (d.events && d.events.length) {
+      d.events.forEach(e => {
+        html += `<div class="agenda-item"><div class="agenda-date"><div class="day">${e.date.slice(8,10)}</div><div class="mon">${isEn ? monthsEn(parseInt(e.date.slice(5,7))) : monthsPt(parseInt(e.date.slice(5,7)))}</div></div><div class="agenda-info"><div class="title">${esc(e.title)}</div></div></div>`;
+      });
+    } else {
+      html += `<div class="empty-state">📅 ${isEn ? 'No upcoming events' : 'Nenhum evento agendado'}</div>`;
+    }
+    html += `</div></div>`;
+
+    // Todos
+    html += `<div class="section"><div class="section-title">${isEn ? 'To-Dos' : 'Coisas a Fazer'} <a href="#" onclick="event.preventDefault();showSection('todos')">${isEn ? 'See all' : 'Ver tudo'}</a></div><div class="card">`;
+    if (d.todos && d.todos.length) {
+      d.todos.forEach(t => {
+        html += `<div class="todo-item"><div class="todo-check ${t.done ? 'done' : ''}" onclick="event.stopPropagation()">${t.done ? '✓' : ''}</div><div class="todo-content"><div class="title ${t.done ? 'done-text' : ''}">${esc(t.title)}</div></div></div>`;
+      });
+    } else {
+      html += `<div class="empty-state">📋 ${isEn ? 'Nothing on the list yet' : 'Nada na lista ainda'}</div>`;
+    }
+    html += `</div></div>`;
+
+    main.innerHTML = html;
+  }).catch(e => {
+    main.innerHTML = `<div class="empty-state">${isEn ? 'Error loading' : 'Erro ao carregar'}: ${esc(e.message)}</div>`;
+  });
+}
+
+function monthsPt(m) { return ['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][m]; }
+function monthsEn(m) { return ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m]; }
+
+function loadQuestion() {
+  const main = document.getElementById('mainContent');
+  const isEn = getLang() === 'en';
+  api('/api/couple/question').then(d => {
+    if (!d.exists) {
+      main.innerHTML = `<div class="section"><div class="card"><div class="empty-state">💭 ${isEn ? 'No question for today yet. Check back later!' : 'Nenhuma pergunta para hoje ainda. Volte mais tarde!'}</div></div></div>`;
+      return;
+    }
+    const q = esc(d.question);
+    const isEn = getLang() === 'en';
+    let html = `<div class="section"><div class="section-title">${isEn ? 'Today\'s Question' : 'Pergunta de Hoje'}</div><div class="card fade-in"><div class="card-title" style="font-size:1.05rem;line-height:1.6;">${q}</div>`;
+
+    if (!d.my_answer) {
+      html += `<textarea id="qAnswer" rows=3 placeholder="${isEn ? 'Write your answer...' : 'Escreva sua resposta...'}"></textarea>`;
+      html += `<button class="card-action" onclick="submitAnswer()" style="margin-top:10px;">💕 ${isEn ? 'Send' : 'Enviar'}</button>`;
+    } else {
+      html += `<div style="margin-top:12px;padding:12px;background:var(--cream);border-radius:var(--radius-sm);"><div style="font-weight:600;font-size:0.8rem;color:var(--text-light);margin-bottom:4px;">${isEn ? 'Your answer' : 'Sua resposta'}:</div><div style="font-size:0.9rem;">${esc(d.my_answer)}</div></div>`;
+      if (d.partner_answer) {
+        html += `<div style="margin-top:10px;padding:12px;background:rgba(212,184,232,0.1);border-radius:var(--radius-sm);border-left:3px solid var(--lavender);"><div style="font-weight:600;font-size:0.8rem;color:var(--text-light);margin-bottom:4px;">${esc(d.partner_name)} ${isEn ? 'answered' : 'respondeu'}:</div><div style="font-size:0.9rem;">${esc(d.partner_answer)}</div></div>`;
+      } else {
+        html += `<div class="empty-state" style="padding:16px 0;">⏳ ${isEn ? 'Waiting for' : 'Aguardando'} ${esc(d.partner_name)}...</div>`;
+      }
+    }
+    html += `</div></div>`;
+    main.innerHTML = html;
+  }).catch(e => {
+    main.innerHTML = `<div class="empty-state">${esc(e.message)}</div>`;
+  });
+}
+
+async function submitAnswer() {
+  const answer = document.getElementById('qAnswer')?.value?.trim();
+  if (!answer) return;
+  const isEn = getLang() === 'en';
+  try {
+    await api('/api/couple/question/answer', { method: 'POST', body: { couple_id: COUPLE_ID, name: USER_NAME, answer } });
+    showToast(isEn ? 'Answer sent! 💕' : 'Resposta enviada! 💕');
+    loadQuestion();
+  } catch(e) {
+    showToast(e.message, true);
+  }
+}
+
+function loadDiary() {
+  const main = document.getElementById('mainContent');
+  const isEn = getLang() === 'en';
+  api('/api/couple/diary').then(d => {
+    let html = `<div class="section"><div class="section-title">📖 ${isEn ? 'Our Diary' : 'Nosso Diário'}</div>`;
+
+    // Today's form
+    html += `<div class="card fade-in"><div class="card-title">${isEn ? 'How are you feeling today?' : 'Como você está se sentindo hoje?'}</div>`;
+    html += `<div class="mood-selector" id="moodSelector">${['😊','🥰','😢','😤','😴','🤗','😐','🔥'].map(m => `<span class="mood-btn" data-mood="${m}" onclick="selectMood(this)">${m}</span>`).join('')}</div>`;
+    html += `<textarea id="diaryContent" rows=4 placeholder="${isEn ? 'Write about your day...' : 'Escreva sobre o seu dia...'}">${esc(d.my_today?.content || '')}</textarea>`;
+    html += `<button class="card-action" onclick="saveDiary()" style="margin-top:8px;">💕 ${isEn ? 'Save' : 'Salvar'}</button>`;
+    html += `</div>`;
+
+    // Partner's today
+    if (d.partner_today) {
+      html += `<div class="card"><div class="card-title">${esc(d.partner_name)} ${isEn ? 'wrote' : 'escreveu'}:</div><div class="diary-entry"><div class="meta">${d.partner_today.mood || ''} ${d.partner_today.date}</div><div class="content">${esc(d.partner_today.content)}</div></div></div>`;
+    } else {
+      html += `<div class="card"><div class="empty-state">⏳ ${isEn ? 'Waiting for' : 'Aguardando'} ${esc(d.partner_name)} ${isEn ? 'to write today...' : 'escrever hoje...'}</div></div>`;
+    }
+
+    // Past entries
+    const past = d.past || [];
+    if (past.length) {
+      html += `<div class="card"><div class="card-title">📜 ${isEn ? 'Past Days' : 'Dias anteriores'}</div>`;
+      past.slice(0, 10).forEach(e => {
+        const author = e.author_id === USER_NAME ? (isEn ? 'You' : 'Você') : esc(d.partner_name || e.author_id);
+        html += `<div class="diary-entry"><div class="meta">${author} · ${e.date} ${e.mood || ''}</div><div class="content">${esc(e.content)}</div></div>`;
+      });
+      html += `</div>`;
+    }
+
+    html += `</div>`;
+    main.innerHTML = html;
+  });
+}
+
+let selectedMood = '';
+function selectMood(el) {
+  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedMood = el.dataset.mood;
+}
+
+async function saveDiary() {
+  const content = document.getElementById('diaryContent')?.value?.trim();
+  if (!content) return;
+  const isEn = getLang() === 'en';
+  try {
+    await api('/api/couple/diary/save', { method: 'POST', body: { couple_id: COUPLE_ID, author_id: USER_NAME, content, mood: selectedMood } });
+    showToast(isEn ? 'Diary saved! 💕' : 'Diário salvo! 💕');
+    loadDiary();
+  } catch(e) { showToast(e.message, true); }
+}
+
+function loadChallenge() {
+  const main = document.getElementById('mainContent');
+  const isEn = getLang() === 'en';
+  api('/api/couple/challenge').then(d => {
+    let html = `<div class="section"><div class="section-title">🎯 ${isEn ? 'Today\'s Challenge' : 'Desafio de Hoje'}</div><div class="card fade-in challenge-box">`;
+    if (d.type === 'wordle') {
+      const word = d.data.word || '????';
+      html += `<div style="font-weight:700;margin-bottom:8px;">${isEn ? 'Guess the word of the day!' : 'Descubra a palavra do dia!'}</div>`;
+      const reveal = d.my_done;
+      html += `<div class="challenge-word">${reveal ? word : word.split('').map(() => '_').join(' ')}</div>`;
+      if (d.my_done) {
+        html += `<div style="margin-top:8px;color:var(--pink-dark);font-weight:700;">✅ ${isEn ? 'You got it!' : 'Você acertou!'}</div>`;
+      } else {
+        html += `<button class="card-action" onclick="completeChallenge()" style="margin-top:12px;">✅ ${isEn ? 'I got it!' : 'Acertei!'}</button>`;
+      }
+    } else if (d.type === 'riddle') {
+      const riddle = isEn ? (d.data.riddle_en || '') : (d.data.riddle_pt || '');
+      const answer = isEn ? (d.data.answer_en || '') : (d.data.answer_pt || '');
+      html += `<div class="challenge-riddle">${esc(riddle)}</div>`;
+      if (d.my_done) {
+        html += `<div style="margin-top:8px;color:var(--pink-dark);font-weight:700;">${isEn ? 'Answer' : 'Resposta'}: ${esc(answer)}</div>`;
+        html += `<div style="margin-top:4px;">✅ ${isEn ? 'You solved it!' : 'Você resolveu!'}</div>`;
+      } else {
+        html += `<button class="card-action" onclick="completeChallenge()" style="margin-top:12px;">✅ ${isEn ? 'I solved it!' : 'Resolvi!'}</button>`;
+      }
+    } else {
+      const prompt = isEn ? (d.data.prompt_en || '') : (d.data.prompt_pt || '');
+      html += `<div style="font-weight:700;margin-bottom:8px;">📸 ${isEn ? 'Photo Challenge' : 'Desafio de Foto'}</div>`;
+      html += `<div style="font-size:1rem;line-height:1.6;">${esc(prompt)}</div>`;
+      if (!d.my_done) {
+        html += `<button class="card-action" onclick="completeChallenge()" style="margin-top:12px;">✅ ${isEn ? 'Done!' : 'Feito!'}</button>`;
+      } else {
+        html += `<div style="margin-top:8px;color:var(--pink-dark);font-weight:700;">✅ ${isEn ? 'You completed it!' : 'Você completou!'}</div>`;
+      }
+    }
+
+    // Partner status
+    html += `<div style="margin-top:16px;padding-top:12px;border-top:1px solid rgba(255,181,194,0.15);font-size:0.85rem;color:var(--text-light);">`;
+    html += `<div>${isEn ? 'You' : 'Você'}: ${d.my_done ? '✅' : '⏳'}</div>`;
+    html += `<div>${esc(d.partner_name)}: ${d.partner_done ? '✅' : '⏳'}</div>`;
+    html += `</div></div></div>`;
+    main.innerHTML = html;
+  });
+}
+
+async function completeChallenge() {
+  const isEn = getLang() === 'en';
+  try {
+    await api('/api/couple/challenge/complete', { method: 'POST', body: { couple_id: COUPLE_ID, name: USER_NAME } });
+    showToast(isEn ? 'Challenge completed! 🎉' : 'Desafio completo! 🎉');
+    loadChallenge();
+  } catch(e) { showToast(e.message, true); }
+}
+
+function loadAgenda() {
+  const main = document.getElementById('mainContent');
+  const isEn = getLang() === 'en';
+  api('/api/couple/agenda').then(d => {
+    let html = `<div class="section"><div class="section-title">📅 ${isEn ? 'Our Agenda' : 'Nossa Agenda'}</div>`;
+    html += `<button class="card-action small" onclick="showAddAgenda()" style="margin-bottom:12px;">+ ${isEn ? 'Add Event' : 'Adicionar Evento'}</button>`;
+
+    const upcoming = d.upcoming || [];
+    if (upcoming.length) {
+      html += `<div class="card"><div class="card-title">${isEn ? 'Upcoming' : 'Próximos'}</div>`;
+      upcoming.forEach(e => {
+        html += `<div class="agenda-item"><div class="agenda-date"><div class="day">${e.date.slice(8,10)}</div><div class="mon">${isEn ? monthsEn(parseInt(e.date.slice(5,7))) : monthsPt(parseInt(e.date.slice(5,7)))}</div></div><div class="agenda-info"><div class="title">${esc(e.title)}</div>${e.description ? `<div class="desc">${esc(e.description)}</div>` : ''}<div class="meta" style="font-size:0.7rem;color:var(--text-light);margin-top:2px;">${isEn ? 'by' : 'por'} ${esc(e.created_by)}</div></div></div>`;
+      });
+      html += `</div>`;
+    } else {
+      html += `<div class="card"><div class="empty-state">📅 ${isEn ? 'No events scheduled. Plan something special! 💕' : 'Nenhum evento agendado. Que tal marcar algo especial? 💕'}</div></div>`;
+    }
+
+    html += `</div>`;
+    main.innerHTML = html;
+  });
+}
+
+function showAddAgenda() {
+  const isEn = getLang() === 'en';
+  const modal = document.getElementById('moreModal');
+  modal.querySelector('.modal-box').innerHTML = `
+    <div style="font-weight:700;font-size:1rem;margin-bottom:12px;">📅 ${isEn ? 'New Event' : 'Novo Evento'}</div>
+    <div class="add-form">
+      <input id="agTitle" placeholder="${isEn ? 'Title' : 'Título'}">
+      <input id="agDate" type="datetime-local">
+      <textarea id="agDesc" rows=2 placeholder="${isEn ? 'Description (optional)' : 'Descrição (opcional)'}"></textarea>
+      <button class="btn" onclick="saveAgenda()">💕 ${isEn ? 'Save' : 'Salvar'}</button>
+      <button class="btn btn-outline" onclick="closeMoreMenu()">${isEn ? 'Cancel' : 'Cancelar'}</button>
+    </div>`;
+  modal.classList.add('show');
+}
+
+async function saveAgenda() {
+  const title = document.getElementById('agTitle')?.value?.trim();
+  const date = document.getElementById('agDate')?.value;
+  const desc = document.getElementById('agDesc')?.value?.trim() || '';
+  if (!title || !date) return;
+  const isEn = getLang() === 'en';
+  try {
+    await api('/api/couple/agenda/add', { method: 'POST', body: { couple_id: COUPLE_ID, title, date, description: desc, created_by: USER_NAME } });
+    showToast(isEn ? 'Event added! 💕' : 'Evento adicionado! 💕');
+    closeMoreMenu();
+    loadAgenda();
+  } catch(e) { showToast(e.message, true); }
+}
+
+function loadTodos() {
+  const main = document.getElementById('mainContent');
+  const isEn = getLang() === 'en';
+  api('/api/couple/todos').then(d => {
+    let html = `<div class="section"><div class="section-title">📋 ${isEn ? 'To-Do List' : 'Lista de Tarefas'}</div>`;
+    html += `<button class="card-action small" onclick="showAddTodo()" style="margin-bottom:12px;">+ ${isEn ? 'Add Item' : 'Adicionar Item'}</button>`;
+
+    const items = d.items || [];
+    if (items.length) {
+      html += `<div class="card">`;
+      items.forEach(t => {
+        html += `<div class="todo-item">
+          <div class="todo-check ${t.done ? 'done' : ''}" onclick="toggleTodo(${t.id})">${t.done ? '✓' : ''}</div>
+          <div class="todo-content">
+            <div class="title ${t.done ? 'done-text' : ''}">${esc(t.title)}</div>
+            <div class="meta">${isEn ? 'by' : 'por'} ${esc(t.created_by)}${t.done_by ? ' · ✅ ' + (isEn ? 'done by' : 'feito por') + ' ' + esc(t.done_by) : ''}</div>
+          </div>
+        </div>`;
+      });
+      html += `</div>`;
+    } else {
+      html += `<div class="card"><div class="empty-state">📋 ${isEn ? 'Nothing on the list yet. Add something! 💕' : 'Nada na lista ainda. Adicione algo! 💕'}</div></div>`;
+    }
+
+    html += `</div>`;
+    main.innerHTML = html;
+  });
+}
+
+function showAddTodo() {
+  const isEn = getLang() === 'en';
+  const modal = document.getElementById('moreModal');
+  modal.querySelector('.modal-box').innerHTML = `
+    <div style="font-weight:700;font-size:1rem;margin-bottom:12px;">📋 ${isEn ? 'New Item' : 'Novo Item'}</div>
+    <div class="add-form">
+      <input id="todoTitle" placeholder="${isEn ? 'What shall we do?' : 'O que vamos fazer?'}">
+      <textarea id="todoDesc" rows=2 placeholder="${isEn ? 'Details...' : 'Detalhes...'}"></textarea>
+      <button class="btn" onclick="saveTodo()">💕 ${isEn ? 'Add' : 'Adicionar'}</button>
+      <button class="btn btn-outline" onclick="closeMoreMenu()">${isEn ? 'Cancel' : 'Cancelar'}</button>
+    </div>`;
+  modal.classList.add('show');
+}
+
+async function saveTodo() {
+  const title = document.getElementById('todoTitle')?.value?.trim();
+  const desc = document.getElementById('todoDesc')?.value?.trim() || '';
+  if (!title) return;
+  const isEn = getLang() === 'en';
+  try {
+    await api('/api/couple/todos/add', { method: 'POST', body: { couple_id: COUPLE_ID, title, description: desc, created_by: USER_NAME } });
+    showToast(isEn ? 'Added! 💕' : 'Adicionado! 💕');
+    closeMoreMenu();
+    loadTodos();
+  } catch(e) { showToast(e.message, true); }
+}
+
+async function toggleTodo(id) {
+  const isEn = getLang() === 'en';
+  try {
+    await api('/api/couple/todos/toggle', { method: 'POST', body: { id, name: USER_NAME } });
+    loadTodos();
+  } catch(e) { showToast(e.message, true); }
+}
+
+function loadReview() {
+  const main = document.getElementById('mainContent');
+  const isEn = getLang() === 'en';
+  api('/api/couple/review').then(d => {
+    let html = `<div class="section"><div class="section-title">📖 ${isEn ? 'Weekly Review' : 'Revisão Semanal'}</div>`;
+
+    const cur = d.current || {};
+    html += `<div class="card fade-in"><div class="card-title">${isEn ? 'This week' : 'Esta semana'}</div>`;
+
+    if (!cur.exists || !cur.my_reflection) {
+      html += `<textarea id="reviewText" rows=4 placeholder="${isEn ? 'How was your week? What did you feel? What stood out?' : 'Como foi sua semana? O que você sentiu? O que te marcou?'}">${esc(cur.my_reflection || '')}</textarea>`;
+      html += `<button class="card-action" onclick="saveReview()" style="margin-top:8px;">💕 ${isEn ? 'Save Reflection' : 'Salvar Reflexão'}</button>`;
+    } else {
+      html += `<div class="review-box"><div class="review-header">${isEn ? 'Your reflection' : 'Sua reflexão'}</div><div class="review-text">${esc(cur.my_reflection)}</div></div>`;
+      if (cur.partner_reflection) {
+        html += `<div class="review-box"><div class="review-header">${esc(d.partner_name)}:</div><div class="review-text">${esc(cur.partner_reflection)}</div></div>`;
+      } else {
+        html += `<div class="empty-state">⏳ ${isEn ? 'Waiting for' : 'Aguardando'} ${esc(d.partner_name)}...</div>`;
+      }
+    }
+
+    html += `</div>`;
+
+    // Past reviews
+    const past = d.past || [];
+    if (past.length) {
+      html += `<div class="card"><div class="card-title">${isEn ? 'Past Reviews' : 'Revisões Anteriores'}</div>`;
+      past.slice(0, 5).forEach(r => {
+        html += `<div style="padding:8px 0;border-bottom:1px solid rgba(255,181,194,0.1);font-size:0.85rem;">📖 ${r.week_start} ${r.completed ? '✅' : '⏳'}</div>`;
+      });
+      html += `</div>`;
+    }
+
+    html += `</div>`;
+    main.innerHTML = html;
+  });
+}
+
+async function saveReview() {
+  const text = document.getElementById('reviewText')?.value?.trim();
+  if (!text) return;
+  const isEn = getLang() === 'en';
+  try {
+    await api('/api/couple/review/save', { method: 'POST', body: { couple_id: COUPLE_ID, name: USER_NAME, reflection: text } });
+    showToast(isEn ? 'Reflection saved! 💕' : 'Reflexão salva! 💕');
+    loadReview();
+  } catch(e) { showToast(e.message, true); }
+}
+
+let toastTimer;
+function showToast(msg, isError = false) {
+  const existing = document.getElementById('toast');
+  if (existing) existing.remove();
+  clearTimeout(toastTimer);
+  const el = document.createElement('div');
+  el.id = 'toast';
+  el.style.cssText = `position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:${isError ? '#ff8fa0' : '#6b9e7a'};color:white;padding:12px 24px;border-radius:var(--radius-sm);font-weight:600;font-size:0.9rem;z-index:300;box-shadow:0 4px 20px rgba(0,0,0,0.15);animation:fadeIn 0.3s ease;`;
+  el.textContent = msg;
+  document.body.appendChild(el);
+  toastTimer = setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, 3000);
+}
+
+function init() {
+  if (!COUPLE_ID || !USER_NAME) {
+    document.getElementById('mainContent').innerHTML = `<div class="empty-state" style="padding:60px 20px;">${getLang() === 'en' ? 'Please log in first' : 'Faça login primeiro'}<br><br><button class="btn" onclick="window.location.href='/'">${getLang() === 'en' ? 'Go to Login' : 'Ir para Login'}</button></div>`;
+    return;
+  }
+  const display = USER_DISPLAY || USER_NAME;
+  document.getElementById('userGreeting').innerHTML = `${display} 💕`;
+  updateNavLang();
+  loadDashboard();
+}
+
+setTimeout(init, 100);
+</script>
+</body>
+</html>
