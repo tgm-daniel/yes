@@ -8,218 +8,454 @@
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 :root {
-  --rose: #ff7d8a;
-  --rose-light: #ffb5c2;
-  --rose-dark: #e86070;
-  --lavender: #c4a4dc;
-  --lavender-light: #e0c8f0;
-  --cream: #fff8f5;
-  --bg: #fef6f3;
-  --text: #4a3a4a;
-  --text-muted: #b0a0b0;
-  --text-light: #8a7a8a;
-  --card-bg: #ffffff;
-  --radius: 28px;
-  --radius-md: 18px;
-  --radius-sm: 14px;
-  --shadow-sm: 0 2px 8px rgba(180,120,160,0.06);
-  --shadow-md: 0 4px 20px rgba(180,120,160,0.1);
-  --shadow-lg: 0 8px 40px rgba(180,120,160,0.14);
-  --transition: 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  --pink: #ffb5c2;
+  --pink-dark: #ff8fa0;
+  --lavender: #d4b8e8;
+  --lavender-light: #ede0f5;
+  --cream: #fffaf5;
+  --text: #5a4a6a;
+  --text-light: #9a8aaa;
+  --correct: #7ddb9a;
+  --radius: 24px;
+  --radius-sm: 16px;
+  --radius-cloud: 50px;
+  --shadow: 0 8px 30px rgba(180, 150, 200, 0.2);
+  --shadow-hover: 0 12px 40px rgba(180, 150, 200, 0.3);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-body { font-family: 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 90px; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
-body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse at 50% 0%, rgba(255,181,194,0.08) 0%, transparent 70%); pointer-events: none; z-index: 0; }
-#app { position: relative; z-index: 1; }
-
-.app-header {
-  background: linear-gradient(135deg, #ff9aa8 0%, #c4a4dc 50%, #a8c8e8 100%);
-  padding: 50px 24px 36px;
-  text-align: center;
-  position: relative;
-  border-radius: 0 0 var(--radius) var(--radius);
-  box-shadow: 0 6px 30px rgba(180,120,160,0.15);
+body {
+  font-family: 'Nunito', sans-serif;
+  background: linear-gradient(160deg, #fce4ec 0%, #f3e5f5 25%, #e8f5e9 55%, #e3f2fd 85%, #fff8e1 100%);
+  background-attachment: fixed;
+  color: var(--text);
+  min-height: 100vh;
+  padding-bottom: 90px;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+.floating-bg {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
   overflow: hidden;
 }
-.app-header::before { content: ''; position: absolute; bottom: -2px; left: 0; right: 0; height: 30px; background: var(--bg); border-radius: var(--radius) var(--radius) 0 0; }
-.app-header::after { content: ''; position: absolute; inset: 0; background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='20' cy='20' r='1.5' fill='rgba(255,255,255,0.15)'/%3E%3Ccircle cx='80' cy='30' r='1' fill='rgba(255,255,255,0.1)'/%3E%3Ccircle cx='50' cy='70' r='1.2' fill='rgba(255,255,255,0.12)'/%3E%3C/svg%3E"); pointer-events: none; }
-.app-header h1 { font-family: 'Georgia', serif; font-size: 20px; color: white; text-shadow: 0 2px 12px rgba(0,0,0,0.08); letter-spacing: -0.5px; position: relative; z-index: 1; }
-.app-header .subtitle { font-size: 0.85rem; color: rgba(255,255,255,0.85); margin-top: 6px; font-weight: 500; position: relative; z-index: 1; }
-.lang-toggle { position: absolute; top: 14px; right: 16px; background: rgba(255,255,255,0.25); border: 1px solid rgba(255,255,255,0.2); border-radius: 24px; padding: 6px 16px; font-size: 11px; font-weight: 700; cursor: pointer; color: white; font-family: 'Nunito', sans-serif; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); letter-spacing: 0.5px; transition: var(--transition); z-index: 2; }
-.lang-toggle:hover { background: rgba(255,255,255,0.4); transform: scale(1.05); }
+.floating-bg::before {
+  content: '';
+  position: absolute; top: -40px; right: -40px;
+  width: 200px; height: 200px;
+  background: radial-gradient(circle at 40% 40%, rgba(255, 181, 194, 0.15), transparent 70%);
+  border-radius: 50%;
+  animation: floatAround 8s ease-in-out infinite;
+}
+.floating-bg::after {
+  content: '';
+  position: absolute; bottom: -30px; left: -30px;
+  width: 180px; height: 180px;
+  background: radial-gradient(circle at 60% 60%, rgba(212, 184, 232, 0.12), transparent 70%);
+  border-radius: 50%;
+  animation: floatAround 10s ease-in-out infinite reverse;
+}
+.floating-items {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  overflow: hidden;
+}
+.floating-items span {
+  position: absolute; font-size: 16px; opacity: 0.35;
+  animation: floatAround 8s ease-in-out infinite;
+  image-rendering: pixelated;
+}
+.stars {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  overflow: hidden;
+}
+.stars span {
+  position: absolute; color: var(--lavender); opacity: 0.15;
+  font-size: 14px; animation: twinkle 3s ease-in-out infinite;
+}
+@keyframes floatAround {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(5deg); }
+}
+@keyframes twinkle {
+  0%, 100% { opacity: 0.15; transform: scale(1); }
+  50% { opacity: 0.3; transform: scale(1.1); }
+}
 
-.user-greeting { padding: 20px 24px 4px; font-size: 1.4rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-.user-greeting small { font-weight: 400; font-size: 0.85rem; color: var(--text-light); display: block; margin-top: 2px; }
+#app { position: relative; z-index: 1; max-width: 520px; margin: 0 auto; }
 
-.section { padding: 16px 20px; animation: sectionIn 0.3s ease; }
+.app-header {
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  margin: 16px 14px 0;
+  padding: 28px 20px 24px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  text-align: center;
+  position: relative;
+  border: 2px solid rgba(255, 181, 194, 0.3);
+  overflow: visible;
+}
+.app-header .card-heart {
+  position: absolute; top: -10px; left: 50%; transform: translateX(-50%); z-index: 5;
+  filter: drop-shadow(0 2px 6px rgba(255, 143, 160, 0.3));
+  cursor: pointer;
+}
+.app-header .card-heart:hover svg { filter: drop-shadow(0 0 12px rgba(255,143,160,0.5)); }
+.app-header h1 {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px; color: var(--pink-dark); line-height: 1.6;
+  margin-bottom: 4px;
+}
+.app-header .subtitle {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.85rem; color: var(--text-light); font-weight: 600;
+}
+.lang-toggle {
+  position: absolute; top: 14px; right: 14px;
+  background: var(--cream);
+  border: 2px solid rgba(255,181,194,0.3);
+  border-radius: var(--radius-cloud);
+  padding: 6px 16px;
+  font-size: 10px; font-weight: 800;
+  cursor: pointer; color: var(--pink-dark);
+  font-family: 'Press Start 2P', monospace;
+  transition: all 0.25s var(--ease-bounce);
+  z-index: 2;
+}
+.lang-toggle:hover { background: var(--pink); color: white; border-color: var(--pink); transform: scale(1.05); }
+.lang-toggle:active { transform: scale(0.95); }
+
+.user-greeting {
+  padding: 8px 18px 0;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px; color: var(--text); text-align: left;
+}
+
+.section { padding: 14px 14px 6px; animation: sectionIn 0.35s ease; }
 @keyframes sectionIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-.section-title { font-size: 0.8rem; font-weight: 700; color: var(--text-light); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-.section-title a { margin-left: auto; font-size: 0.75rem; text-decoration: none; color: var(--rose); font-weight: 600; text-transform: none; letter-spacing: 0; transition: var(--transition); }
-.section-title a:hover { color: var(--rose-dark); }
+.section-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px; color: var(--text-light);
+  margin-bottom: 10px; padding: 0 4px;
+  display: flex; align-items: center; gap: 6px;
+}
+.section-title a {
+  margin-left: auto;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.75rem; text-decoration: none;
+  color: var(--pink-dark); font-weight: 700;
+  transition: all 0.2s var(--ease-bounce);
+  cursor: pointer;
+}
+.section-title a:hover { color: var(--pink); transform: scale(1.03); }
 
 .card {
-  background: var(--card-bg);
-  border-radius: var(--radius-md);
-  padding: 20px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 28px 24px;
   margin-bottom: 14px;
-  box-shadow: var(--shadow-sm);
-  border: 1px solid rgba(255,181,194,0.1);
-  transition: var(--transition);
-  animation: cardIn 0.35s ease both;
+  border: 2px solid rgba(255, 181, 194, 0.3);
+  transition: box-shadow 0.3s ease, transform 0.25s var(--ease-bounce);
+  animation: cardIn 0.4s ease both;
+  position: relative;
+  overflow: hidden;
 }
-.card:nth-child(2) { animation-delay: 0.05s; }
-.card:nth-child(3) { animation-delay: 0.1s; }
-.card:nth-child(4) { animation-delay: 0.15s; }
-.card:nth-child(5) { animation-delay: 0.2s; }
-@keyframes cardIn { from { opacity: 0; transform: translateY(16px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
-.card:hover { box-shadow: var(--shadow-md); border-color: rgba(255,181,194,0.2); }
-.card-title { font-weight: 700; font-size: 1rem; margin-bottom: 8px; color: var(--text); }
+.card:nth-child(2) { animation-delay: 0.06s; }
+.card:nth-child(3) { animation-delay: 0.12s; }
+.card:nth-child(4) { animation-delay: 0.18s; }
+.card:nth-child(5) { animation-delay: 0.24s; }
+@keyframes cardIn { from { opacity: 0; transform: translateY(20px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.card:hover { box-shadow: var(--shadow-hover); }
+.card-title { font-weight: 800; font-size: 0.95rem; margin-bottom: 8px; color: var(--text); }
 .card-text { font-size: 0.88rem; color: var(--text-light); line-height: 1.7; }
-.card-action {
-  display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; padding: 10px 22px;
-  background: linear-gradient(135deg, var(--rose-light), var(--lavender));
-  color: white; border: none; border-radius: var(--radius-sm); font-weight: 700;
-  font-size: 0.85rem; cursor: pointer; text-decoration: none; transition: var(--transition);
-  box-shadow: 0 2px 10px rgba(255,125,138,0.2);
-}
-.card-action:hover { transform: translateY(-1px) scale(1.02); box-shadow: 0 4px 16px rgba(255,125,138,0.3); }
-.card-action:active { transform: scale(0.97); }
-.card-action.small { padding: 8px 16px; font-size: 0.78rem; }
 
-.card-icon { width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; margin-bottom: 10px; }
-.card-icon.pink { background: linear-gradient(135deg, #ffe0e6, #ffb5c2); }
-.card-icon.purple { background: linear-gradient(135deg, #e8d4f0, #d4b8e8); }
-.card-icon.blue { background: linear-gradient(135deg, #d0e8f8, #a8d0f0); }
-.card-icon.green { background: linear-gradient(135deg, #d0f0d8, #a8e0b8); }
-.card-icon.orange { background: linear-gradient(135deg, #ffe0c0, #ffc8a0); }
 .card-row { display: flex; align-items: center; gap: 14px; }
 .card-row .card-text { flex: 1; }
 
-.stat-row { display: flex; gap: 10px; margin: 4px 0; }
-.stat-pill { flex: 1; background: var(--bg); border-radius: var(--radius-sm); padding: 14px; text-align: center; }
-.stat-pill .num { font-size: 1.5rem; font-weight: 800; color: var(--rose); }
-.stat-pill .label { font-size: 0.7rem; color: var(--text-light); margin-top: 2px; font-weight: 600; }
+.stat-row { display: flex; gap: 10px; margin: 6px 0 8px; }
+.stat-pill {
+  flex: 1; background: rgba(255, 255, 255, 0.6);
+  border-radius: var(--radius-sm); padding: 14px 8px;
+  text-align: center;
+  border: 2px solid rgba(255, 181, 194, 0.15);
+}
+.stat-pill .num { font-family: 'Press Start 2P', monospace; font-size: 18px; color: var(--pink-dark); }
+.stat-pill .label { font-size: 0.65rem; color: var(--text-light); margin-top: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
 
-.empty-state { text-align: center; padding: 28px 0; color: var(--text-muted); font-size: 0.88rem; line-height: 1.8; }
-.mood-selector { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
-.mood-btn { font-size: 1.6rem; padding: 8px 12px; border: 2px solid transparent; border-radius: 14px; cursor: pointer; background: var(--bg); transition: var(--transition); }
-.mood-btn:hover { transform: scale(1.12); background: white; }
-.mood-btn.selected { border-color: var(--rose); background: white; transform: scale(1.15); box-shadow: 0 2px 12px rgba(255,125,138,0.15); }
-textarea, input[type="text"], input[type="datetime-local"] { width: 100%; padding: 14px 16px; border: 2px solid rgba(255,181,194,0.15); border-radius: var(--radius-sm); font-family: 'Nunito', sans-serif; font-size: 16px; resize: vertical; min-height: 80px; outline: none; transition: var(--transition); background: var(--bg); }
-textarea:focus, input:focus { border-color: var(--rose); background: white; box-shadow: 0 0 0 4px rgba(255,125,138,0.08); }
+.empty-state { text-align: center; padding: 24px 0; color: var(--text-light); font-size: 0.85rem; line-height: 1.8; }
+
+.mood-selector { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0; justify-content: center; }
+.mood-btn {
+  font-size: 1.5rem; padding: 6px 10px;
+  border: 2px solid transparent; border-radius: var(--radius-sm);
+  cursor: pointer; background: var(--cream);
+  transition: all 0.2s var(--ease-bounce);
+}
+.mood-btn:hover { transform: scale(1.15); background: white; border-color: var(--pink-light); }
+.mood-btn.selected { border-color: var(--pink); background: white; transform: scale(1.2); box-shadow: 0 3px 12px rgba(255,181,194,0.3); }
+
+textarea, input[type="text"], input[type="datetime-local"] {
+  width: 100%;
+  padding: 14px 18px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  color: var(--text);
+  background: var(--cream);
+  border: 2px solid rgba(255, 181, 194, 0.3);
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: all 0.25s var(--ease-bounce);
+  letter-spacing: 0.3px;
+}
+textarea::placeholder, input::placeholder { color: var(--text-light); opacity: 0.6; }
+textarea:focus, input:focus { border-color: var(--pink); box-shadow: 0 0 0 3px rgba(255, 143, 160, 0.15); background: white; }
+textarea { min-height: 80px; resize: vertical; }
 input[type="text"] { min-height: auto; }
+input[type="datetime-local"] { font-family: 'Nunito', sans-serif; font-size: 14px; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 14px 32px;
+  border: none;
+  border-radius: var(--radius-cloud);
+  font-size: 0.85rem;
+  font-weight: 800;
+  font-family: 'Nunito', sans-serif;
+  cursor: pointer;
+  transition: all 0.25s var(--ease-bounce);
+  text-decoration: none;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--pink), var(--pink-dark));
+  color: white;
+  box-shadow: 0 6px 20px rgba(255, 143, 160, 0.3);
+}
+.btn-primary:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 10px 30px rgba(255, 143, 160, 0.4); }
+.btn-primary:active { transform: translateY(0) scale(0.97); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+.btn-outline {
+  background: transparent;
+  border: 2px solid rgba(255, 181, 194, 0.4);
+  color: var(--text-light);
+  box-shadow: none;
+}
+.btn-outline:hover { background: var(--cream); border-color: var(--pink); color: var(--pink-dark); transform: translateY(-2px); }
+.btn-ghost { background: transparent; border: none; color: var(--text-light); box-shadow: none; }
+.btn-ghost:hover { background: var(--cream); transform: none; }
+
+.card-action {
+  display: inline-flex; align-items: center; gap: 6px; margin-top: 12px;
+  padding: 12px 28px;
+  background: linear-gradient(135deg, var(--pink), var(--pink-dark));
+  color: white; border: none;
+  border-radius: var(--radius-cloud);
+  font-weight: 800;
+  font-size: 0.85rem;
+  font-family: 'Nunito', sans-serif;
+  cursor: pointer;
+  transition: all 0.25s var(--ease-bounce);
+  box-shadow: 0 6px 20px rgba(255, 143, 160, 0.3);
+  text-decoration: none;
+}
+.card-action:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 10px 30px rgba(255, 143, 160, 0.4); }
+.card-action:active { transform: translateY(0) scale(0.97); }
+.card-action.small { padding: 10px 22px; font-size: 0.78rem; }
 
 .nav-bar {
-  position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255,255,255,0.92);
-  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-  display: flex; border-top: 1px solid rgba(255,181,194,0.1);
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: rgba(255,255,255,0.88);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  border-top: 2px solid rgba(255, 181, 194, 0.2);
   padding: 6px 0 calc(6px + env(safe-area-inset-bottom, 0px)) 0;
-  z-index: 100; box-shadow: 0 -4px 20px rgba(0,0,0,0.04);
+  z-index: 100;
+  max-width: 520px;
+  margin: 0 auto;
 }
-.nav-item { flex: 1; text-align: center; padding: 4px 2px; cursor: pointer; color: var(--text-muted); font-size: 9px; font-weight: 700; transition: var(--transition); position: relative; letter-spacing: 0.3px; }
-.nav-item .nav-icon { font-size: 1.4rem; display: block; margin-bottom: 2px; transition: var(--transition); }
-.nav-item.active { color: var(--rose); }
-.nav-item.active .nav-icon { transform: scale(1.1); }
-.nav-item.active::after { content: ''; position: absolute; top: -1px; left: 50%; transform: translateX(-50%); width: 24px; height: 3px; background: var(--rose); border-radius: 0 0 4px 4px; }
-.nav-item:hover { color: var(--rose); }
+.nav-item {
+  flex: 1; text-align: center; padding: 4px 2px;
+  cursor: pointer; color: var(--text-light);
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px; font-weight: 400;
+  transition: all 0.2s var(--ease-bounce);
+  position: relative;
+}
+.nav-item .nav-icon { font-size: 1.3rem; display: block; margin-bottom: 2px; transition: all 0.2s var(--ease-bounce); }
+.nav-item.active { color: var(--pink-dark); }
+.nav-item.active .nav-icon { transform: scale(1.15); }
+.nav-item:hover .nav-icon { transform: scale(1.1); }
+.nav-item.active::after {
+  content: '';
+  position: absolute; top: -3px; left: 50%; transform: translateX(-50%);
+  width: 30px; height: 3px;
+  background: linear-gradient(135deg, var(--pink), var(--pink-dark));
+  border-radius: 0 0 4px 4px;
+}
 
-.diary-entry { border-left: 3px solid var(--rose); padding: 14px 16px; margin-bottom: 10px; background: var(--bg); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; transition: var(--transition); }
-.diary-entry:hover { background: white; }
-.diary-entry .meta { font-size: 0.75rem; color: var(--text-light); margin-bottom: 6px; display: flex; gap: 8px; align-items: center; }
+.diary-entry {
+  border-left: 3px solid var(--pink);
+  padding: 14px 16px; margin-bottom: 10px;
+  background: var(--cream);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  transition: all 0.2s ease;
+}
+.diary-entry:hover { background: rgba(255,255,255,0.9); }
+.diary-entry .meta { font-family: 'Press Start 2P', monospace; font-size: 7px; color: var(--text-light); margin-bottom: 6px; display: flex; gap: 8px; align-items: center; }
 .diary-entry .content { font-size: 0.9rem; line-height: 1.7; white-space: pre-line; }
 
-.challenge-box { text-align: center; padding: 24px 16px; }
-.challenge-box .challenge-word { font-family: 'Courier New', monospace; font-size: 1.8rem; letter-spacing: 10px; padding: 20px; background: var(--bg); border-radius: var(--radius-md); display: inline-block; margin: 16px 0; font-weight: 800; color: var(--text); }
-.challenge-box .challenge-riddle { font-size: 1.05rem; font-style: italic; padding: 20px 16px; line-height: 1.7; color: var(--text); }
-.challenge-type-badge { display: inline-block; padding: 4px 16px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; background: var(--bg); color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+.challenge-box { text-align: center; padding: 20px 8px; }
+.challenge-type-badge {
+  display: inline-block; padding: 4px 16px;
+  border-radius: var(--radius-cloud);
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px; font-weight: 400;
+  background: var(--lavender-light);
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+.challenge-word {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 1.5rem; letter-spacing: 10px;
+  padding: 20px;
+  background: var(--cream);
+  border-radius: var(--radius-sm);
+  display: inline-block; margin: 14px 0;
+  color: var(--text);
+}
+.challenge-riddle { font-size: 1rem; font-style: italic; padding: 18px 14px; line-height: 1.7; color: var(--text); }
 
-.agenda-item { display: flex; gap: 14px; align-items: flex-start; padding: 14px 0; border-bottom: 1px solid rgba(255,181,194,0.08); transition: var(--transition); }
+.agenda-item {
+  display: flex; gap: 14px; align-items: flex-start;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(255, 181, 194, 0.12);
+  transition: all 0.2s ease;
+}
 .agenda-item:last-child { border: none; }
-.agenda-item:hover { padding-left: 6px; }
-.agenda-date { min-width: 52px; text-align: center; }
-.agenda-date .day { font-size: 1.5rem; font-weight: 800; line-height: 1; color: var(--text); }
-.agenda-date .mon { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+.agenda-item:hover { padding-left: 4px; }
+.agenda-date { min-width: 48px; text-align: center; }
+.agenda-date .day { font-family: 'Press Start 2P', monospace; font-size: 16px; color: var(--text); line-height: 1; }
+.agenda-date .mon { font-family: 'Press Start 2P', monospace; font-size: 7px; color: var(--text-light); margin-top: 3px; }
 .agenda-info { flex: 1; }
-.agenda-info .title { font-weight: 700; font-size: 0.9rem; }
-.agenda-info .desc { font-size: 0.8rem; color: var(--text-light); margin-top: 4px; line-height: 1.5; }
+.agenda-info .title { font-weight: 700; font-size: 0.88rem; }
+.agenda-info .desc { font-size: 0.78rem; color: var(--text-light); margin-top: 4px; line-height: 1.5; }
 
-.todo-item { display: flex; gap: 12px; align-items: center; padding: 12px 0; border-bottom: 1px solid rgba(255,181,194,0.06); transition: var(--transition); }
+.todo-item {
+  display: flex; gap: 12px; align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 181, 194, 0.08);
+  transition: all 0.2s ease;
+}
 .todo-item:last-child { border: none; }
 .todo-item:hover { padding-left: 4px; }
-.todo-check { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--rose-light); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.7rem; transition: var(--transition); background: var(--bg); }
-.todo-check.done { background: linear-gradient(135deg, var(--rose-light), var(--lavender)); color: white; border-color: transparent; }
-.todo-check:hover { border-color: var(--rose); transform: scale(1.1); }
+.todo-check {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  border: 2px solid var(--pink);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; font-size: 0.7rem;
+  transition: all 0.2s var(--ease-bounce);
+  background: var(--cream);
+  color: transparent;
+}
+.todo-check.done { background: linear-gradient(135deg, var(--pink), var(--pink-dark)); color: white; border-color: transparent; }
+.todo-check:hover { transform: scale(1.15); }
 .todo-content { flex: 1; }
-.todo-content .title { font-weight: 600; font-size: 0.9rem; }
-.todo-content .title.done-text { text-decoration: line-through; color: var(--text-muted); }
-.todo-content .meta { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
+.todo-content .title { font-weight: 600; font-size: 0.88rem; }
+.todo-content .title.done-text { text-decoration: line-through; color: var(--text-light); }
+.todo-content .meta { font-family: 'Press Start 2P', monospace; font-size: 7px; color: var(--text-light); margin-top: 3px; }
+
 .add-form { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
 
-.review-box { background: var(--bg); border-radius: var(--radius-sm); padding: 18px; margin-bottom: 14px; border: 1px solid rgba(255,181,194,0.08); }
-.review-box .review-header { font-weight: 700; margin-bottom: 8px; font-size: 0.85rem; color: var(--text-light); }
+.review-box {
+  background: var(--cream);
+  border-radius: var(--radius-sm);
+  padding: 18px; margin-bottom: 14px;
+  border: 2px solid rgba(255, 181, 194, 0.15);
+}
+.review-box .review-header { font-family: 'Press Start 2P', monospace; font-size: 8px; color: var(--text-light); margin-bottom: 8px; }
 .review-box .review-text { font-size: 0.9rem; line-height: 1.7; color: var(--text); white-space: pre-line; padding: 12px 16px; background: white; border-radius: var(--radius-sm); }
-.review-box .review-empty { color: var(--text-light); font-style: italic; }
 
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 200; display: none; align-items: flex-end; justify-content: center; padding: 0; animation: modalOverlay 0.2s ease; }
-@keyframes modalOverlay { from { opacity: 0; } to { opacity: 1; } }
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(255, 250, 245, 0.88);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 200;
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+}
 .modal-overlay.show { display: flex; }
 .modal-box {
-  background: white; border-radius: var(--radius) var(--radius) 0 0; padding: 28px 24px calc(24px + env(safe-area-inset-bottom, 12px));
-  width: 100%; max-width: 480px; max-height: 80vh; overflow-y: auto;
-  animation: modalUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: 0 -8px 40px rgba(0,0,0,0.1);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: var(--radius) var(--radius) 0 0;
+  padding: 28px 24px calc(24px + env(safe-area-inset-bottom, 12px));
+  width: 100%; max-width: 520px; max-height: 80vh;
+  overflow-y: auto;
+  animation: modalUp 0.35s var(--ease-bounce);
+  border-top: 2px solid rgba(255, 181, 194, 0.3);
 }
 @keyframes modalUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
 .hidden { display: none !important; }
-.btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-  padding: 14px 28px; background: linear-gradient(135deg, var(--rose-light), var(--lavender));
-  color: white; border: none; border-radius: var(--radius-sm); font-weight: 700;
-  font-size: 0.9rem; cursor: pointer; transition: var(--transition);
-  box-shadow: 0 2px 10px rgba(255,125,138,0.2); font-family: 'Nunito', sans-serif;
-}
-.btn:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(255,125,138,0.3); }
-.btn:active { transform: scale(0.97); }
-.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-.btn-outline { background: transparent; border: 2px solid var(--rose-light); color: var(--rose); box-shadow: none; }
-.btn-outline:hover { background: rgba(255,181,194,0.08); box-shadow: none; }
-.btn-ghost { background: transparent; color: var(--text-light); box-shadow: none; padding: 10px 16px; }
-.btn-ghost:hover { background: var(--bg); box-shadow: none; transform: none; }
 
-.spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; }
+.loading { text-align: center; padding: 60px 20px; color: var(--text-light); display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.spinner { display: inline-block; width: 24px; height: 24px; border: 3px solid rgba(255, 181, 194, 0.2); border-top-color: var(--pink); border-radius: 50%; animation: spin 0.6s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
-
-.loading { text-align: center; padding: 60px 20px; color: var(--text-muted); display: flex; flex-direction: column; align-items: center; gap: 12px; }
-.loading .spinner { width: 32px; height: 32px; border-width: 3px; border-color: rgba(255,181,194,0.2); border-top-color: var(--rose); }
+.loading-text {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+@keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
 
 @media (max-width: 600px) {
-  .app-header { padding: 44px 20px 30px; border-radius: 0 0 24px 24px; }
-  .app-header h1 { font-size: 17px; }
-  .section { padding: 12px 14px; }
-  .card { padding: 16px; }
-  .nav-item { font-size: 8px; }
-  .nav-item .nav-icon { font-size: 1.3rem; }
-  .user-greeting { padding: 16px 18px 4px; font-size: 1.2rem; }
-  .stat-pill { padding: 10px 8px; }
-  .stat-pill .num { font-size: 1.2rem; }
+  .app-header { margin: 12px 10px 0; padding: 24px 16px 20px; }
+  .app-header h1 { font-size: 9px; }
+  .app-header .subtitle { font-size: 0.8rem; }
+  .section { padding: 10px 10px 4px; }
+  .card { padding: 22px 18px; }
+  .nav-item { font-size: 6px; }
+  .nav-item .nav-icon { font-size: 1.2rem; }
+  .stat-pill { padding: 10px 6px; }
+  .stat-pill .num { font-size: 14px; }
 }
 @media (max-width: 400px) {
-  .app-header { padding: 38px 14px 24px; }
-  .app-header h1 { font-size: 15px; }
-  .app-header .subtitle { font-size: 0.75rem; }
-  .section { padding: 8px 10px; }
-  .card { padding: 14px; margin-bottom: 10px; border-radius: var(--radius-sm); }
-  .nav-item { font-size: 7px; }
+  .app-header { margin: 8px 6px 0; padding: 20px 12px 16px; }
+  .app-header h1 { font-size: 8px; }
+  .card { padding: 18px 14px; border-radius: var(--radius-sm); }
+  .section { padding: 8px 6px 2px; }
+  .nav-item { font-size: 5px; }
   .nav-item .nav-icon { font-size: 1.1rem; }
 }
 </style>
 </head>
 <body>
+<div class="floating-bg"></div>
+<div class="floating-items" id="floatingItems"></div>
+<div class="stars" id="stars"></div>
+
 <div id="app">
   <div class="app-header">
+    <div class="card-heart">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M14 24.5L5.25 15.75C3.25 13.75 2.5 10.5 4.5 7.75C6.5 5 10 4.5 12.5 7L14 8.5L15.5 7C18 4.5 21.5 5 23.5 7.75C25.5 10.5 24.75 13.75 22.75 15.75L14 24.5Z"
+          fill="url(#heartGrad)" stroke="var(--pink-dark)" stroke-width="0.8"/>
+        <defs><linearGradient id="heartGrad" x1="14" y1="4.5" x2="14" y2="24.5"><stop stop-color="var(--pink)"/><stop offset="1" stop-color="var(--pink-dark)"/></linearGradient></defs>
+      </svg>
+    </div>
     <button class="lang-toggle" onclick="toggleLang()" id="langBtn">EN</button>
-    <h1>Still Learning 💕</h1>
-    <div class="subtitle" id="headerSub">Aprendendo um ao outro, um dia de cada vez</div>
+    <h1>✨ Still Learning ✨</h1>
+    <div class="subtitle" id="headerSub">Aprendendo um ao outro, um dia de cada vez 💕</div>
   </div>
   <div id="userGreeting" class="user-greeting"></div>
   <div id="mainContent"></div>
@@ -235,12 +471,19 @@ input[type="text"] { min-height: auto; }
 
 <div class="modal-overlay" id="moreModal" onclick="if(event.target===this)closeMoreMenu()">
   <div class="modal-box" style="text-align:center;">
-    <div style="font-weight:700;margin-bottom:16px;font-size:1rem;">Still Learning 💕</div>
-    <div style="display:flex;flex-direction:column;gap:8px;">
+    <div class="card-heart" style="position:static;margin:0 auto 12px;transform:none;">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M14 24.5L5.25 15.75C3.25 13.75 2.5 10.5 4.5 7.75C6.5 5 10 4.5 12.5 7L14 8.5L15.5 7C18 4.5 21.5 5 23.5 7.75C25.5 10.5 24.75 13.75 22.75 15.75L14 24.5Z"
+          fill="url(#heartGrad2)" stroke="var(--pink-dark)" stroke-width="0.8"/>
+        <defs><linearGradient id="heartGrad2" x1="14" y1="4.5" x2="14" y2="24.5"><stop stop-color="var(--pink)"/><stop offset="1" stop-color="var(--pink-dark)"/></linearGradient></defs>
+      </svg>
+    </div>
+    <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--text);margin-bottom:14px;">Still Learning 💕</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
       <button class="btn btn-outline" onclick="showSection('agenda');closeMoreMenu()">📅 Agenda</button>
       <button class="btn btn-outline" onclick="showSection('todos');closeMoreMenu()">📋 Listas</button>
       <button class="btn btn-outline" onclick="showSection('review');closeMoreMenu()">📖 Revisão Semanal</button>
-      <button class="btn-ghost btn" style="margin-top:12px;color:var(--text-muted);" onclick="logout()">🚪 Sair</button>
+      <button class="btn btn-ghost" style="margin-top:10px;font-size:0.8rem;" onclick="logout()">🚪 Sair</button>
     </div>
   </div>
 </div>
@@ -252,8 +495,36 @@ const COUPLE_ID = localStorage.getItem('couple_id') || '';
 const USER_NAME = localStorage.getItem('user_name') || '';
 const USER_DISPLAY = localStorage.getItem('user_display') || '';
 const PARTNER_NAME = localStorage.getItem('partner_name') || '';
-
 let state = { section: 'dashboard', data: {} };
+
+function initDecorations() {
+  // Floating emojis
+  const emojis = ['💕', '❤️', '💗', '💖', '✨'];
+  const items = document.getElementById('floatingItems');
+  for (let i = 0; i < 6; i++) {
+    const span = document.createElement('span');
+    span.textContent = emojis[i % emojis.length];
+    span.style.left = (10 + Math.random() * 75) + '%';
+    span.style.top = (5 + Math.random() * 80) + '%';
+    span.style.fontSize = (12 + Math.random() * 10) + 'px';
+    span.style.animationDelay = (Math.random() * 5) + 's';
+    span.style.animationDuration = (6 + Math.random() * 6) + 's';
+    items.appendChild(span);
+  }
+  // Stars
+  const stars = document.getElementById('stars');
+  const starChars = ['✦', '★', '✧'];
+  for (let i = 0; i < 12; i++) {
+    const span = document.createElement('span');
+    span.textContent = starChars[i % starChars.length];
+    span.style.left = (5 + Math.random() * 85) + '%';
+    span.style.top = (5 + Math.random() * 85) + '%';
+    span.style.fontSize = (10 + Math.random() * 8) + 'px';
+    span.style.animationDelay = (Math.random() * 4) + 's';
+    span.style.animationDuration = (2 + Math.random() * 3) + 's';
+    stars.appendChild(span);
+  }
+}
 
 async function api(path, opts = {}) {
   opts.headers = opts.headers || {};
@@ -280,7 +551,7 @@ function logout() { localStorage.clear(); window.location.href = '/'; }
 function updateNavLang() {
   const isEn = getLang() === 'en';
   document.getElementById('langBtn').textContent = isEn ? 'PT' : 'EN';
-  document.getElementById('headerSub').textContent = isEn ? 'Learning each other, one day at a time' : 'Aprendendo um ao outro, um dia de cada vez';
+  document.getElementById('headerSub').textContent = isEn ? 'Learning each other, one day at a time 💕' : 'Aprendendo um ao outro, um dia de cada vez 💕';
   document.querySelectorAll('[data-nav]').forEach(el => {
     const nav = el.dataset.nav;
     const labels = { dashboard: isEn ? 'Home' : 'Início', question: isEn ? 'Question' : 'Pergunta', diary: isEn ? 'Diary' : 'Diário', challenge: isEn ? 'Challenge' : 'Desafio', more: isEn ? 'More' : 'Mais' };
@@ -295,7 +566,7 @@ function showSection(name) {
   document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.nav === name));
   closeMoreMenu();
   const main = document.getElementById('mainContent');
-  main.innerHTML = `<div class="loading"><div class="spinner"></div><span>${getLang() === 'en' ? 'Loading...' : 'Carregando...'}</span></div>`;
+  main.innerHTML = `<div class="loading"><div class="spinner"></div><div class="loading-text">${getLang() === 'en' ? 'Loading...' : 'Carregando...'}</div></div>`;
   if (name === 'dashboard') loadDashboard();
   else if (name === 'question') loadQuestion();
   else if (name === 'diary') loadDiary();
@@ -314,22 +585,26 @@ function loadDashboard() {
   const isEn = getLang() === 'en';
   api('/api/couple/dashboard').then(d => {
     let html = `<div class="section">`;
-    // Greeting
-    html += `<div class="card" style="background:linear-gradient(135deg,#fff8f5,#f0e8ff);border-color:rgba(196,164,220,0.15);">
-      <div style="font-size:1.3rem;font-weight:700;">${isEn ? 'Hello' : 'Olá'}, ${esc(u)} 💕</div>
+
+    html += `<div class="card">
+      <div class="card-heart" style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);filter:drop-shadow(0 2px 6px rgba(255,143,160,0.3));">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M14 24.5L5.25 15.75C3.25 13.75 2.5 10.5 4.5 7.75C6.5 5 10 4.5 12.5 7L14 8.5L15.5 7C18 4.5 21.5 5 23.5 7.75C25.5 10.5 24.75 13.75 22.75 15.75L14 24.5Z" fill="url(#h1)" stroke="var(--pink-dark)" stroke-width="0.8"/>
+          <defs><linearGradient id="h1" x1="14" y1="4.5" x2="14" y2="24.5"><stop stop-color="var(--pink)"/><stop offset="1" stop-color="var(--pink-dark)"/></linearGradient></defs>
+        </svg>
+      </div>
+      <div style="font-size:1.15rem;font-weight:800;margin-top:4px;">${isEn ? 'Hello' : 'Olá'}, ${esc(u)} 💕</div>
       <div class="card-text" style="margin-top:4px;">${isEn ? 'What shall we do today?' : 'O que vamos fazer hoje?'}</div>
     </div>`;
 
-    // Stats row
     html += `<div class="stat-row">
       <div class="stat-pill"><div class="num">${d.diary_count || 0}</div><div class="label">${isEn ? 'Diary' : 'Diário'}</div></div>
-      <div class="stat-pill"><div class="num">${d.challenge?.exists ? (d.challenge.done ? '✅' : '🎯') : '—'}</div><div class="label">${isEn ? 'Challenge' : 'Desafio'}</div></div>
-      <div class="stat-pill"><div class="num">${(d.todos||[]).filter(t=>!t.done).length}</div><div class="label">${isEn ? 'To-Dos' : 'Tarefas'}</div></div>
+      <div class="stat-pill"><div class="num">${d.challenge?.exists ? (d.challenge.done ? '✓' : '!') : '—'}</div><div class="label">${isEn ? 'Challenge' : 'Desafio'}</div></div>
+      <div class="stat-pill"><div class="num">${(d.todos||[]).filter(t=>!t.done).length}</div><div class="label">${isEn ? 'To-dos' : 'Tarefas'}</div></div>
     </div>`;
 
-    // Daily Question card
     html += `<div class="card"><div class="card-row">
-      <div class="card-icon pink">💭</div>
+      <span style="font-size:1.8rem;">💭</span>
       <div class="card-text">
         <strong>${isEn ? 'Daily Question' : 'Pergunta do Dia'}</strong><br>
         ${d.question && d.question.exists
@@ -341,9 +616,8 @@ function loadDashboard() {
       ${d.question?.my_answer ? (isEn ? 'View 💕' : 'Ver 💕') : (isEn ? 'Answer 💭' : 'Responder 💭')}
     </button></div>`;
 
-    // Diary card
     html += `<div class="card"><div class="card-row">
-      <div class="card-icon purple">📖</div>
+      <span style="font-size:1.8rem;">📖</span>
       <div class="card-text">
         <strong>${isEn ? 'Our Diary' : 'Nosso Diário'}</strong><br>
         ${d.diary_count > 0 ? (isEn ? `${d.diary_count} entry today` : `${d.diary_count} registro hoje`) : (isEn ? 'No entries yet' : 'Nenhum registro ainda')}
@@ -351,9 +625,8 @@ function loadDashboard() {
     </div>
     <button class="card-action" onclick="showSection('diary')">📝 ${isEn ? 'Write' : 'Escrever'}</button></div>`;
 
-    // Challenge card
     html += `<div class="card"><div class="card-row">
-      <div class="card-icon orange">🎯</div>
+      <span style="font-size:1.8rem;">🎯</span>
       <div class="card-text">
         <strong>${isEn ? "Today's Challenge" : 'Desafio de Hoje'}</strong><br>
         ${d.challenge?.exists ? (d.challenge.done ? (isEn ? 'Completed ✅' : 'Completado ✅') : (isEn ? 'Pending' : 'Pendente')) : (isEn ? 'No challenge today' : 'Nenhum desafio hoje')}
@@ -361,28 +634,26 @@ function loadDashboard() {
     </div>
     <button class="card-action" onclick="showSection('challenge')">🎯 ${isEn ? 'Start' : 'Começar'}</button></div>`;
 
-    // Events + Todos combined
     const hasEvents = d.events && d.events.length;
-    const hasTodos = d.todos && d.todos.length;
     html += `<div class="card"><div class="card-row">
-      <div class="card-icon blue">📅</div>
+      <span style="font-size:1.8rem;">📅</span>
       <div class="card-text">
         <strong>${isEn ? 'Upcoming Events' : 'Próximos Eventos'}</strong><br>
-        ${hasEvents ? d.events.map(e => esc(e.title)).join(', ') : (isEn ? 'Nothing scheduled' : 'Nada agendado')}
+        ${hasEvents ? d.events.slice(0,2).map(e => esc(e.title)).join(', ') + (d.events.length > 2 ? ` +${d.events.length-2}` : '') : (isEn ? 'Nothing scheduled' : 'Nada agendado')}
       </div>
     </div>
     <button class="card-action small" onclick="showSection('agenda')" style="margin-top:8px;">📅 ${isEn ? 'View' : 'Ver'}</button>
-    ${hasTodos ? `<div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,181,194,0.1);">
-      <div style="font-size:0.75rem;color:var(--text-light);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">📋 ${isEn ? 'To-Dos' : 'Tarefas'}</div>
-      ${d.todos.slice(0,3).map(t => `<div class="todo-item" style="padding:6px 0;border:none;"><div class="todo-check ${t.done ? 'done' : ''}" style="width:20px;height:20px;font-size:0.6rem;">${t.done ? '✓' : ''}</div><div class="todo-content"><div class="title ${t.done ? 'done-text' : ''}" style="font-size:0.85rem;">${esc(t.title)}</div></div></div>`).join('')}
-      ${d.todos.length > 3 ? `<div style="font-size:0.75rem;color:var(--text-muted);text-align:center;padding-top:4px;">+${d.todos.length - 3} ${isEn ? 'more' : 'mais'}</div>` : ''}
+    ${(d.todos && d.todos.length) ? `<div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,181,194,0.15);">
+      <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--text-light);margin-bottom:6px;">📋 ${isEn ? 'To-Dos' : 'Tarefas'}</div>
+      ${d.todos.slice(0,3).map(t => `<div class="todo-item" style="padding:6px 0;border:none;"><div class="todo-check ${t.done ? 'done' : ''}" style="width:20px;height:20px;font-size:0.6rem;">${t.done ? '✓' : ''}</div><div class="todo-content"><div class="title ${t.done ? 'done-text' : ''}" style="font-size:0.82rem;">${esc(t.title)}</div></div></div>`).join('')}
+      ${d.todos.length > 3 ? `<div style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--text-light);text-align:center;padding-top:6px;">+${d.todos.length - 3} ${isEn ? 'more' : 'mais'}</div>` : ''}
     </div>` : ''}
     </div>`;
 
     html += `</div>`;
     main.innerHTML = html;
   }).catch(e => {
-    main.innerHTML = `<div class="empty-state" style="padding:60px;">${isEn ? 'Error' : 'Erro'}: ${esc(e.message)}</div>`;
+    main.innerHTML = `<div class="empty-state" style="padding:60px;">${esc(e.message)}</div>`;
   });
 }
 
@@ -396,21 +667,27 @@ function loadQuestion() {
     }
     const q = esc(d.question);
     let html = `<div class="section"><div class="section-title">${isEn ? "Today's Question" : 'Pergunta de Hoje'}</div>`;
-    html += `<div class="card"><div class="card-icon pink">💭</div><div class="card-title" style="font-size:1.05rem;line-height:1.7;">${q}</div>`;
+    html += `<div class="card"><div class="card-heart" style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);filter:drop-shadow(0 2px 6px rgba(255,143,160,0.3));">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M14 24.5L5.25 15.75C3.25 13.75 2.5 10.5 4.5 7.75C6.5 5 10 4.5 12.5 7L14 8.5L15.5 7C18 4.5 21.5 5 23.5 7.75C25.5 10.5 24.75 13.75 22.75 15.75L14 24.5Z" fill="url(#hq)" stroke="var(--pink-dark)" stroke-width="0.8"/>
+        <defs><linearGradient id="hq" x1="14" y1="4.5" x2="14" y2="24.5"><stop stop-color="var(--pink)"/><stop offset="1" stop-color="var(--pink-dark)"/></linearGradient></defs>
+      </svg>
+    </div>`;
+    html += `<div style="font-size:0.9rem;line-height:1.7;margin:4px 0 4px;font-weight:600;">${q}</div>`;
 
     if (!d.my_answer) {
-      html += `<textarea id="qAnswer" rows=3 placeholder="${isEn ? 'Write your answer...' : 'Escreva sua resposta...'}" style="margin-top:8px;"></textarea>`;
-      html += `<button class="card-action" onclick="submitAnswer()" style="margin-top:10px;">💕 ${isEn ? 'Send' : 'Enviar'}</button>`;
+      html += `<textarea id="qAnswer" rows=3 placeholder="${isEn ? 'Write your answer...' : 'Escreva sua resposta...'}" style="margin-top:12px;"></textarea>`;
+      html += `<button class="card-action" onclick="submitAnswer()" style="margin-top:12px;">💕 ${isEn ? 'Send' : 'Enviar'}</button>`;
     } else {
-      html += `<div style="margin-top:14px;padding:14px;background:var(--bg);border-radius:var(--radius-sm);border-left:3px solid var(--rose);">
-        <div style="font-weight:600;font-size:0.78rem;color:var(--text-light);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">${isEn ? 'Your answer' : 'Sua resposta'}</div>
+      html += `<div style="margin-top:16px;padding:14px;background:var(--cream);border-radius:var(--radius-sm);border-left:3px solid var(--pink);">
+        <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--text-light);margin-bottom:6px;">${isEn ? 'Your answer' : 'Sua resposta'}</div>
         <div style="font-size:0.9rem;line-height:1.6;">${esc(d.my_answer)}</div></div>`;
       if (d.partner_answer) {
         html += `<div style="margin-top:12px;padding:14px;background:rgba(212,184,232,0.08);border-radius:var(--radius-sm);border-left:3px solid var(--lavender);">
-          <div style="font-weight:600;font-size:0.78rem;color:var(--text-light);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">${esc(d.partner_name)} ${isEn ? 'answered' : 'respondeu'}</div>
+          <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--text-light);margin-bottom:6px;">${esc(d.partner_name)} ${isEn ? 'answered' : 'respondeu'}</div>
           <div style="font-size:0.9rem;line-height:1.6;">${esc(d.partner_answer)}</div></div>`;
       } else {
-        html += `<div class="empty-state" style="padding:16px 0;">⏳ ${isEn ? 'Waiting for' : 'Aguardando'} ${esc(d.partner_name)}...</div>`;
+        html += `<div class="empty-state">⏳ ${isEn ? 'Waiting for' : 'Aguardando'} ${esc(d.partner_name)}...</div>`;
       }
     }
     html += `</div></div>`;
@@ -437,10 +714,16 @@ function loadDiary() {
   api('/api/couple/diary').then(d => {
     let html = `<div class="section"><div class="section-title">📖 ${isEn ? 'Our Diary' : 'Nosso Diário'}</div>`;
 
-    html += `<div class="card"><div class="card-icon purple">📖</div><div class="card-title">${isEn ? 'How are you feeling?' : 'Como você está?'}</div>`;
+    html += `<div class="card"><div class="card-heart" style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);filter:drop-shadow(0 2px 6px rgba(255,143,160,0.3));">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M14 24.5L5.25 15.75C3.25 13.75 2.5 10.5 4.5 7.75C6.5 5 10 4.5 12.5 7L14 8.5L15.5 7C18 4.5 21.5 5 23.5 7.75C25.5 10.5 24.75 13.75 22.75 15.75L14 24.5Z" fill="url(#hd)" stroke="var(--pink-dark)" stroke-width="0.8"/>
+        <defs><linearGradient id="hd" x1="14" y1="4.5" x2="14" y2="24.5"><stop stop-color="var(--pink)"/><stop offset="1" stop-color="var(--pink-dark)"/></linearGradient></defs>
+      </svg>
+    </div>`;
+    html += `<div class="card-title">${isEn ? 'How are you feeling?' : 'Como você está?'}</div>`;
     html += `<div class="mood-selector" id="moodSelector">${['😊','🥰','😢','😤','😴','🤗','😐','🔥'].map(m => `<span class="mood-btn" data-mood="${m}" onclick="selectMood(this)">${m}</span>`).join('')}</div>`;
     html += `<textarea id="diaryContent" rows=4 placeholder="${isEn ? 'Write about your day...' : 'Escreva sobre o seu dia...'}">${esc(d.my_today?.content || '')}</textarea>`;
-    html += `<button class="card-action" onclick="saveDiary()" style="margin-top:10px;">💕 ${isEn ? 'Save' : 'Salvar'}</button>`;
+    html += `<button class="card-action" onclick="saveDiary()" style="margin-top:12px;">💕 ${isEn ? 'Save' : 'Salvar'}</button>`;
     html += `</div>`;
 
     if (d.partner_today) {
@@ -460,7 +743,6 @@ function loadDiary() {
       });
       html += `</div>`;
     }
-
     html += `</div>`;
     main.innerHTML = html;
   });
@@ -488,16 +770,22 @@ function loadChallenge() {
   const main = document.getElementById('mainContent');
   const isEn = getLang() === 'en';
   api('/api/couple/challenge').then(d => {
-    let html = `<div class="section"><div class="section-title">🎯 ${isEn ? "Today's Challenge" : 'Desafio de Hoje'}</div><div class="card challenge-box">`;
-    html += `<div class="challenge-type-badge">${d.type || ''}</div>`;
+    let html = `<div class="section"><div class="section-title">🎯 ${isEn ? "Today's Challenge" : 'Desafio de Hoje'}</div><div class="card">
+    <div class="card-heart" style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);filter:drop-shadow(0 2px 6px rgba(255,143,160,0.3));">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M14 24.5L5.25 15.75C3.25 13.75 2.5 10.5 4.5 7.75C6.5 5 10 4.5 12.5 7L14 8.5L15.5 7C18 4.5 21.5 5 23.5 7.75C25.5 10.5 24.75 13.75 22.75 15.75L14 24.5Z" fill="url(#hc)" stroke="var(--pink-dark)" stroke-width="0.8"/>
+        <defs><linearGradient id="hc" x1="14" y1="4.5" x2="14" y2="24.5"><stop stop-color="var(--pink)"/><stop offset="1" stop-color="var(--pink-dark)"/></linearGradient></defs>
+      </svg>
+    </div>`;
+    html += `<div class="challenge-box"><div class="challenge-type-badge">${d.type || ''}</div>`;
 
     if (d.type === 'wordle') {
       const word = d.data.word || '????';
-      html += `<div style="font-weight:600;margin-bottom:8px;font-size:0.9rem;color:var(--text-light);">${isEn ? 'Guess the word of the day!' : 'Descubra a palavra do dia!'}</div>`;
+      html += `<div style="font-weight:700;margin-bottom:4px;font-size:0.85rem;color:var(--text-light);">${isEn ? 'Guess the word of the day!' : 'Descubra a palavra do dia!'}</div>`;
       const reveal = d.my_done;
       html += `<div class="challenge-word">${reveal ? word : word.split('').map(() => '_').join(' ')}</div>`;
       if (d.my_done) {
-        html += `<div style="margin-top:10px;color:var(--rose);font-weight:700;font-size:1.1rem;">✅ ${isEn ? 'You got it!' : 'Você acertou!'}</div>`;
+        html += `<div style="margin-top:10px;color:var(--pink-dark);font-weight:800;font-size:1rem;">✅ ${isEn ? 'You got it!' : 'Você acertou!'}</div>`;
       } else {
         html += `<button class="card-action" onclick="completeChallenge()" style="margin-top:14px;">✅ ${isEn ? 'I got it!' : 'Acertei!'}</button>`;
       }
@@ -506,26 +794,26 @@ function loadChallenge() {
       const answer = isEn ? (d.data.answer_en || '') : (d.data.answer_pt || '');
       html += `<div class="challenge-riddle">${esc(riddle)}</div>`;
       if (d.my_done) {
-        html += `<div style="margin-top:8px;"><span style="font-weight:600;color:var(--text-light);font-size:0.85rem;">${isEn ? 'Answer' : 'Resposta'}:</span> ${esc(answer)}</div>`;
-        html += `<div style="margin-top:6px;color:var(--rose);font-weight:700;">✅ ${isEn ? 'You solved it!' : 'Você resolveu!'}</div>`;
+        html += `<div style="margin-top:8px;"><span style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--text-light);">${isEn ? 'Answer' : 'Resposta'}:</span> <span style="font-weight:700;">${esc(answer)}</span></div>`;
+        html += `<div style="margin-top:8px;color:var(--pink-dark);font-weight:800;">✅ ${isEn ? 'You solved it!' : 'Você resolveu!'}</div>`;
       } else {
         html += `<button class="card-action" onclick="completeChallenge()" style="margin-top:14px;">✅ ${isEn ? 'I solved it!' : 'Resolvi!'}</button>`;
       }
     } else {
       const prompt = isEn ? (d.data.prompt_en || '') : (d.data.prompt_pt || '');
-      html += `<div style="font-weight:600;margin-bottom:8px;font-size:0.9rem;color:var(--text-light);">📸 ${isEn ? 'Photo Challenge' : 'Desafio de Foto'}</div>`;
+      html += `<div style="font-weight:700;margin-bottom:8px;font-size:0.85rem;color:var(--text-light);">📸 ${isEn ? 'Photo Challenge' : 'Desafio de Foto'}</div>`;
       html += `<div style="font-size:1rem;line-height:1.7;">${esc(prompt)}</div>`;
       if (!d.my_done) {
         html += `<button class="card-action" onclick="completeChallenge()" style="margin-top:14px;">✅ ${isEn ? 'Done!' : 'Feito!'}</button>`;
       } else {
-        html += `<div style="margin-top:8px;color:var(--rose);font-weight:700;">✅ ${isEn ? 'You completed it!' : 'Você completou!'}</div>`;
+        html += `<div style="margin-top:8px;color:var(--pink-dark);font-weight:800;">✅ ${isEn ? 'You completed it!' : 'Você completou!'}</div>`;
       }
     }
 
-    html += `<div style="margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,181,194,0.1);display:flex;gap:16px;justify-content:center;font-size:0.85rem;">
+    html += `<div style="margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,181,194,0.15);display:flex;gap:20px;justify-content:center;font-family:'Press Start 2P',monospace;font-size:8px;">
       <div><span style="color:var(--text-light);">${isEn ? 'You' : 'Você'}:</span> ${d.my_done ? '✅' : '⏳'}</div>
       <div><span style="color:var(--text-light);">${esc(d.partner_name)}:</span> ${d.partner_done ? '✅' : '⏳'}</div>
-    </div></div></div>`;
+    </div></div></div></div>`;
     main.innerHTML = html;
   });
 }
@@ -544,8 +832,8 @@ function loadAgenda() {
   const isEn = getLang() === 'en';
   api('/api/couple/agenda').then(d => {
     let html = `<div class="section"><div class="section-title">📅 ${isEn ? 'Our Agenda' : 'Nossa Agenda'}</div>`;
-    html += `<div class="card" style="text-align:center;padding:12px;">
-      <button class="card-action small" onclick="showAddAgenda()">+ ${isEn ? 'Add Event' : 'Adicionar Evento'}</button>
+    html += `<div class="card" style="text-align:center;padding:18px;">
+      <button class="btn btn-primary" onclick="showAddAgenda()">+ ${isEn ? 'Add Event' : 'Adicionar Evento'}</button>
     </div>`;
 
     const upcoming = d.upcoming || [];
@@ -556,7 +844,7 @@ function loadAgenda() {
           <div class="agenda-date"><div class="day">${e.date.slice(8,10)}</div><div class="mon">${isEn ? monthsEn(parseInt(e.date.slice(5,7))) : monthsPt(parseInt(e.date.slice(5,7)))}</div></div>
           <div class="agenda-info"><div class="title">${esc(e.title)}</div>
           ${e.description ? `<div class="desc">${esc(e.description)}</div>` : ''}
-          <div style="font-size:0.7rem;color:var(--text-muted);margin-top:4px;">💕 ${isEn ? 'by' : 'por'} ${esc(e.created_by)}</div></div>
+          <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--text-light);margin-top:4px;">💕 ${isEn ? 'by' : 'por'} ${esc(e.created_by)}</div></div>
         </div>`;
       });
       html += `</div>`;
@@ -572,12 +860,12 @@ function showAddAgenda() {
   const isEn = getLang() === 'en';
   const modal = document.getElementById('moreModal');
   modal.querySelector('.modal-box').innerHTML = `
-    <div style="font-weight:700;font-size:1.1rem;margin-bottom:16px;">📅 ${isEn ? 'New Event' : 'Novo Evento'}</div>
+    <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--text);margin-bottom:16px;text-align:center;">📅 ${isEn ? 'New Event' : 'Novo Evento'}</div>
     <div class="add-form">
       <input id="agTitle" placeholder="${isEn ? 'Title' : 'Título'}">
       <input id="agDate" type="datetime-local">
       <textarea id="agDesc" rows=2 placeholder="${isEn ? 'Description (optional)' : 'Descrição (opcional)'}"></textarea>
-      <button class="btn" onclick="saveAgenda()">💕 ${isEn ? 'Save' : 'Salvar'}</button>
+      <button class="btn btn-primary" onclick="saveAgenda()">💕 ${isEn ? 'Save' : 'Salvar'}</button>
       <button class="btn btn-outline" onclick="closeMoreMenu()">${isEn ? 'Cancel' : 'Cancelar'}</button>
     </div>`;
   modal.classList.add('show');
@@ -602,8 +890,8 @@ function loadTodos() {
   const isEn = getLang() === 'en';
   api('/api/couple/todos').then(d => {
     let html = `<div class="section"><div class="section-title">📋 ${isEn ? 'To-Do List' : 'Lista de Tarefas'}</div>`;
-    html += `<div class="card" style="text-align:center;padding:12px;">
-      <button class="card-action small" onclick="showAddTodo()">+ ${isEn ? 'Add Item' : 'Adicionar Item'}</button>
+    html += `<div class="card" style="text-align:center;padding:18px;">
+      <button class="btn btn-primary" onclick="showAddTodo()">+ ${isEn ? 'Add Item' : 'Adicionar Item'}</button>
     </div>`;
 
     const items = d.items || [];
@@ -631,11 +919,11 @@ function showAddTodo() {
   const isEn = getLang() === 'en';
   const modal = document.getElementById('moreModal');
   modal.querySelector('.modal-box').innerHTML = `
-    <div style="font-weight:700;font-size:1.1rem;margin-bottom:16px;">📋 ${isEn ? 'New Item' : 'Novo Item'}</div>
+    <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--text);margin-bottom:16px;text-align:center;">📋 ${isEn ? 'New Item' : 'Novo Item'}</div>
     <div class="add-form">
       <input id="todoTitle" placeholder="${isEn ? 'What shall we do?' : 'O que vamos fazer?'}">
       <textarea id="todoDesc" rows=2 placeholder="${isEn ? 'Details...' : 'Detalhes...'}"></textarea>
-      <button class="btn" onclick="saveTodo()">💕 ${isEn ? 'Add' : 'Adicionar'}</button>
+      <button class="btn btn-primary" onclick="saveTodo()">💕 ${isEn ? 'Add' : 'Adicionar'}</button>
       <button class="btn btn-outline" onclick="closeMoreMenu()">${isEn ? 'Cancel' : 'Cancelar'}</button>
     </div>`;
   modal.classList.add('show');
@@ -668,15 +956,21 @@ function loadReview() {
     let html = `<div class="section"><div class="section-title">📖 ${isEn ? 'Weekly Review' : 'Revisão Semanal'}</div>`;
 
     const cur = d.current || {};
-    html += `<div class="card"><div class="card-icon green">📖</div><div class="card-title">${isEn ? 'This Week' : 'Esta Semana'}</div>`;
+    html += `<div class="card"><div class="card-heart" style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);filter:drop-shadow(0 2px 6px rgba(255,143,160,0.3));">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M14 24.5L5.25 15.75C3.25 13.75 2.5 10.5 4.5 7.75C6.5 5 10 4.5 12.5 7L14 8.5L15.5 7C18 4.5 21.5 5 23.5 7.75C25.5 10.5 24.75 13.75 22.75 15.75L14 24.5Z" fill="url(#hr)" stroke="var(--pink-dark)" stroke-width="0.8"/>
+        <defs><linearGradient id="hr" x1="14" y1="4.5" x2="14" y2="24.5"><stop stop-color="var(--pink)"/><stop offset="1" stop-color="var(--pink-dark)"/></linearGradient></defs>
+      </svg>
+    </div>`;
+    html += `<div class="card-title">${isEn ? 'This Week' : 'Esta Semana'}</div>`;
 
     if (!cur.exists || !cur.my_reflection) {
       html += `<textarea id="reviewText" rows=4 placeholder="${isEn ? 'How was your week? What did you feel? What stood out?' : 'Como foi sua semana? O que você sentiu? O que te marcou?'}">${esc(cur.my_reflection || '')}</textarea>`;
-      html += `<button class="card-action" onclick="saveReview()" style="margin-top:10px;">💕 ${isEn ? 'Save Reflection' : 'Salvar Reflexão'}</button>`;
+      html += `<button class="card-action" onclick="saveReview()" style="margin-top:12px;">💕 ${isEn ? 'Save Reflection' : 'Salvar Reflexão'}</button>`;
     } else {
       html += `<div class="review-box"><div class="review-header">${isEn ? 'Your reflection' : 'Sua reflexão'}</div><div class="review-text">${esc(cur.my_reflection)}</div></div>`;
       if (cur.partner_reflection) {
-        html += `<div class="review-box" style="border-left:3px solid var(--rose);"><div class="review-header">${esc(d.partner_name)}:</div><div class="review-text">${esc(cur.partner_reflection)}</div></div>`;
+        html += `<div class="review-box" style="border-left:3px solid var(--pink);"><div class="review-header">${esc(d.partner_name)}:</div><div class="review-text">${esc(cur.partner_reflection)}</div></div>`;
       } else {
         html += `<div class="empty-state">⏳ ${isEn ? 'Waiting for' : 'Aguardando'} ${esc(d.partner_name)}...</div>`;
       }
@@ -687,13 +981,12 @@ function loadReview() {
     if (past.length) {
       html += `<div class="card"><div class="card-title">📜 ${isEn ? 'Past Reviews' : 'Revisões Anteriores'}</div>`;
       past.slice(0, 5).forEach(r => {
-        html += `<div style="padding:10px 0;border-bottom:1px solid rgba(255,181,194,0.06);display:flex;align-items:center;gap:8px;font-size:0.85rem;">
-          <span>📖</span><span style="flex:1;">${r.week_start}</span>${r.completed ? '<span style="color:var(--rose);font-weight:700;">✅</span>' : '<span style="color:var(--text-muted);">⏳</span>'}
+        html += `<div style="padding:10px 0;border-bottom:1px solid rgba(255,181,194,0.1);display:flex;align-items:center;gap:8px;font-size:0.85rem;">
+          <span>📖</span><span style="flex:1;">${r.week_start}</span>${r.completed ? '<span style="color:var(--pink-dark);font-weight:800;">✅</span>' : '<span style="color:var(--text-light);">⏳</span>'}
         </div>`;
       });
       html += `</div>`;
     }
-
     html += `</div>`;
     main.innerHTML = html;
   });
@@ -719,36 +1012,38 @@ function showToast(msg, isError = false) {
   el.id = 'toast';
   el.style.cssText =
     `position:fixed;bottom:100px;left:50%;transform:translateX(-50%);` +
-    `background:${isError ? 'linear-gradient(135deg,#ff8fa0,#e86070)' : 'linear-gradient(135deg,#6bcc8a,#4ab06a)'};` +
-    `color:white;padding:14px 28px;border-radius:var(--radius-sm);font-weight:600;font-size:0.9rem;` +
+    `background:${isError ? 'linear-gradient(135deg,var(--pink-dark),#e86070)' : 'linear-gradient(135deg,var(--correct),#5cc888)'};` +
+    `color:white;padding:14px 28px;border-radius:var(--radius-cloud);font-weight:800;font-size:0.85rem;` +
     `z-index:300;box-shadow:0 6px 30px rgba(0,0,0,0.15);` +
-    `animation:toastIn 0.35s cubic-bezier(0.34,1.56,0.64,1);` +
-    `text-align:center;max-width:90%;backdrop-filter:blur(8px);`;
+    `font-family:'Nunito',sans-serif;` +
+    `animation:toastIn 0.35s var(--ease-bounce);` +
+    `text-align:center;max-width:90%;`;
   el.textContent = msg;
   document.body.appendChild(el);
   toastTimer = setTimeout(() => {
     el.style.transition = 'opacity 0.3s, transform 0.3s';
     el.style.opacity = '0';
-    el.style.transform = 'translateX(-50%) translateY(20px)';
+    el.style.transform = 'translateX(-50%) translateY(30px)';
     setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, 300);
   }, 2800);
 }
 
 function init() {
+  initDecorations();
   if (!COUPLE_ID || !USER_NAME) {
-    document.getElementById('mainContent').innerHTML = `<div class="empty-state" style="padding:60px 20px;">${getLang() === 'en' ? 'Please log in first' : 'Faça login primeiro'}<br><br><button class="btn" onclick="window.location.href='/'">${getLang() === 'en' ? 'Go to Login' : 'Ir para Login'}</button></div>`;
+    document.getElementById('mainContent').innerHTML = `<div class="empty-state" style="padding:60px 20px;">${getLang() === 'en' ? 'Please log in first' : 'Faça login primeiro'}<br><br><button class="btn btn-primary" onclick="window.location.href='/'">${getLang() === 'en' ? 'Go to Login' : 'Ir para Login'}</button></div>`;
     return;
   }
   const display = USER_DISPLAY || USER_NAME;
-  document.getElementById('userGreeting').innerHTML = `${display} 💕`;
+  document.getElementById('userGreeting').innerHTML = `✦ ${display} ✦`;
   updateNavLang();
   loadDashboard();
 }
 
-// Add toast animation keyframes
-const styleSheet = document.createElement('style');
-styleSheet.textContent = `@keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(30px) scale(0.9); } to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); } }`;
-document.head.appendChild(styleSheet);
+// Toast keyframes
+document.head.appendChild(Object.assign(document.createElement('style'), {
+  textContent: `@keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(30px) scale(0.9); } to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); } }`
+}));
 
 setTimeout(init, 100);
 </script>
