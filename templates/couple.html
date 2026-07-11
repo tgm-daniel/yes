@@ -3,6 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#ffb5c2">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="/static/manifest.json">
+<link rel="apple-touch-icon" href="/static/icons/icon-192.svg">
 <title>Still Learning 💕</title>
 <link rel="stylesheet" href="/static/style.css">
 <style>
@@ -2183,6 +2188,11 @@ function init() {
 }
 
 setTimeout(init, 100);
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/static/sw.js').catch(function(){});
+}
 </script>
 </body>
 </html>
