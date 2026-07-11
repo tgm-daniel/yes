@@ -69,6 +69,7 @@ def migrate_profiles(db: Session):
         data = {k: v for k, v in pd.items() if k not in ("password", "type")}
         profile = Profile(id=pid, type=p_type, display_name=display, data=data)
         db.add(profile)
+        db.flush()
 
         cred = LoginCredential(
             login_name=login_name.lower(),
