@@ -1016,7 +1016,7 @@ function loadChallenge() {
           html += `<div class="section-title" style="font-size:8px;margin-bottom:6px;">${isEn ? 'Themes' : 'Temas'}</div>`;
           html += `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">`;
           d.data.themes.forEach((th, i) => {
-            html += `<span class="mood-btn" data-idx="${i}" onclick="document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('selected'));this.classList.add('selected');window._themeIdx=${i};">${esc(th)}</span>`;
+            html += `<span class="mood-btn" data-idx="${i}" onclick="document.querySelectorAll('.mood-btn').forEach(b=>b.classList.remove('selected'));this.classList.add('selected');window._themeIdx=${i};">${esc(th)}</span>`;
           });
           html += `</div>`;
           html += `<div class="add-form">`;
@@ -1043,21 +1043,33 @@ function loadChallenge() {
     } else if (d.type === 'photo') {
       const prompt = isEn ? (d.data.prompt_en || d.data.prompt_pt || '') : (d.data.prompt_pt || d.data.prompt_en || '');
       html += `<div style="font-size:0.9rem;font-weight:600;margin-bottom:10px;line-height:1.6;">${esc(prompt)}</div>`;
-      if (d.data.photo_url && d.data.photo_by === USER_NAME) {
-        html += `<img src="${d.data.photo_url}" class="photo-preview" alt="photo">`;
-        html += `<div style="margin-top:8px;color:var(--pink-dark);font-weight:800;">✅ ${isEn ? 'Photo uploaded!' : 'Foto enviada!'}</div>`;
-        if (d.data.caption) html += `<div style="font-size:0.85rem;color:var(--text-light);margin-top:4px;">"${esc(d.data.caption)}"</div>`;
-      } else if (d.data.photo_url && d.data.photo_by !== USER_NAME) {
-        html += `<img src="${d.data.photo_url}" class="photo-preview" alt="partner photo">`;
-        html += `<div style="margin-top:8px;color:var(--text-light);font-size:0.85rem;">${esc(d.partner_name)} ${isEn ? 'uploaded' : 'enviou'}</div>`;
-        if (d.data.caption) html += `<div style="font-size:0.85rem;color:var(--text-light);">"${esc(d.data.caption)}"</div>`;
-        if (!d.my_done) {
-          html += `<button class="card-action" onclick="uploadPhotoNow()" style="margin-top:10px;">📸 ${isEn ? 'Take your photo too' : 'Tire sua foto também'}</button>`;
-        }
-      } else {
+      const myKey = 'photo_url_' + (d._is_a ? 'a' : 'b');
+      const partnerKey = 'photo_url_' + (d._is_a ? 'b' : 'a');
+      const myPhoto = d.data[myKey];
+      const partnerPhoto = d.data[partnerKey];
+      if (myPhoto) {
+        html += `<div style="margin-top:8px;"><strong>${isEn ? 'Your photo' : 'Sua foto'}:</strong></div>`;
+        html += `<img src="${myPhoto}" class="photo-preview" alt="my photo">`;
+        html += `<div style="margin-top:4px;color:var(--pink-dark);font-weight:800;">✅ ${isEn ? 'Uploaded!' : 'Enviada!'}</div>`;
+        if (d.data['caption_' + (d._is_a ? 'a' : 'b')]) html += `<div style="font-size:0.85rem;color:var(--text-light);">"${esc(d.data['caption_' + (d._is_a ? 'a' : 'b')])}"</div>`;
+      }
+      if (partnerPhoto) {
+        html += `<div style="margin-top:12px;"><strong>${esc(d.partner_name)}:</strong></div>`;
+        html += `<img src="${partnerPhoto}" class="photo-preview" alt="partner photo">`;
+        if (d.data['caption_' + (d._is_a ? 'b' : 'a')]) html += `<div style="font-size:0.85rem;color:var(--text-light);">"${esc(d.data['caption_' + (d._is_a ? 'b' : 'a')])}"</div>`;
+      }
+      if (!myPhoto && !partnerPhoto) {
         html += `<div id="photoCaptureArea">
           <input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none;" onchange="handlePhotoSelect(event)">
           <button class="card-action" onclick="document.getElementById('photoInput').click()" style="margin-top:10px;">📸 ${isEn ? 'Take Photo' : 'Tirar Foto'}</button>
+          <canvas id="photoCanvas" style="display:none;"></canvas>
+          <div id="photoPreview" style="margin-top:10px;"></div>
+          <input id="photoCaption" type="text" placeholder="${isEn ? 'Add a caption...' : 'Adicione uma legenda...'}" style="margin-top:8px;display:none;">
+          <button class="card-action" id="uploadPhotoBtn" onclick="uploadPhotoNow()" style="margin-top:10px;display:none;">💕 ${isEn ? 'Upload' : 'Enviar'}</button>
+        </div>`;
+      } else if (!myPhoto) {
+        html += `<div style="margin-top:12px;"><button class="card-action" onclick="document.getElementById('photoInput').click()">📸 ${isEn ? 'Upload your photo' : 'Enviar sua foto'}</button>
+          <input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none;" onchange="handlePhotoSelect(event)">
           <canvas id="photoCanvas" style="display:none;"></canvas>
           <div id="photoPreview" style="margin-top:10px;"></div>
           <input id="photoCaption" type="text" placeholder="${isEn ? 'Add a caption...' : 'Adicione uma legenda...'}" style="margin-top:8px;display:none;">
@@ -1096,6 +1108,7 @@ function loadChallenge() {
 }
 
 let _photoData = null;
+let _photosData = [];
 function handlePhotoSelect(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -1577,8 +1590,6 @@ function loadMemories() {
 
     // ── PHOTOS ──
     if (hasPhotos) {
-let _photosData = [];
-// ... (after loadMemories)
       html += `<div class="card"><div class="card-title">📸 ${isEn ? 'Photos' : 'Fotos'}</div>`;
       html += `<div class="photo-grid">`;
       _photosData = (d.photos || []).map(p => p.data);

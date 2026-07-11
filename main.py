@@ -847,6 +847,7 @@ def api_get_challenge(request: Request, db: Session = Depends(get_db)):
         "my_guess": my_guess,
         "partner_guess": challenge.guess_b if is_a else challenge.guess_a,
         "both_answered": my_answered and partner_answered,
+        "_is_a": is_a,
     }
     return result
 
@@ -896,6 +897,13 @@ def api_create_question(body: dict, db: Session = Depends(get_db)):
     if not challenge:
         raise HTTPException(status_code=404, detail="No partner question challenge today")
     challenge.created_by = name
+    is_a = name == couple_id.split("_")[0]
+    if is_a:
+        challenge.answered_a = True
+        challenge.done_a = True
+    else:
+        challenge.answered_b = True
+        challenge.done_b = True
     data = challenge.data
     data["question"] = question
     if custom_theme:
@@ -1151,9 +1159,10 @@ def api_upload_photo(body: dict, db: Session = Depends(get_db)):
     if challenge:
         is_a = name == couple_id.split("_")[0]
         data = challenge.data
-        data["photo_url"] = photo_data
-        data["photo_by"] = name
-        data["caption"] = caption
+        key = "photo_url_a" if is_a else "photo_url_b"
+        data[key] = photo_data
+        data["photo_by_" + ("a" if is_a else "b")] = name
+        data["caption_" + ("a" if is_a else "b")] = caption
         challenge.data = data
         if is_a:
             challenge.done_a = True
