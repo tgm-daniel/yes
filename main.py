@@ -990,6 +990,9 @@ def api_complete_partner_challenge(body: dict, db: Session = Depends(get_db)):
         d = chal.data
         d["photo_" + ("a" if is_a else "b")] = photo_data
         chal.data = d
+        # Save to photos table for memories
+        photo = Photo(couple_id=couple_id, author_id=name, date=chal.date, data=photo_data, caption="")
+        db.add(photo)
     if is_a:
         chal.done_a = True
         chal.answered_a = True

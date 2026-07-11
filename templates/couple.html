@@ -552,7 +552,7 @@ input[type="datetime-local"] { font-family: 'Nunito', sans-serif; font-size: 14p
   <div class="nav-item active" data-nav="dashboard" onclick="showSection('dashboard')"><span class="nav-icon">🏠</span>Início</div>
   <div class="nav-item" data-nav="question" onclick="showSection('question')"><span class="nav-icon">💭</span>Pergunta</div>
   <div class="nav-item" data-nav="diary" onclick="showSection('diary')"><span class="nav-icon">📖</span>Diário</div>
-  <div class="nav-item" data-nav="memories" onclick="showSection('memories')"><span class="nav-icon">📖</span>Memórias</div>
+  <div class="nav-item" data-nav="memories" onclick="showSection('memories')"><span class="nav-icon">✨</span>Memórias</div>
   <div class="nav-item" data-nav="challenge" onclick="showSection('challenge')"><span class="nav-icon">🎯</span>Desafio</div>
   <div class="nav-item" data-nav="quiz" onclick="showSection('quiz')"><span class="nav-icon">❓</span>Quiz</div>
   <div class="nav-item" data-nav="more" onclick="toggleMoreMenu()"><span class="nav-icon">🚪</span>Sair</div>
@@ -1704,7 +1704,7 @@ function loadMemories() {
   const main = document.getElementById('mainContent');
   const isEn = getLang() === 'en';
   api('/api/couple/memories').then(d => {
-    let html = `<div class="section"><div class="section-title">📖 ${isEn ? 'Mixed Memories' : 'Memórias Misturadas'}${backLink()}</div>`;
+    let html = `<div class="section"><div class="section-title">✨ ${isEn ? 'Mixed Memories' : 'Memórias Misturadas'}${backLink()}</div>`;
     const hasQuestions = d.questions && d.questions.length;
     const hasChallenges = d.challenges && d.challenges.length;
     const hasReviews = d.reviews && d.reviews.length;
@@ -1712,7 +1712,7 @@ function loadMemories() {
     const hasDiary = d.diary && d.diary.length;
 
     if (!hasQuestions && !hasChallenges && !hasReviews && !hasPhotos && !hasDiary) {
-      html += `<div class="card"><div class="empty-state">📖 ${isEn ? 'No memories yet. Answer questions, take photos, and complete challenges together!' : 'Nenhuma memória ainda. Respondam perguntas, tirem fotos e completem desafios juntos!'}</div></div>`;
+      html += `<div class="card"><div class="empty-state">✨ ${isEn ? 'No memories yet. Answer questions, take photos, and complete challenges together!' : 'Nenhuma memória ainda. Respondam perguntas, tirem fotos e completem desafios juntos!'}</div></div>`;
       html += `</div>`;
       main.innerHTML = html;
       return;
