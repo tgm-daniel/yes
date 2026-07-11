@@ -951,6 +951,7 @@ def api_create_partner_challenge(body: dict, db: Session = Depends(get_db)):
     challenge_text = body.get("challenge", "")
     suggestion_idx = body.get("suggestion_idx", None)
     custom_challenge = body.get("custom_challenge", "")
+    challenge_type = body.get("challenge_type", "text")
     if not couple_id or not name:
         raise HTTPException(status_code=400, detail="Missing fields")
     text = challenge_text or custom_challenge
@@ -965,7 +966,7 @@ def api_create_partner_challenge(body: dict, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Daily limit of 3 partner challenges reached")
     chal = Challenge(
         couple_id=couple_id, date=today, type="partner_challenge",
-        data={"challenge": text, "suggestion_idx": suggestion_idx},
+        data={"challenge": text, "type": challenge_type, "suggestion_idx": suggestion_idx},
         created_by=name
     )
     db.add(chal)
@@ -977,6 +978,7 @@ def api_create_partner_challenge(body: dict, db: Session = Depends(get_db)):
 def api_complete_partner_challenge(body: dict, db: Session = Depends(get_db)):
     challenge_id = body.get("id")
     name = body.get("name", "")
+    photo_data = body.get("photo", "")
     if not challenge_id or not name:
         raise HTTPException(status_code=400, detail="Missing fields")
     chal = db.query(Challenge).filter(Challenge.id == challenge_id).first()
@@ -984,6 +986,10 @@ def api_complete_partner_challenge(body: dict, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Challenge not found")
     couple_id = chal.couple_id
     is_a = name == couple_id.split("_")[0]
+    if chal.data.get("type") == "photo" and photo_data:
+        d = chal.data
+        d["photo_" + ("a" if is_a else "b")] = photo_data
+        chal.data = d
     if is_a:
         chal.done_a = True
         chal.answered_a = True
@@ -1007,10 +1013,13 @@ def api_get_partner_challenges(request: Request, db: Session = Depends(get_db)):
     is_a = my_name == couple_id.split("_")[0]
     return [{
         "id": c.id, "created_by": c.created_by, "challenge": c.data.get("challenge", ""),
+        "type": c.data.get("type", "text"),
         "my_done": c.done_a if is_a else c.done_b,
         "partner_done": c.done_b if is_a else c.done_a,
         "my_answered": c.answered_a if is_a else c.answered_b,
         "partner_answered": c.answered_b if is_a else c.answered_a,
+        "my_photo": c.data.get("photo_" + ("a" if is_a else "b"), ""),
+        "partner_photo": c.data.get("photo_" + ("b" if is_a else "a"), ""),
     } for c in challenges]
 
 
