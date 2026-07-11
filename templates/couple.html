@@ -1058,18 +1058,10 @@ function loadChallenge() {
         html += `<img src="${partnerPhoto}" class="photo-preview" alt="partner photo">`;
         if (d.data['caption_' + (d._is_a ? 'b' : 'a')]) html += `<div style="font-size:0.85rem;color:var(--text-light);">"${esc(d.data['caption_' + (d._is_a ? 'b' : 'a')])}"</div>`;
       }
-      if (!myPhoto && !partnerPhoto) {
-        html += `<div id="photoCaptureArea">
-          <input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none;" onchange="handlePhotoSelect(event)">
-          <button class="card-action" onclick="document.getElementById('photoInput').click()" style="margin-top:10px;">📸 ${isEn ? 'Take Photo' : 'Tirar Foto'}</button>
-          <canvas id="photoCanvas" style="display:none;"></canvas>
-          <div id="photoPreview" style="margin-top:10px;"></div>
-          <input id="photoCaption" type="text" placeholder="${isEn ? 'Add a caption...' : 'Adicione uma legenda...'}" style="margin-top:8px;display:none;">
-          <button class="card-action" id="uploadPhotoBtn" onclick="uploadPhotoNow()" style="margin-top:10px;display:none;">💕 ${isEn ? 'Upload' : 'Enviar'}</button>
-        </div>`;
-      } else if (!myPhoto) {
-        html += `<div style="margin-top:12px;"><button class="card-action" onclick="document.getElementById('photoInput').click()">📸 ${isEn ? 'Upload your photo' : 'Enviar sua foto'}</button>
-          <input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none;" onchange="handlePhotoSelect(event)">
+      if (!myPhoto) {
+        html += `<div id="photoCaptureArea" style="margin-top:12px;">
+          <input type="file" id="photoInput" accept="image/*" style="display:none;" onchange="handlePhotoSelect(event)">
+          <button class="card-action" onclick="document.getElementById('photoInput').click()">📸 ${isEn ? (myPhoto ? 'Take another photo' : 'Take Photo') : (myPhoto ? 'Tirar outra foto' : 'Tirar Foto')}</button>
           <canvas id="photoCanvas" style="display:none;"></canvas>
           <div id="photoPreview" style="margin-top:10px;"></div>
           <input id="photoCaption" type="text" placeholder="${isEn ? 'Add a caption...' : 'Adicione uma legenda...'}" style="margin-top:8px;display:none;">
