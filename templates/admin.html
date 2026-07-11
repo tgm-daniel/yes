@@ -397,6 +397,27 @@ body.dark .q-table tr { background: var(--surface2); }
 
   <!-- COUPLE TAB -->
   <div class="tab-content" id="tabCouple">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+      <div><span style="font-weight:700;font-size:0.95rem;">Gestão de Casais</span><div style="font-size:0.75rem;color:var(--text-light);">visualizar, criar e gerenciar casais</div></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn-sm primary" onclick="showCreateCoupleForm()">➕ Novo Casal</button>
+        <button class="btn-sm danger" onclick="confirmResetCouple()">🔄 Resetar Dados</button>
+        <button class="btn-sm danger" onclick="confirmDeleteCouple()">🗑 Deletar Casal</button>
+      </div>
+    </div>
+    <div id="coupleCreateForm" style="display:none;margin-bottom:16px;padding:16px;background:var(--cream);border-radius:var(--radius-sm);">
+      <div style="font-weight:700;font-size:0.85rem;margin-bottom:10px;">Criar Novo Casal</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div><label style="font-size:0.75rem;color:var(--text-light);">Usuário 1</label><input id="cu1_name" placeholder="ex: joao" style="width:100%;"></div>
+        <div><label style="font-size:0.75rem;color:var(--text-light);">Senha 1</label><input id="cu1_pass" type="password" value="senha123" style="width:100%;"></div>
+        <div><label style="font-size:0.75rem;color:var(--text-light);">Usuário 2</label><input id="cu2_name" placeholder="ex: maria" style="width:100%;"></div>
+        <div><label style="font-size:0.75rem;color:var(--text-light);">Senha 2</label><input id="cu2_pass" type="password" value="senha123" style="width:100%;"></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <button class="btn btn-primary" onclick="saveNewCouple()">💾 Salvar Casal</button>
+        <button class="btn btn-outline" onclick="document.getElementById('coupleCreateForm').style.display='none'">Cancelar</button>
+      </div>
+    </div>
     <div id="coupleStats"></div>
   </div>
 
@@ -1184,24 +1205,49 @@ function duplicateProfile() {
 
 // ---- COUPLE TAB ----
 let COUPLE_STATS = null;
+let COUPLE_LIST = [];
 async function loadCoupleStats() {
   try {
     const r = await fetch('/api/admin/couple/stats', {
       method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(AUTH)
     });
     if (!r.ok) return;
-    COUPLE_STATS = await r.json();
+    const d = await r.json();
+    COUPLE_LIST = d.couples || [];
+    COUPLE_STATS = d.selected;
+    // Populate couple selector
+    const sel = document.getElementById('selectCouple');
+    if (sel) {
+      sel.innerHTML = COUPLE_LIST.map(c =>
+        `<option value="${c.couple_id}" ${c.couple_id === (COUPLE_STATS||{}).couple_id ? 'selected' : ''}>${c.user1_name || c.user1} & ${c.user2_name || c.user2}</option>`
+      ).join('');
+    }
     renderCoupleStats();
   } catch(e) { /* silent */ }
 }
 
+function switchCoupleStats() {
+  const sel = document.getElementById('selectCouple');
+  const cid = sel?.value;
+  COUPLE_STATS = COUPLE_LIST.find(c => c.couple_id === cid) || COUPLE_LIST[0];
+  renderCoupleStats();
+}
+
 function renderCoupleStats() {
-  if (!COUPLE_STATS) {
-    document.getElementById('coupleStats').innerHTML = '<div style="text-align:center;color:var(--text-light);padding:40px 0;">Nenhum dado do casal disponível.</div>';
+  const s = COUPLE_STATS;
+  if (!s) {
+    document.getElementById('coupleStats').innerHTML = '<div style="text-align:center;color:var(--text-light);padding:40px 0;">Nenhum casal encontrado. Crie um novo casal acima.</div>';
     return;
   }
-  const s = COUPLE_STATS;
-  let html = `<div class="stats-row">`;
+  let html = `<div style="margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+    <label style="font-size:0.85rem;font-weight:600;">Casal:</label>
+    <select id="selectCouple" onchange="switchCoupleStats()" style="flex:1;min-width:160px;padding:6px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg);font-size:0.85rem;">
+      ${COUPLE_LIST.map(c =>
+        `<option value="${c.couple_id}" ${c.couple_id === s.couple_id ? 'selected' : ''}>${c.user1_name || c.user1} & ${c.user2_name || c.user2}</option>`
+      ).join('')}
+    </select>
+  </div>`;
+  html += `<div class="stats-row">`;
   const cards = [
     { num: s.total_sessions || 0, label: 'Sessões' },
     { num: s.total_questions || 0, label: 'Perguntas' },
@@ -1227,12 +1273,97 @@ function renderCoupleStats() {
   document.getElementById('coupleStats').innerHTML = html;
 }
 
+// ---- COUPLE MANAGEMENT (admin) ----
+function showCreateCoupleForm() {
+  const el = document.getElementById('coupleCreateForm');
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+async function saveNewCouple() {
+  const u1 = document.getElementById('cu1_name').value.trim();
+  const u2 = document.getElementById('cu2_name').value.trim();
+  if (!u1 || !u2) { showToast('Preencha os dois nomes de usuário.', 'error'); return; }
+  try {
+    const r = await fetch('/api/admin/couple/create', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        username: AUTH.username, password: AUTH.password,
+        user1_name: u1, user2_name: u2,
+        user1_pass: document.getElementById('cu1_pass').value,
+        user2_pass: document.getElementById('cu2_pass').value
+      })
+    });
+    if (!r.ok) { const d = await r.json(); throw new Error(d.detail || 'Erro'); }
+    showToast(`Casal "${u1}_${u2}" criado! ✅`, 'success');
+    document.getElementById('coupleCreateForm').style.display = 'none';
+    loadCoupleStats();
+  } catch(e) { showToast('Erro: ' + e.message, 'error'); }
+}
+
+async function confirmResetCouple() {
+  const coupleId = document.getElementById('selectCouple')?.value || '';
+  if (!coupleId || !confirm(`Resetar todos os dados do casal "${coupleId}"?`)) return;
+  try {
+    const r = await fetch('/api/admin/couple/reset', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ username: AUTH.username, password: AUTH.password, couple_id: coupleId })
+    });
+    if (!r.ok) { const d = await r.json(); throw new Error(d.detail || 'Erro'); }
+    showToast(`Dados do casal "${coupleId}" resetados! ✅`, 'success');
+    loadCoupleStats();
+  } catch(e) { showToast('Erro: ' + e.message, 'error'); }
+}
+
+async function confirmDeleteCouple() {
+  const coupleId = document.getElementById('selectCouple')?.value || '';
+  if (!coupleId || !confirm(`⚠️ Deletar PERMANENTEMENTE o casal "${coupleId}"? Isso não pode ser desfeito!`)) return;
+  if (!confirm(`Tem CERTEZA? Todos os dados, perfis e credenciais de "${coupleId}" serão perdidos.`)) return;
+  try {
+    const r = await fetch('/api/admin/couple/delete', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ username: AUTH.username, password: AUTH.password, couple_id: coupleId })
+    });
+    if (!r.ok) { const d = await r.json(); throw new Error(d.detail || 'Erro'); }
+    showToast(`Casal "${coupleId}" deletado! 🗑`, 'success');
+    loadCoupleStats();
+  } catch(e) { showToast('Erro: ' + e.message, 'error'); }
+}
+
+async function deleteAdminChallenge(id) {
+  if (!id || !confirm('Deletar este desafio?')) return;
+  try {
+    const r = await fetch('/api/admin/challenge/delete', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ username: AUTH.username, password: AUTH.password, id })
+    });
+    if (!r.ok) { const d = await r.json(); throw new Error(d.detail || 'Erro'); }
+    showToast('Desafio deletado ✅', 'success');
+    loadChallenges();
+  } catch(e) { showToast('Erro: ' + e.message, 'error'); }
+}
+
+async function deleteAdminPhoto(id) {
+  if (!id || !confirm('Deletar esta foto?')) return;
+  try {
+    const r = await fetch('/api/admin/photo/delete', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ username: AUTH.username, password: AUTH.password, id })
+    });
+    if (!r.ok) { const d = await r.json(); throw new Error(d.detail || 'Erro'); }
+    showToast('Foto deletada ✅', 'success');
+    loadChallenges();
+  } catch(e) { showToast('Erro: ' + e.message, 'error'); }
+}
+
 // ---- QUESTIONS TAB ----
 let DAILY_QUESTIONS = [];
+function getCID() { return COUPLE_STATS?.couple_id || ''; }
+
 async function loadDailyQuestions() {
   try {
     const r = await fetch('/api/admin/couple/questions', {
-      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(AUTH)
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({...AUTH, couple_id: getCID()})
     });
     if (!r.ok) return;
     const d = await r.json();
@@ -1302,7 +1433,8 @@ let CHALLENGES_DATA = { challenges: [], photos: [] };
 async function loadChallenges() {
   try {
     const r = await fetch('/api/admin/couple/challenges', {
-      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(AUTH)
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({...AUTH, couple_id: COUPLE_STATS?.couple_id || ''})
     });
     if (!r.ok) return;
     const d = await r.json();
@@ -1326,6 +1458,7 @@ function renderChallenges() {
       html += `<div style="width:120px;border-radius:var(--radius-sm);overflow:hidden;border:2px solid rgba(255,181,194,0.15);">
         <img src="${esc(p.data)}" style="width:100%;height:120px;object-fit:cover;display:block;" onclick="window.open('${esc(p.data)}','_blank')">
         <div style="padding:4px 6px;font-size:0.65rem;color:var(--text-light);text-align:center;">${esc(p.author_id || '')} · ${esc(p.date || '')}</div>
+        <div style="text-align:center;padding:2px;"><span class="q-del" onclick="deleteAdminPhoto(${p.id})" style="cursor:pointer;font-size:0.8rem;">🗑 excluir</span></div>
       </div>`;
     });
     html += '</div>';
@@ -1338,13 +1471,13 @@ function renderChallenges() {
   if (!challenges.length) {
     html += '<div style="color:var(--text-light);padding:12px 0;">Nenhum desafio registrado.</div>';
   } else {
-    html += '<div class=q-table-wrap><table class=q-table><thead><tr><th>Tipo</th><th>Conteúdo</th><th>Autor</th><th>Status</th><th>Data</th></tr></thead><tbody>';
+    html += '<div class=q-table-wrap><table class=q-table><thead><tr><th style="min-width:30px;"></th><th>Tipo</th><th>Conteúdo</th><th>Autor</th><th>Status</th><th>Data</th></tr></thead><tbody>';
     challenges.forEach(c => {
       const typeIcons = { daily: '🎯', riddle: '🧩', partner_question: '💑', partner_challenge: '🤝', photo: '📸', quote: '💌' };
       const icon = typeIcons[c.type] || '🎯';
-      const content = c.question_text || c.riddle_text || c.quote_text || c.photo_caption || '—';
+      const content = c.question_text || c.riddle_text || c.quote_text || c.photo_caption || c.challenge_text || (c.data && c.data.challenge) || (c.data && c.data.question) || '—';
       const status = c.completed ? '✅' : '⏳';
-      html += `<tr><td data-label="Tipo">${icon} ${c.type || '—'}</td><td data-label="Conteúdo">${esc(content).slice(0, 80)}${(content||'').length > 80 ? '…' : ''}</td><td data-label="Autor">${esc(c.author_id || c.created_by || '—')}</td><td data-label="Status">${status}</td><td data-label="Data">${esc(c.date || c.created_at || '—')}</td></tr>`;
+      html += `<tr><td data-label=""><span class="q-del" onclick="deleteAdminChallenge(${c.id})" style="cursor:pointer;">✕</span></td><td data-label="Tipo">${icon} ${c.type || '—'}</td><td data-label="Conteúdo">${esc(content).slice(0, 80)}${(content||'').length > 80 ? '…' : ''}</td><td data-label="Autor">${esc(c.author_id || c.created_by || '—')}</td><td data-label="Status">${status}</td><td data-label="Data">${esc(c.date || c.created_at || '—')}</td></tr>`;
     });
     html += '</tbody></table></div>';
   }
@@ -1358,7 +1491,8 @@ let DIARY_ENTRIES = [];
 async function loadDiary() {
   try {
     const r = await fetch('/api/admin/couple/diary', {
-      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(AUTH)
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({...AUTH, couple_id: getCID()})
     });
     if (!r.ok) return;
     const d = await r.json();
@@ -1412,7 +1546,8 @@ let AGENDA_EVENTS = [];
 async function loadAgenda() {
   try {
     const r = await fetch('/api/admin/couple/agenda', {
-      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(AUTH)
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({...AUTH, couple_id: getCID()})
     });
     if (!r.ok) return;
     const d = await r.json();
@@ -1440,7 +1575,8 @@ let TODOS = [];
 async function loadTodos() {
   try {
     const r = await fetch('/api/admin/couple/todos', {
-      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(AUTH)
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({...AUTH, couple_id: getCID()})
     });
     if (!r.ok) return;
     const d = await r.json();

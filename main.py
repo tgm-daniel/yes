@@ -1398,20 +1398,39 @@ def admin_couple_stats(body: dict, db: Session = Depends(get_db)):
     couples = db.query(Couple).all()
     result = []
     for c in couples:
+        profile_a = db.query(Profile).filter(Profile.id == c.user1_id).first()
+        profile_b = db.query(Profile).filter(Profile.id == c.user2_id).first()
+        data_a = profile_a.data if profile_a else {}
+        data_b = profile_b.data if profile_b else {}
+        # Compute sessions count via LoginCredential
+        sess_count = 0
+        for pid in [c.user1_id, c.user2_id]:
+            sess_count += db.query(QuizSession).filter(QuizSession.profile_id == pid).count()
         diary_count = db.query(DiaryEntry).filter(DiaryEntry.couple_id == c.id).count()
         photo_count = db.query(Photo).filter(Photo.couple_id == c.id).count()
         question_count = db.query(DailyQuestion).filter(DailyQuestion.couple_id == c.id).count()
         challenge_count = db.query(Challenge).filter(Challenge.couple_id == c.id).count()
         todo_count = db.query(TodoItem).filter(TodoItem.couple_id == c.id).count()
         event_count = db.query(AgendaEvent).filter(AgendaEvent.couple_id == c.id).count()
-        review_count = db.query(WeeklyReview).filter(WeeklyReview.couple_id == c.id).count()
+        days_together = (datetime.utcnow() - c.created_at).days if c.created_at else 0
+        anniversary = data_a.get("partner_date", "") or data_b.get("partner_date", "") or "—"
         result.append({
-            "couple_id": c.id, "user1": c.user1_id, "user2": c.user2_id,
-            "diary": diary_count, "photos": photo_count, "questions": question_count,
-            "challenges": challenge_count, "todos": todo_count, "events": event_count,
-            "reviews": review_count,
+            "couple_id": c.id,
+            "user1": c.user1_id,
+            "user2": c.user2_id,
+            "user1_name": data_a.get("name", profile_a.display_name if profile_a else c.user1_id),
+            "user2_name": data_b.get("name", profile_b.display_name if profile_b else c.user2_id),
+            "total_sessions": sess_count,
+            "total_questions": question_count,
+            "total_challenges": challenge_count,
+            "total_photos": photo_count,
+            "total_diary": diary_count,
+            "total_agenda": event_count,
+            "total_todos": todo_count,
+            "days_together": days_together,
+            "couple_anniversary": anniversary,
         })
-    return {"couples": result}
+    return {"couples": result, "selected": result[0] if result else None}
 
 
 @app.post("/api/admin/couple/questions")
@@ -1588,6 +1607,28 @@ def admin_save_profiles(body: dict, db: Session = Depends(get_db)):
             existing.data = {k: v for k, v in pd.items() if k not in ("password", "type", "display_name")}
             if "type" in pd: existing.type = pd["type"]
             if "display_name" in pd: existing.display_name = pd["display_name"]
+            # Update login credential
+            cred = db.query(LoginCredential).filter(LoginCredential.profile_id == pid).first()
+            if cred and pd.get("password"):
+                cred.password_hash = hash_pw(pd["password"])
+        else:
+            # Create new profile
+            from uuid import uuid4
+            new_id = str(uuid4())[:12]
+            p_type = pd.get("type", "quiz")
+            display = pd.get("display_name", "")
+            data = {k: v for k, v in pd.items() if k not in ("password", "type", "display_name")}
+            profile = Profile(id=new_id, type=p_type, display_name=display, data=data)
+            db.add(profile)
+            db.flush()
+            # Create login credential
+            pw = pd.get("password", "senha123")
+            cred = LoginCredential(
+                login_name=pid.lower() if pid != "novo_perfil" else display.lower().replace(" ", "_"),
+                profile_id=new_id,
+                password_hash=hash_pw(pw)
+            )
+            db.add(cred)
     db.commit()
     reload_profiles(db)
     return {"ok": True}
@@ -1638,6 +1679,92 @@ def admin_couple_reset(body: dict, db: Session = Depends(get_db)):
     db.query(AgendaEvent).filter(AgendaEvent.couple_id == couple_id).delete()
     db.commit()
     return {"ok": True, "message": f"All data reset for couple {couple_id}"}
+
+
+@app.post("/api/admin/couple/create")
+def admin_couple_create(body: dict, db: Session = Depends(get_db)):
+    check_admin(body)
+    user1_name = body.get("user1_name", "").strip()
+    user2_name = body.get("user2_name", "").strip()
+    user1_pass = body.get("user1_pass", "senha123")
+    user2_pass = body.get("user2_pass", "senha123")
+    if not user1_name or not user2_name:
+        raise HTTPException(status_code=400, detail="Both user names required")
+    couple_id = f"{user1_name}_{user2_name}"
+    # Create profile A
+    from uuid import uuid4
+    pid_a = str(uuid4())[:12]
+    profile_a = Profile(id=pid_a, type="couple", display_name=user1_name,
+        data={"partner": user2_name, "title": "", "subtitle": "", "emoji": "💕"})
+    db.add(profile_a)
+    db.flush()
+    cred_a = LoginCredential(login_name=user1_name.lower(), profile_id=pid_a, password_hash=hash_pw(user1_pass))
+    db.add(cred_a)
+    # Create profile B
+    pid_b = str(uuid4())[:12]
+    profile_b = Profile(id=pid_b, type="couple", display_name=user2_name,
+        data={"partner": user1_name, "title": "", "subtitle": "", "emoji": "💕"})
+    db.add(profile_b)
+    db.flush()
+    cred_b = LoginCredential(login_name=user2_name.lower(), profile_id=pid_b, password_hash=hash_pw(user2_pass))
+    db.add(cred_b)
+    db.flush()
+    # Create Couple entry
+    c = Couple(id=couple_id, user1_id=pid_a, user2_id=pid_b)
+    db.add(c)
+    db.commit()
+    reload_profiles(db)
+    return {"ok": True, "couple_id": couple_id, "profiles": {user1_name: pid_a, user2_name: pid_b}}
+
+
+@app.post("/api/admin/couple/delete")
+def admin_couple_delete(body: dict, db: Session = Depends(get_db)):
+    check_admin(body)
+    couple_id = body.get("couple_id", "")
+    if not couple_id:
+        raise HTTPException(status_code=400, detail="couple_id obrigatório")
+    # Delete all couple data
+    db.query(Challenge).filter(Challenge.couple_id == couple_id).delete()
+    db.query(Photo).filter(Photo.couple_id == couple_id).delete()
+    db.query(DiaryEntry).filter(DiaryEntry.couple_id == couple_id).delete()
+    db.query(DailyQuestion).filter(DailyQuestion.couple_id == couple_id).delete()
+    db.query(WeeklyReview).filter(WeeklyReview.couple_id == couple_id).delete()
+    db.query(QuoteRefresh).filter(QuoteRefresh.couple_id == couple_id).delete()
+    db.query(AgendaEvent).filter(AgendaEvent.couple_id == couple_id).delete()
+    db.query(TodoItem).filter(TodoItem.couple_id == couple_id).delete()
+    # Delete profiles + credentials for this couple
+    couple = db.query(Couple).filter(Couple.id == couple_id).first()
+    if couple:
+        for pid in [couple.user1_id, couple.user2_id]:
+            db.query(QuizSession).filter(QuizSession.profile_id == pid).delete()
+            db.query(LoginCredential).filter(LoginCredential.profile_id == pid).delete()
+            db.query(Profile).filter(Profile.id == pid).delete()
+        db.delete(couple)
+    db.commit()
+    reload_profiles(db)
+    return {"ok": True, "message": f"Couple {couple_id} deleted"}
+
+
+@app.post("/api/admin/challenge/delete")
+def admin_challenge_delete(body: dict, db: Session = Depends(get_db)):
+    check_admin(body)
+    challenge_id = body.get("id")
+    if not challenge_id:
+        raise HTTPException(status_code=400, detail="id obrigatório")
+    db.query(Challenge).filter(Challenge.id == challenge_id).delete()
+    db.commit()
+    return {"ok": True}
+
+
+@app.post("/api/admin/photo/delete")
+def admin_photo_delete(body: dict, db: Session = Depends(get_db)):
+    check_admin(body)
+    photo_id = body.get("id")
+    if not photo_id:
+        raise HTTPException(status_code=400, detail="id obrigatório")
+    db.query(Photo).filter(Photo.id == photo_id).delete()
+    db.commit()
+    return {"ok": True}
 
 
 if __name__ == "__main__":
