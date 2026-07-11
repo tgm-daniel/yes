@@ -552,9 +552,10 @@ input[type="datetime-local"] { font-family: 'Nunito', sans-serif; font-size: 14p
   <div class="nav-item active" data-nav="dashboard" onclick="showSection('dashboard')"><span class="nav-icon">🏠</span>Início</div>
   <div class="nav-item" data-nav="question" onclick="showSection('question')"><span class="nav-icon">💭</span>Pergunta</div>
   <div class="nav-item" data-nav="diary" onclick="showSection('diary')"><span class="nav-icon">📖</span>Diário</div>
+  <div class="nav-item" data-nav="memories" onclick="showSection('memories')"><span class="nav-icon">📖</span>Memórias</div>
   <div class="nav-item" data-nav="challenge" onclick="showSection('challenge')"><span class="nav-icon">🎯</span>Desafio</div>
   <div class="nav-item" data-nav="quiz" onclick="showSection('quiz')"><span class="nav-icon">❓</span>Quiz</div>
-  <div class="nav-item" data-nav="more" onclick="toggleMoreMenu()"><span class="nav-icon">📋</span>Mais</div>
+  <div class="nav-item" data-nav="more" onclick="toggleMoreMenu()"><span class="nav-icon">🚪</span>Sair</div>
 </div>
 
 <div class="modal-overlay" id="moreModal" onclick="if(event.target===this)closeMoreMenu()">
@@ -567,12 +568,7 @@ input[type="datetime-local"] { font-family: 'Nunito', sans-serif; font-size: 14p
       </svg>
     </div>
     <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--text);margin-bottom:16px;">Still Learning</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-      <div class="more-card" onclick="showSection('memories');closeMoreMenu()">
-        <div style="font-size:2rem;">📖</div>
-        <div style="font-weight:700;font-size:0.85rem;margin-top:4px;" id="mixedMemoriesLabel">Mixed Memories</div>
-        <div style="font-size:0.7rem;color:var(--text-light);margin-top:2px;" data-i18n="more_mixed_memories">Nossas memórias misturadas</div>
-      </div>
+    <div style="display:grid;grid-template-columns:1fr;gap:10px;max-width:200px;margin:0 auto;">
       <div class="more-card" onclick="logout()">
         <div style="font-size:2rem;">🚪</div>
         <div style="font-weight:700;font-size:0.85rem;margin-top:4px;">Sair</div>
@@ -651,28 +647,16 @@ function updateNavLang() {
   document.getElementById('headerSub').textContent = isEn ? 'Learning each other, one day at a time 💕' : 'Aprendendo um ao outro, um dia de cada vez 💕';
   document.querySelectorAll('[data-nav]').forEach(el => {
     const nav = el.dataset.nav;
-    const labels = { dashboard: isEn ? 'Home' : 'Início', question: isEn ? 'Question' : 'Pergunta', diary: isEn ? 'Diary' : 'Diário', challenge: isEn ? 'Challenge' : 'Desafio', quiz: isEn ? 'Quiz' : 'Quiz', more: isEn ? 'More' : 'Mais' };
+    const labels = { dashboard: isEn ? 'Home' : 'Início', question: isEn ? 'Question' : 'Pergunta', diary: isEn ? 'Diary' : 'Diário', memories: isEn ? 'Memories' : 'Memórias', challenge: isEn ? 'Challenge' : 'Desafio', quiz: isEn ? 'Quiz' : 'Quiz', more: isEn ? 'Exit' : 'Sair' };
     el.childNodes[el.childNodes.length - 1].textContent = labels[nav] || nav;
   });
-  // More menu i18n
-  const moreLabels = {
-    'more_mixed_memories': isEn ? 'Our mixed memories' : 'Nossas memórias misturadas',
-    'more_logout': isEn ? 'Disconnect' : 'Desconectar'
-  };
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.dataset.i18n;
-    if (moreLabels[key]) el.textContent = moreLabels[key];
+    if (key === 'more_logout') el.textContent = isEn ? 'Disconnect' : 'Desconectar';
   });
-  // More menu titles
-  const titles = {
-    'Mixed Memories': isEn ? 'Mixed Memories' : 'Mixed Memories',
-    'Sair': isEn ? 'Exit' : 'Sair'
-  };
-  document.querySelector('#mixedMemoriesLabel').textContent = isEn ? 'Mixed Memories' : 'Memórias Misturadas';
-  document.querySelectorAll('.more-card').forEach(el => {
-    const titleEl = el.querySelector('div:nth-child(2)');
-    if (titleEl && titles[titleEl.textContent]) titleEl.textContent = titles[titleEl.textContent];
-  });
+  // More card title
+  const moreTitles = document.querySelectorAll('.more-card > div:nth-child(2)');
+  if (moreTitles.length) moreTitles[0].textContent = isEn ? 'Exit' : 'Sair';
 }
 function toggleMoreMenu() { document.getElementById('moreModal').classList.toggle('show'); }
 function closeMoreMenu() { document.getElementById('moreModal').classList.remove('show'); }
@@ -1046,16 +1030,20 @@ function loadChallenge() {
       const partnerKey = 'photo_url_' + (d._is_a ? 'b' : 'a');
       const myPhoto = d.data[myKey];
       const partnerPhoto = d.data[partnerKey];
+      const bothPhotos = myPhoto && partnerPhoto;
       if (myPhoto) {
         html += `<div style="margin-top:8px;"><strong>${isEn ? 'Your photo' : 'Sua foto'}:</strong></div>`;
-        html += `<img src="${myPhoto}" class="photo-preview" alt="my photo">`;
+        html += `<img src="${myPhoto}" class="photo-preview" style="max-height:180px;cursor:pointer;" onclick="showFullPhoto(-1,'${myPhoto.replace(/'/g, "\\'")}')">`;
         html += `<div style="margin-top:4px;color:var(--pink-dark);font-weight:800;">✅ ${isEn ? 'Uploaded!' : 'Enviada!'}</div>`;
         if (d.data['caption_' + (d._is_a ? 'a' : 'b')]) html += `<div style="font-size:0.85rem;color:var(--text-light);">"${esc(d.data['caption_' + (d._is_a ? 'a' : 'b')])}"</div>`;
       }
       if (partnerPhoto) {
         html += `<div style="margin-top:12px;"><strong>${esc(d.partner_name)}:</strong></div>`;
-        html += `<img src="${partnerPhoto}" class="photo-preview" alt="partner photo">`;
+        html += `<img src="${partnerPhoto}" class="photo-preview" style="max-height:180px;cursor:pointer;" onclick="showFullPhoto(-1,'${partnerPhoto.replace(/'/g, "\\'")}')">`;
         if (d.data['caption_' + (d._is_a ? 'b' : 'a')]) html += `<div style="font-size:0.85rem;color:var(--text-light);">"${esc(d.data['caption_' + (d._is_a ? 'b' : 'a')])}"</div>`;
+      }
+      if (bothPhotos) {
+        html += `<div style="margin-top:12px;padding:10px;background:var(--pink-light);border-radius:var(--radius-sm);text-align:center;font-size:0.85rem;color:var(--pink-dark);font-weight:700;">💕 ${isEn ? 'You both took photos!' : 'Vocês dois tiraram fotos!'}</div>`;
       }
       if (!myPhoto) {
         html += `<div id="photoCaptureArea" style="margin-top:12px;">
@@ -1090,11 +1078,20 @@ function loadChallenge() {
       <div id="partnerChallengeRefresh" style="margin-top:8px;"></div>
     </div>`;
 
-    html += `</div>`;
+    html += `</div>
+    <div class="card" style="margin-top:14px;" id="challengeHistoryContainer">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">
+        <span style="font-size:1.2rem;">🏆</span>
+        <span style="font-weight:800;font-size:0.9rem;">${isEn ? 'Challenge History' : 'Histórico de Desafios'}</span>
+      </div>
+      <div id="challengeHistoryList"><div class="loading"><div class="spinner"></div></div></div>
+    </div>`;
+
     main.innerHTML = html;
 
     // Always load partner challenges
     loadPartnerChallengeList();
+    loadChallengeHistory();
   });
 }
 
@@ -1102,6 +1099,8 @@ let _photosData = [];
 
 // ── Camera capture (getUserMedia) ──
 let _cameraStream = null;
+let _cameraFacing = 'environment';
+let _capturedDataUrl = null;
 
 function stopCamera() {
   if (_cameraStream) {
@@ -1110,47 +1109,90 @@ function stopCamera() {
   }
 }
 
+function toggleCamera() {
+  _cameraFacing = _cameraFacing === 'environment' ? 'user' : 'environment';
+  const container = document.querySelector('.camera-overlay');
+  if (container) {
+    _startCameraStream(container);
+  }
+}
+
+function _startCameraStream(container) {
+  const isEn = getLang() === 'en';
+  const video = document.getElementById('camViewfinder');
+  if (!video) return;
+  stopCamera();
+  video.style.transform = 'scaleX(' + (_cameraFacing === 'user' ? '-1' : '1') + ')';
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: _cameraFacing, width: { ideal: 480 }, height: { ideal: 640 } }, audio: false })
+    .then(function(stream) {
+      _cameraStream = stream;
+      video.srcObject = stream;
+    })
+    .catch(function() {
+      container.innerHTML = '<div style="color:var(--danger);padding:12px;">⚠️ ' + (isEn ? 'Camera access denied' : 'Acesso à câmera negado') + '</div>';
+    });
+}
+
 function openCamera(containerId, onCapture) {
   stopCamera();
+  _capturedDataUrl = null;
   const container = document.getElementById(containerId);
   if (!container) return;
   const isEn = getLang() === 'en';
   container.innerHTML =
     '<div class="camera-overlay" style="text-align:center;">' +
-      '<video id="camViewfinder" autoplay playsinline style="width:100%;max-height:50vh;border-radius:12px;background:#000;transform:scaleX(-1);"></video>' +
-      '<div style="display:flex;gap:10px;justify-content:center;margin-top:10px;">' +
+      '<div style="position:relative;">' +
+        '<video id="camViewfinder" autoplay playsinline style="width:100%;max-height:55vh;border-radius:12px;background:#000;transform:scaleX(' + (_cameraFacing === 'user' ? '-1' : '1') + ');"></video>' +
+        '<button id="camFlipBtn" onclick="toggleCamera()" style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.4);color:white;border:none;border-radius:50%;width:40px;height:40px;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">🔄</button>' +
+      '</div>' +
+      '<div style="display:flex;gap:12px;justify-content:center;margin-top:10px;flex-wrap:wrap;">' +
         '<button class="card-action" id="camCaptureBtn">📸 ' + (isEn ? 'Capture' : 'Capturar') + '</button>' +
         '<button class="btn btn-ghost" id="camCancelBtn">' + (isEn ? 'Cancel' : 'Cancelar') + '</button>' +
       '</div>' +
+      '<div id="camPreview" style="margin-top:10px;"></div>' +
       '<canvas id="camCanvas" style="display:none;"></canvas>' +
     '</div>';
-  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 480 }, height: { ideal: 640 } }, audio: false })
-    .then(function(stream) {
-      _cameraStream = stream;
-      document.getElementById('camViewfinder').srcObject = stream;
-    })
-    .catch(function() {
-      container.innerHTML = '<div style="color:var(--danger);padding:12px;">⚠️ ' + (isEn ? 'Camera access denied' : 'Acesso à câmera negado') + '</div>';
-      return;
-    });
+  _startCameraStream(container);
   document.getElementById('camCaptureBtn').onclick = function() {
     const video = document.getElementById('camViewfinder');
     const canvas = document.getElementById('camCanvas');
     const w = video.videoWidth || 480, h = video.videoHeight || 640;
     canvas.width = w; canvas.height = h;
     const ctx = canvas.getContext('2d');
-    ctx.translate(w, 0);
-    ctx.scale(-1, 1);
+    if (_cameraFacing === 'user') {
+      ctx.translate(w, 0);
+      ctx.scale(-1, 1);
+    }
     ctx.drawImage(video, 0, 0, w, h);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+    _capturedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
     stopCamera();
-    container.innerHTML = '';
-    if (typeof onCapture === 'function') onCapture(dataUrl);
+    const preview = document.getElementById('camPreview');
+    preview.innerHTML =
+      '<div style="margin-top:6px;">' +
+        '<img src="' + _capturedDataUrl + '" class="photo-preview" style="max-height:200px;cursor:pointer;" onclick="showFullPhoto(-1,\'' + _capturedDataUrl.replace(/'/g, "\\'") + '\')">' +
+        '<div style="display:flex;gap:10px;justify-content:center;margin-top:8px;">' +
+          '<button class="card-action" id="camConfirmBtn">💕 ' + (isEn ? 'Confirm' : 'Confirmar') + '</button>' +
+          '<button class="btn btn-ghost" id="camRetakeBtn">🔄 ' + (isEn ? 'Retake' : 'Repetir') + '</button>' +
+        '</div>' +
+      '</div>';
+    document.getElementById('camViewfinder').style.display = 'none';
+    document.getElementById('camCaptureBtn').style.display = 'none';
+    document.getElementById('camCancelBtn').style.display = 'none';
+    document.getElementById('camFlipBtn').style.display = 'none';
+    document.getElementById('camConfirmBtn').onclick = function() {
+      container.innerHTML = '';
+      if (typeof onCapture === 'function') onCapture(_capturedDataUrl);
+      _capturedDataUrl = null;
+    };
+    document.getElementById('camRetakeBtn').onclick = function() {
+      openCamera(containerId, onCapture);
+    };
   };
   document.getElementById('camCancelBtn').onclick = function() {
     stopCamera();
     container.innerHTML = '';
+    _capturedDataUrl = null;
   };
 }
 
@@ -1318,6 +1360,61 @@ async function completePartnerChallengeWithPhoto(id, photo) {
     showToast(isEn ? 'Challenge completed! 🎉' : 'Desafio completo! 🎉');
     loadPartnerChallengeList();
   } catch(e) { showToast(e.message, true); }
+}
+
+async function loadChallengeHistory() {
+  const container = document.getElementById('challengeHistoryList');
+  if (!container) return;
+  const isEn = getLang() === 'en';
+  try {
+    const chals = await api('/api/couple/challenge/history');
+    if (!chals || !chals.length) {
+      container.innerHTML = '<div class="empty-state">🎯 ' + (isEn ? 'No completed challenges yet. Complete today\'s challenge!' : 'Nenhum desafio completo ainda. Complete o desafio de hoje!') + '</div>';
+      return;
+    }
+    const tlabel = { riddle: isEn ? 'Riddle' : 'Enigma', partner_question: isEn ? 'Question' : 'Pergunta', partner_challenge: isEn ? 'Partner Challenge' : 'Desafio do Parceiro', quote: isEn ? 'Quote' : 'Citação', photo: isEn ? 'Photo' : 'Foto' };
+    let html = '';
+    chals.forEach(function(c) {
+      const iconMap = { riddle: '🧩', partner_question: '💌', partner_challenge: '💪', quote: '💬', photo: '📸' };
+      const icon = iconMap[c.type] || '🎯';
+      let desc = '';
+      if (c.type === 'riddle') {
+        desc = isEn ? (c.data.riddle_en || '') : (c.data.riddle_pt || '');
+      } else if (c.type === 'quote') {
+        desc = isEn ? (c.data.quote_en || '') : (c.data.quote_pt || '');
+      } else if (c.type === 'partner_question') {
+        desc = c.data.question || '';
+      } else if (c.type === 'partner_challenge') {
+        desc = c.data.challenge || '';
+      } else if (c.type === 'photo') {
+        desc = isEn ? (c.data.prompt_en || '') : (c.data.prompt_pt || '');
+      }
+      const myPhoto = c.data && c.data['photo_url_' + (c._is_a ? 'a' : 'b')];
+      const partnerPhoto = c.data && c.data['photo_url_' + (c._is_a ? 'b' : 'a')];
+      html += '<div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,181,194,0.1);align-items:flex-start;">' +
+        '<div style="font-size:1.3rem;min-width:30px;text-align:center;">' + icon + '</div>' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">' +
+            '<span style="font-family:\'Press Start 2P\',monospace;font-size:6px;color:var(--text-light);">' + c.date + '</span>' +
+            '<span style="font-family:\'Press Start 2P\',monospace;font-size:6px;color:var(--pink-dark);background:var(--pink-light);padding:2px 8px;border-radius:20px;">' + (tlabel[c.type] || c.type) + '</span>' +
+          '</div>' +
+          '<div style="font-weight:700;font-size:0.85rem;margin-top:3px;line-height:1.5;">' + esc(desc) + '</div>';
+      if (myPhoto) {
+        html += '<img src="' + myPhoto + '" class="photo-preview" style="max-height:100px;margin-top:6px;cursor:pointer;" onclick="showFullPhoto(-1,\'' + myPhoto.replace(/'/g, "\\'") + '\')">';
+      }
+      if (partnerPhoto) {
+        html += '<div style="font-size:0.7rem;color:var(--text-light);margin-top:4px;">' + esc(c.partner_name) + ':</div>';
+        html += '<img src="' + partnerPhoto + '" class="photo-preview" style="max-height:100px;cursor:pointer;" onclick="showFullPhoto(-1,\'' + partnerPhoto.replace(/'/g, "\\'") + '\')">';
+      }
+      html += '<div style="display:flex;gap:10px;margin-top:5px;font-family:\'Press Start 2P\',monospace;font-size:6px;color:var(--text-light);">' +
+        '<span>' + (isEn ? 'You' : 'Você') + ': ' + (c.my_done ? '✅' : '⏳') + '</span>' +
+        '<span>' + esc(c.partner_name) + ': ' + (c.partner_done ? '✅' : '⏳') + '</span>' +
+      '</div></div></div>';
+    });
+    container.innerHTML = html;
+  } catch(e) {
+    container.innerHTML = '<div class="empty-state">' + esc(e.message) + '</div>';
+  }
 }
 
 function loadAgenda() {
@@ -1607,7 +1704,7 @@ function loadMemories() {
   const main = document.getElementById('mainContent');
   const isEn = getLang() === 'en';
   api('/api/couple/memories').then(d => {
-    let html = `<div class="section"><div class="section-title">📖 ${isEn ? 'Mixed Memories' : 'Mixed Memories'}${backLink()}</div>`;
+    let html = `<div class="section"><div class="section-title">📖 ${isEn ? 'Mixed Memories' : 'Memórias Misturadas'}${backLink()}</div>`;
     const hasQuestions = d.questions && d.questions.length;
     const hasChallenges = d.challenges && d.challenges.length;
     const hasReviews = d.reviews && d.reviews.length;
@@ -1668,13 +1765,19 @@ function loadMemories() {
       html += `<div class="card"><div class="card-title">🎯 ${isEn ? 'Completed Challenges' : 'Desafios Completados'}</div>`;
       d.challenges.slice(0, 10).forEach(c => {
         const tlabel = { riddle: isEn ? 'Riddle' : 'Enigma', partner_question: isEn ? 'Question' : 'Pergunta', partner_challenge: isEn ? 'Partner Challenge' : 'Desafio do Parceiro', quote: isEn ? 'Quote' : 'Citação', photo: isEn ? 'Photo' : 'Foto' };
+        const myKey = 'photo_url_' + (c._is_a ? 'a' : 'b');
+        const partnerKey = 'photo_url_' + (c._is_a ? 'b' : 'a');
+        const myPhoto = c.data && c.data[myKey];
+        const partnerPhoto = c.data && c.data[partnerKey];
         html += `<div class="memory-item">
           <div class="memory-date">${c.date} · ${tlabel[c.type] || c.type}</div>
           ${c.data?.riddle_pt || c.data?.riddle_en ? `<div class="memory-q">${esc(isEn ? (c.data.riddle_en || c.data.riddle_pt) : (c.data.riddle_pt || c.data.riddle_en))}</div>` : ''}
           ${c.data?.question ? `<div class="memory-q">${esc(c.data.question)}</div>` : ''}
           ${c.data?.challenge ? `<div class="memory-q">${esc(c.data.challenge)}</div>` : ''}
           ${c.data?.quote_pt || c.data?.quote_en ? `<div class="memory-q">"${esc(isEn ? (c.data.quote_en || c.data.quote_pt) : (c.data.quote_pt || c.data.quote_en))}"</div>` : ''}
-          ${c.data?.photo_url ? `<img src="${c.data.photo_url}" class="photo-preview" style="max-height:150px;" onclick="showFullPhoto(-1, '${esc(c.data.photo_url)}')">` : ''}
+          ${c.data?.photo_url ? `<img src="${c.data.photo_url}" class="photo-preview" style="max-height:150px;cursor:pointer;" onclick="showFullPhoto(-1, '${esc(c.data.photo_url)}')">` : ''}
+          ${myPhoto ? `<img src="${myPhoto}" class="photo-preview" style="max-height:150px;margin-top:4px;cursor:pointer;" onclick="showFullPhoto(-1,'${myPhoto.replace(/'/g, "\\'")}')">` : ''}
+          ${partnerPhoto ? `<div style="font-size:0.7rem;color:var(--text-light);margin-top:4px;">📸 ${esc(c.partner_name)}:</div><img src="${partnerPhoto}" class="photo-preview" style="max-height:150px;cursor:pointer;" onclick="showFullPhoto(-1,'${partnerPhoto.replace(/'/g, "\\'")}')">` : ''}
         </div>`;
       });
       html += `</div>`;

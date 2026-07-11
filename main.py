@@ -1221,6 +1221,7 @@ def api_get_memories(request: Request, db: Session = Depends(get_db)):
         DiaryEntry.couple_id == couple_id
     ).order_by(DiaryEntry.date.desc()).limit(30).all()
 
+    partner_name = get_partner_name(couple_id, my_name)
     return {
         "questions": [{
             "date": str(q.date), "question_pt": q.question_pt, "question_en": q.question_en,
@@ -1232,6 +1233,8 @@ def api_get_memories(request: Request, db: Session = Depends(get_db)):
             "data": c.data,
             "my_done": c.done_a if is_a else c.done_b,
             "partner_done": c.done_b if is_a else c.done_a,
+            "_is_a": is_a,
+            "partner_name": partner_name,
         } for c in challenges],
         "reviews": [{
             "week_start": str(r.week_start),
@@ -1247,6 +1250,33 @@ def api_get_memories(request: Request, db: Session = Depends(get_db)):
             "content": d.content, "mood": d.mood,
         } for d in diary],
     }
+
+
+@app.get("/api/couple/challenge/history")
+def api_challenge_history(request: Request, db: Session = Depends(get_db)):
+    couple_id = request.headers.get("X-Couple-Id", "")
+    my_name = request.headers.get("X-User-Name", "")
+    if not couple_id or not my_name:
+        raise HTTPException(status_code=400, detail="Missing headers")
+    is_a = my_name == couple_id.split("_")[0]
+    challenges = db.query(Challenge).filter(
+        Challenge.couple_id == couple_id,
+        Challenge.answered_a == True, Challenge.answered_b == True
+    ).order_by(Challenge.date.desc()).limit(50).all()
+    partner_name = get_partner_name(couple_id, my_name)
+    return [{
+        "date": str(c.date), "type": c.type,
+        "data": c.data,
+        "my_done": c.done_a if is_a else c.done_b,
+        "partner_done": c.done_b if is_a else c.done_a,
+        "my_answered": c.answered_a if is_a else c.answered_b,
+        "partner_answered": c.answered_b if is_a else c.answered_a,
+        "my_guess": c.guess_a if is_a else c.guess_b,
+        "partner_guess": c.guess_b if is_a else c.guess_a,
+        "created_by": c.created_by,
+        "partner_name": partner_name,
+        "_is_a": is_a,
+    } for c in challenges]
 
 
 # ---- EXISTING QUIZ API (unchanged) ----
