@@ -736,7 +736,7 @@ def api_get_review(request: Request, db: Session = Depends(get_db)):
 
 # ── CHALLENGES ──────────────────────────────────────────────────
 
-CHALLENGE_TYPES = ["riddle", "partner_question", "partner_challenge", "quote", "photo"]
+CHALLENGE_TYPES = ["photo", "riddle", "partner_question", "partner_challenge", "quote"]
 
 RIDDLES_PT = ["O que é meu, mas os outros usam mais que eu?", "Quanto mais se tira, maior fica.", "O que pode correr mas nunca anda?", "O que tem chaves mas não abre portas?", "O que é leve como uma pluma, mas ninguém segura por muito tempo?"]
 RIDDLES_EN = ["What is mine but others use more than me?", "The more you take, the more you leave behind.", "What can run but never walks?", "What has keys but can't open doors?", "What is light as a feather but nobody can hold for long?"]
@@ -797,20 +797,20 @@ def api_get_challenge(request: Request, db: Session = Depends(get_db)):
             data = get_quote(today)
         elif ctype == "photo":
             pt_prompts = [
+                "Sua vista favorita no momento 🌅",
                 "Tire uma foto de algo que te lembre de mim 💕",
                 "Capture um momento que te fez sorrir hoje 😊",
                 "Mostre o que você está vendo agora 👀",
                 "Um lugar especial para nós dois 🏠",
                 "Algo pequeno que tem um grande significado ✨",
-                "Sua vista favorita no momento 🌅",
             ]
             en_prompts = [
+                "Your favorite view right now 🌅",
                 "Take a photo of something that reminds you of me 💕",
                 "Capture a moment that made you smile today 😊",
                 "Show what you're seeing right now 👀",
                 "A special place for the two of us 🏠",
                 "Something small with big meaning ✨",
-                "Your favorite view right now 🌅",
             ]
             idx = today.toordinal() % len(pt_prompts)
             data = {"prompt_pt": pt_prompts[idx], "prompt_en": en_prompts[idx], "photo_url": None}
