@@ -1494,10 +1494,10 @@ def admin_couple_photos(body: dict, db: Session = Depends(get_db)):
     q = db.query(Photo)
     if couple_id:
         q = q.filter(Photo.couple_id == couple_id)
-    photos = q.order_by(Photo.date.desc()).limit(100).all()
+    photos = q.order_by(Photo.date.desc()).limit(50).all()
     return {"photos": [{
         "id": p.id, "couple_id": p.couple_id, "author_id": p.author_id,
-        "date": str(p.date), "caption": p.caption, "data": p.data[:100] + "..." if len(p.data) > 100 else p.data,
+        "date": str(p.date), "caption": p.caption, "data": p.data[:500] + "..." if len(p.data or "") > 500 else (p.data or ""),
     } for p in photos]}
 
 
@@ -1765,6 +1765,18 @@ def admin_photo_delete(body: dict, db: Session = Depends(get_db)):
     db.query(Photo).filter(Photo.id == photo_id).delete()
     db.commit()
     return {"ok": True}
+
+
+@app.post("/api/admin/photo/data")
+def admin_photo_data(body: dict, db: Session = Depends(get_db)):
+    check_admin(body)
+    photo_id = body.get("id")
+    if not photo_id:
+        raise HTTPException(status_code=400, detail="id obrigatório")
+    photo = db.query(Photo).filter(Photo.id == photo_id).first()
+    if not photo:
+        raise HTTPException(status_code=404, detail="Foto não encontrada")
+    return {"id": photo.id, "data": photo.data, "caption": photo.caption}
 
 
 if __name__ == "__main__":

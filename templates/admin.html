@@ -437,13 +437,17 @@ body.dark .q-table tr { background: var(--surface2); }
     </div>
   </div>
 
-  <!-- CHALLENGES TAB -->
-  <div class="tab-content" id="tabChallenges">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-      <div><span style="font-weight:700;font-size:0.95rem;">Desafios & Fotos</span><div style="font-size:0.75rem;color:var(--text-light);">histórico de desafios e fotos enviadas</div></div>
+<!-- CHALLENGES TAB -->
+<div class="tab-content" id="tabChallenges">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px;">
+    <div><span style="font-weight:700;font-size:0.95rem;">🎯 Desafios & 📸 Fotos</span><div style="font-size:0.7rem;color:var(--text-light);">gerenciar e excluir desafios e fotos duplicados ou com erro</div></div>
+    <div style="display:flex;gap:6px;">
+      <button class="btn-sm danger" onclick="deleteAllAdminPhotos()" style="font-size:0.7rem;">🗑 excluir todas as fotos</button>
+      <button class="btn-sm danger" onclick="clearAllChallenges()" style="font-size:0.7rem;">🗑 limpar tudo</button>
     </div>
-    <div id="challengesList"></div>
   </div>
+  <div id="challengesList"></div>
+</div>
 
   <!-- DIARY TAB -->
   <div class="tab-content" id="tabDiary">
@@ -1359,6 +1363,41 @@ async function deleteAdminPhoto(id) {
   } catch(e) { showToast('Erro: ' + e.message, 'error'); }
 }
 
+async function deleteAllAdminPhotos() {
+  const photos = CHALLENGES_DATA.photos || [];
+  if (!photos.length) { showToast('Nenhuma foto para excluir.', 'error'); return; }
+  if (!confirm(`Excluir TODAS as ${photos.length} foto${photos.length > 1 ? 's' : ''}?`)) return;
+  for (const p of photos) {
+    if (!p.id) continue;
+    try {
+      await fetch('/api/admin/photo/delete', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ username: AUTH.username, password: AUTH.password, id: p.id })
+      });
+    } catch(_) {}
+  }
+  showToast(`${photos.length} foto${photos.length > 1 ? 's' : ''} deletada${photos.length > 1 ? 's' : ''}! 🗑`, 'success');
+  loadChallenges();
+}
+
+async function clearAllChallenges() {
+  const challenges = CHALLENGES_DATA.challenges || [];
+  if (!challenges.length) { showToast('Nenhum desafio para excluir.', 'error'); return; }
+  if (!confirm(`⚠️ Excluir PERMANENTEMENTE todos os ${challenges.length} desafio${challenges.length > 1 ? 's' : ''}?`)) return;
+  if (!confirm(`Tem CERTEZA? Essa ação não pode ser desfeita.`)) return;
+  for (const c of challenges) {
+    if (!c.id) continue;
+    try {
+      await fetch('/api/admin/challenge/delete', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ username: AUTH.username, password: AUTH.password, id: c.id })
+      });
+    } catch(_) {}
+  }
+  showToast(`${challenges.length} desafio${challenges.length > 1 ? 's' : ''} deletado${challenges.length > 1 ? 's' : ''}! 🗑`, 'success');
+  loadChallenges();
+}
+
 // ---- QUESTIONS TAB ----
 let DAILY_QUESTIONS = [];
 function getCID() { return COUPLE_STATS?.couple_id || ''; }
@@ -1436,58 +1475,188 @@ async function saveDailyQuestions() {
 let CHALLENGES_DATA = { challenges: [], photos: [] };
 async function loadChallenges() {
   try {
-    const r = await fetch('/api/admin/couple/challenges', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({...AUTH, couple_id: COUPLE_STATS?.couple_id || ''})
-    });
-    if (!r.ok) return;
-    const d = await r.json();
-    CHALLENGES_DATA = d;
+    const cid = COUPLE_STATS?.couple_id || '';
+    const [r1, r2] = await Promise.all([
+      fetch('/api/admin/couple/challenges', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({...AUTH, couple_id: cid})
+      }),
+      fetch('/api/admin/couple/photos', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({...AUTH, couple_id: cid})
+      })
+    ]);
+    const d1 = r1.ok ? await r1.json() : { challenges: [] };
+    const d2 = r2.ok ? await r2.json() : { photos: [] };
+    CHALLENGES_DATA = { challenges: d1.challenges || [], photos: d2.photos || [] };
     renderChallenges();
   } catch(e) { /* silent */ }
+}
+
+let challengeFilter = '';
+let _challengeTypeFilter = '';
+function filterChallenges(v) {
+  challengeFilter = v.toLowerCase();
+  _challengeTypeFilter = document.getElementById('challengeTypeFilter')?.value || '';
+  renderChallenges();
 }
 
 function renderChallenges() {
   const el = document.getElementById('challengesList');
   let html = '';
 
-  // Photos
+  // --- PHOTOS ---
   const photos = CHALLENGES_DATA.photos || [];
-  html += `<div style="margin-bottom:20px;"><h4 style="margin:0 0 10px;">📸 Fotos (${photos.length})</h4>`;
+  html += `<div style="margin-bottom:20px;">
+    <h4 style="margin:0 0 6px;">📸 Fotos (${photos.length})</h4>
+    <div style="font-size:0.7rem;color:var(--text-light);margin-bottom:8px;">Clique na foto para ver em tamanho real. Passe o mouse para opções de exclusão.</div>`;
   if (!photos.length) {
     html += '<div style="color:var(--text-light);padding:12px 0;">Nenhuma foto enviada.</div>';
   } else {
     html += '<div style="display:flex;flex-wrap:wrap;gap:8px;">';
     photos.forEach(p => {
-      html += `<div style="width:120px;border-radius:var(--radius-sm);overflow:hidden;border:2px solid rgba(255,181,194,0.15);">
-        <img src="${esc(p.data)}" style="width:100%;height:120px;object-fit:cover;display:block;" onclick="window.open('${esc(p.data)}','_blank')">
-        <div style="padding:4px 6px;font-size:0.65rem;color:var(--text-light);text-align:center;">${esc(p.author_id || '')} · ${esc(p.date || '')}</div>
-        <div style="text-align:center;padding:2px;"><span class="q-del" onclick="deleteAdminPhoto(${p.id})" style="cursor:pointer;font-size:0.8rem;">🗑 excluir</span></div>
+      const isTruncated = (p.data || '').endsWith('...');
+      const thumb = isTruncated ? '' : (p.data || '');
+      html += `<div style="width:120px;border-radius:var(--radius-sm);overflow:hidden;border:2px solid rgba(255,181,194,0.15);position:relative;">
+        ${thumb ? `<img src="${thumb}" style="width:100%;height:120px;object-fit:cover;display:block;" onclick="viewAdminPhoto(${p.id})">` : `<div style="width:100%;height:120px;display:flex;align-items:center;justify-content:center;background:var(--cream);font-size:0.65rem;color:var(--text-light);cursor:pointer;" onclick="viewAdminPhoto(${p.id})">📸<br>carregar</div>`}
+        <div style="padding:4px 6px;font-size:0.65rem;color:var(--text-light);text-align:center;word-break:break-all;">${esc(p.author_id || '')} · ${esc(p.date || '')}</div>
+        <div style="text-align:center;padding:2px;">
+          <span class="q-del" onclick="deleteAdminPhoto(${p.id})" style="cursor:pointer;font-size:0.75rem;">🗑 excluir</span>
+          ${p.caption ? `<span style="font-size:0.6rem;color:var(--text-light);display:block;">"${esc(p.caption).slice(0,30)}"</span>` : ''}
+        </div>
       </div>`;
     });
     html += '</div>';
   }
   html += '</div>';
 
-  // Challenges
+  // --- CHALLENGES ---
   const challenges = CHALLENGES_DATA.challenges || [];
-  html += `<div><h4 style="margin:0 0 10px;">🎯 Desafios (${challenges.length})</h4>`;
+  const filtered = challenges.filter(c => {
+    const text = [c.type, c.question_text, c.riddle_text, c.quote_text, c.challenge_text, c.author_id, c.created_by, c.date].filter(Boolean).join(' ').toLowerCase();
+    const matchesText = !challengeFilter || text.includes(challengeFilter);
+    let matchesType = true;
+    if (_challengeTypeFilter === 'completed') matchesType = c.completed;
+    else if (_challengeTypeFilter === 'pending') matchesType = !c.completed;
+    else if (_challengeTypeFilter) matchesType = c.type === _challengeTypeFilter;
+    return matchesText && matchesType;
+  });
+
+  html += `<div>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
+      <h4 style="margin:0;">🎯 Desafios (${filtered.length} de ${challenges.length})</h4>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <input id="challengeSearch" type="text" placeholder="🔍 buscar..." value="${esc(challengeFilter)}" oninput="filterChallenges(this.value)" style="padding:4px 8px;font-size:0.75rem;border-radius:var(--radius-sm);border:1px solid var(--border);width:140px;">
+        <select id="challengeTypeFilter" onchange="filterChallenges(document.getElementById('challengeSearch').value)" style="padding:4px 8px;font-size:0.75rem;border-radius:var(--radius-sm);border:1px solid var(--border);">
+          <option value="">todos</option>
+          <option value="riddle">🧩 enigma</option>
+          <option value="partner_question">💑 pergunta</option>
+          <option value="partner_challenge">🤝 desafio</option>
+          <option value="photo">📸 foto</option>
+          <option value="quote">💌 citação</option>
+          <option value="daily">🎯 diário</option>
+          <option value="completed">✅ completos</option>
+          <option value="pending">⏳ pendentes</option>
+        </select>
+        <button class="btn-sm danger" onclick="batchDeleteChallenges()" style="font-size:0.7rem;">🗑 excluir filtrados</button>
+      </div>
+    </div>`;
+
   if (!challenges.length) {
     html += '<div style="color:var(--text-light);padding:12px 0;">Nenhum desafio registrado.</div>';
+  } else if (!filtered.length) {
+    html += '<div style="color:var(--text-light);padding:12px 0;">Nenhum desafio encontrado com este filtro.</div>';
   } else {
-    html += '<div class=q-table-wrap><table class=q-table><thead><tr><th style="min-width:30px;"></th><th>Tipo</th><th>Conteúdo</th><th>Autor</th><th>Status</th><th>Data</th></tr></thead><tbody>';
-    challenges.forEach(c => {
+    html += '<div style="overflow-x:auto;"><table class=q-table style="font-size:0.75rem;"><thead><tr><th style="min-width:24px;"><input type=checkbox id="chkAll" onchange="toggleAllChallenges(this.checked)"></th><th style="min-width:24px;"></th><th>Tipo</th><th>Conteúdo</th><th>Autor</th><th>Status</th><th>Data</th></tr></thead><tbody>';
+    filtered.forEach(c => {
       const typeIcons = { daily: '🎯', riddle: '🧩', partner_question: '💑', partner_challenge: '🤝', photo: '📸', quote: '💌' };
       const icon = typeIcons[c.type] || '🎯';
-      const content = c.question_text || c.riddle_text || c.quote_text || c.photo_caption || c.challenge_text || (c.data && c.data.challenge) || (c.data && c.data.question) || '—';
+      let content = c.question_text || c.riddle_text || c.quote_text || c.photo_caption || c.challenge_text || '—';
+      if (!content || content === '—') {
+        if (c.data && typeof c.data === 'object') content = c.data.challenge || c.data.question || c.data.riddle_pt || c.data.riddle_en || c.data.quote_pt || c.data.quote_en || JSON.stringify(c.data).slice(0,60);
+      }
       const status = c.completed ? '✅' : '⏳';
-      html += `<tr><td data-label=""><span class="q-del" onclick="deleteAdminChallenge(${c.id})" style="cursor:pointer;">✕</span></td><td data-label="Tipo">${icon} ${c.type || '—'}</td><td data-label="Conteúdo">${esc(content).slice(0, 80)}${(content||'').length > 80 ? '…' : ''}</td><td data-label="Autor">${esc(c.author_id || c.created_by || '—')}</td><td data-label="Status">${status}</td><td data-label="Data">${esc(c.date || c.created_at || '—')}</td></tr>`;
+      const chkId = 'chk_' + c.id;
+      html += `<tr>
+        <td><input type=checkbox class="chk-challenge" value="${c.id}" id="${chkId}"></td>
+        <td><span class="q-del" onclick="deleteAdminChallenge(${c.id})" style="cursor:pointer;">✕</span></td>
+        <td>${icon} ${c.type || '—'}</td>
+        <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(content)}">${esc(content).slice(0,60)}${content.length > 60 ? '…' : ''}</td>
+        <td>${esc(c.author_id || c.created_by || '—')}</td>
+        <td>${status}</td>
+        <td style="white-space:nowrap;">${esc(c.date || c.created_at || '—')}</td>
+      </tr>`;
     });
     html += '</tbody></table></div>';
   }
   html += '</div>';
 
   el.innerHTML = html;
+}
+
+let _selectedChallengeIds = [];
+function toggleAllChallenges(checked) {
+  document.querySelectorAll('.chk-challenge').forEach(cb => cb.checked = checked);
+}
+
+async function batchDeleteChallenges() {
+  const checked = Array.from(document.querySelectorAll('.chk-challenge:checked')).map(cb => cb.value).filter(Boolean);
+  const filteredCount = document.querySelectorAll('.chk-challenge').length;
+  if (checked.length === 0 && filteredCount > 0) {
+    // If nothing checked but there's a filter, offer to delete all filtered
+    if (!confirm(`Excluir TODOS os ${filteredCount} desafios exibidos?`)) return;
+    // Collect all filtered IDs
+    const allIds = CHALLENGES_DATA.challenges.filter(c => {
+      const text = [c.type, c.question_text, c.riddle_text, c.quote_text, c.challenge_text, c.author_id, c.created_by, c.date].filter(Boolean).join(' ').toLowerCase();
+      const matchesText = !challengeFilter || text.includes(challengeFilter);
+      let matchesType = true;
+      if (_challengeTypeFilter === 'completed') matchesType = c.completed;
+      else if (_challengeTypeFilter === 'pending') matchesType = !c.completed;
+      else if (_challengeTypeFilter) matchesType = c.type === _challengeTypeFilter;
+      return matchesText && matchesType;
+    }).map(c => c.id).filter(Boolean);
+    for (const id of allIds) {
+      try {
+        await fetch('/api/admin/challenge/delete', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({ username: AUTH.username, password: AUTH.password, id })
+        });
+      } catch(_) {}
+    }
+    showToast(`${allIds.length} desafios deletados! 🗑`, 'success');
+    loadChallenges();
+    return;
+  }
+  if (!checked.length) { showToast('Selecione ao menos um desafio.', 'error'); return; }
+  if (!confirm(`Excluir ${checked.length} desafio${checked.length > 1 ? 's' : ''} selecionado${checked.length > 1 ? 's' : ''}?`)) return;
+  for (const id of checked) {
+    try {
+      await fetch('/api/admin/challenge/delete', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ username: AUTH.username, password: AUTH.password, id })
+      });
+    } catch(_) {}
+  }
+  showToast(`${checked.length} desafio${checked.length > 1 ? 's' : ''} deletado${checked.length > 1 ? 's' : ''}! 🗑`, 'success');
+  loadChallenges();
+}
+
+async function viewAdminPhoto(id) {
+  try {
+    const r = await fetch('/api/admin/photo/data', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ username: AUTH.username, password: AUTH.password, id })
+    });
+    if (!r.ok) return;
+    const d = await r.json();
+    if (d.data) {
+      const w = window.open('', '_blank');
+      if (w) {
+        w.document.write(`<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;display:flex;align-items:center;justify-content:center;min-height:100dvh;background:#1a1a1a;}img{max-width:100%;max-height:100dvh;object-fit:contain;}</style></head><body><img src="${esc(d.data)}" alt="${esc(d.caption||'')}"></body></html>`);
+        w.document.close();
+      }
+    }
+  } catch(e) { /* silent */ }
 }
 
 // ---- DIARY TAB ----
