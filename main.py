@@ -1623,6 +1623,23 @@ async def admin_page():
     return HTMLResponse(_render("admin.html"))
 
 
+@app.post("/api/admin/couple/reset")
+def admin_couple_reset(body: dict, db: Session = Depends(get_db)):
+    check_admin(body)
+    couple_id = body.get("couple_id", "")
+    if not couple_id:
+        raise HTTPException(status_code=400, detail="couple_id obrigatório")
+    db.query(Challenge).filter(Challenge.couple_id == couple_id).delete()
+    db.query(Photo).filter(Photo.couple_id == couple_id).delete()
+    db.query(DiaryEntry).filter(DiaryEntry.couple_id == couple_id).delete()
+    db.query(DailyQuestion).filter(DailyQuestion.couple_id == couple_id).delete()
+    db.query(WeeklyReview).filter(WeeklyReview.couple_id == couple_id).delete()
+    db.query(QuoteRefresh).filter(QuoteRefresh.couple_id == couple_id).delete()
+    db.query(AgendaEvent).filter(AgendaEvent.couple_id == couple_id).delete()
+    db.commit()
+    return {"ok": True, "message": f"All data reset for couple {couple_id}"}
+
+
 if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 8000))
