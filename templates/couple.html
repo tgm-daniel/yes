@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Still Learning 💕</title>
 <link rel="stylesheet" href="/static/style.css">
 <style>
@@ -10,6 +10,7 @@
 :root {
   --pink: #ffb5c2;
   --pink-dark: #ff8fa0;
+  --pink-light: #ffe0e8;
   --lavender: #d4b8e8;
   --lavender-light: #ede0f5;
   --cream: #fffaf5;
@@ -20,6 +21,7 @@
   --radius-sm: 16px;
   --radius-cloud: 50px;
   --shadow: 0 8px 30px rgba(180, 150, 200, 0.2);
+  --shadow-sm: 0 4px 16px rgba(180, 150, 200, 0.15);
   --shadow-hover: 0 12px 40px rgba(180, 150, 200, 0.3);
   --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -29,7 +31,7 @@ body {
   background-attachment: fixed;
   color: var(--text);
   min-height: 100vh;
-  padding-bottom: 90px;
+  padding-bottom: calc(90px + env(safe-area-inset-bottom, 0px));
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }
@@ -100,6 +102,7 @@ body {
   cursor: pointer;
 }
 .app-header .card-heart:hover svg { filter: drop-shadow(0 0 12px rgba(255,143,160,0.5)); }
+.app-header .card-heart:active svg { transform: scale(0.9); }
 .app-header h1 {
   font-family: 'Press Start 2P', monospace;
   font-size: 10px; color: var(--pink-dark); line-height: 1.6;
@@ -121,7 +124,8 @@ body {
   transition: all 0.25s var(--ease-bounce);
   z-index: 2;
 }
-.lang-toggle:hover { background: var(--pink); color: white; border-color: var(--pink); transform: scale(1.05); }
+.lang-toggle:hover { background: var(--pink); color: white; border-color: var(--pink); }
+.lang-toggle:active { transform: scale(0.95); }
 .lang-toggle:active { transform: scale(0.95); }
 
 .user-greeting {
@@ -161,18 +165,41 @@ body {
   animation: cardIn 0.4s ease both;
   position: relative;
 }
+.card:active { transform: scale(0.98); }
 .card .card-heart {
   position: absolute; top: -14px; left: 50%; transform: translateX(-50%); z-index: 3;
   filter: drop-shadow(0 2px 6px rgba(255, 143, 160, 0.3));
   cursor: pointer;
 }
 .card .card-heart:hover svg { filter: drop-shadow(0 0 12px rgba(255,143,160,0.5)); }
+.card .card-heart:active svg { transform: scale(0.9); }
 .card:nth-child(2) { animation-delay: 0.06s; }
 .card:nth-child(3) { animation-delay: 0.12s; }
 .card:nth-child(4) { animation-delay: 0.18s; }
 .card:nth-child(5) { animation-delay: 0.24s; }
 @keyframes cardIn { from { opacity: 0; transform: translateY(20px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
-.card:hover { box-shadow: var(--shadow-hover); }
+
+@media (hover: hover) {
+  .card:hover { box-shadow: var(--shadow-hover); }
+  .card-heart:hover svg { filter: drop-shadow(0 0 12px rgba(255,143,160,0.5)); }
+  .lang-toggle:hover { background: var(--pink); color: white; border-color: var(--pink); }
+  .section-title a:hover { color: var(--pink); }
+  .btn-primary:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 10px 30px rgba(255, 143, 160, 0.4); }
+  .btn-outline:hover { background: var(--cream); border-color: var(--pink); color: var(--pink-dark); transform: translateY(-2px); }
+  .btn-ghost:hover { background: var(--cream); }
+  .card-action:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 10px 30px rgba(255, 143, 160, 0.4); }
+  .nav-item:hover .nav-icon { transform: scale(1.1); }
+  .mood-btn:hover { transform: scale(1.15); background: white; border-color: var(--pink-light); }
+  .todo-check:hover { transform: scale(1.15); }
+  .diary-entry:hover { background: rgba(255,255,255,0.9); }
+  .agenda-item:hover { padding-left: 4px; }
+  .todo-item:hover { padding-left: 4px; }
+  .more-card:hover { background: white; border-color: var(--pink); transform: translateY(-3px) scale(1.02); box-shadow: 0 6px 20px rgba(255,143,160,0.15); }
+  .notif-card:hover { background: white; transform: translateX(4px); }
+  .memory-item:hover { border-color: var(--pink); background: white; }
+  .photo-preview:hover { filter: sepia(0.2) contrast(1) brightness(1.1) saturate(0.8); }
+  .photo-grid img:hover { transform: scale(1.03); filter: sepia(0.2) contrast(1); }
+}
 .card-title { font-weight: 800; font-size: 0.95rem; margin-bottom: 8px; color: var(--text); }
 .card-text { font-size: 0.88rem; color: var(--text-light); line-height: 1.7; }
 
@@ -193,10 +220,11 @@ body {
 
 .mood-selector { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0; justify-content: center; }
 .mood-btn {
-  font-size: 1.5rem; padding: 6px 10px;
+  font-size: 1.5rem; padding: 10px 14px; min-width: 44px; min-height: 44px;
   border: 2px solid transparent; border-radius: var(--radius-sm);
   cursor: pointer; background: var(--cream);
   transition: all 0.2s var(--ease-bounce);
+  display: flex; align-items: center; justify-content: center;
 }
 .mood-btn:hover { transform: scale(1.15); background: white; border-color: var(--pink-light); }
 .mood-btn.selected { border-color: var(--pink); background: white; transform: scale(1.2); box-shadow: 0 3px 12px rgba(255,181,194,0.3); }
@@ -204,15 +232,14 @@ body {
 textarea, input[type="text"], input[type="datetime-local"] {
   width: 100%;
   padding: 14px 18px;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 9px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.9rem;
   color: var(--text);
   background: var(--cream);
   border: 2px solid rgba(255, 181, 194, 0.3);
   border-radius: var(--radius-sm);
   outline: none;
   transition: all 0.25s var(--ease-bounce);
-  letter-spacing: 0.3px;
 }
 textarea::placeholder, input::placeholder { color: var(--text-light); opacity: 0.6; }
 textarea:focus, input:focus { border-color: var(--pink); box-shadow: 0 0 0 3px rgba(255, 143, 160, 0.15); background: white; }
@@ -267,6 +294,8 @@ input[type="datetime-local"] { font-family: 'Nunito', sans-serif; font-size: 14p
 .card-action:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 10px 30px rgba(255, 143, 160, 0.4); }
 .card-action:active { transform: translateY(0) scale(0.97); }
 .card-action.small { padding: 10px 22px; font-size: 0.78rem; }
+.answer-option { display: block; width: 100%; margin-top: 8px; padding: 14px 20px; background: var(--cream); border: 2px solid rgba(255, 181, 194, 0.25); border-radius: var(--radius-sm); font-weight: 700; font-size: 0.85rem; font-family: 'Nunito', sans-serif; color: var(--text); cursor: pointer; transition: all 0.2s var(--ease-bounce); text-align: center; }
+.answer-option:active { transform: scale(0.97); background: white; border-color: var(--pink); }
 
 .nav-bar {
   position: fixed; bottom: 0; left: 0; right: 0;
@@ -281,12 +310,14 @@ input[type="datetime-local"] { font-family: 'Nunito', sans-serif; font-size: 14p
   margin: 0 auto;
 }
 .nav-item {
-  flex: 1; text-align: center; padding: 4px 2px;
+  flex: 1; text-align: center; padding: 6px 2px;
   cursor: pointer; color: var(--text-light);
   font-family: 'Press Start 2P', monospace;
   font-size: 7px; font-weight: 400;
   transition: all 0.2s var(--ease-bounce);
   position: relative;
+  min-height: 44px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
 }
 .nav-item .nav-icon { font-size: 1.3rem; display: block; margin-bottom: 2px; transition: all 0.2s var(--ease-bounce); }
 .nav-item.active { color: var(--pink-dark); }
@@ -331,6 +362,7 @@ input[type="datetime-local"] { font-family: 'Nunito', sans-serif; font-size: 14p
   border-radius: var(--radius-sm);
   display: inline-block; margin: 14px 0;
   color: var(--text);
+  overflow-wrap: break-word; word-break: break-word;
 }
 .challenge-riddle { font-size: 1rem; font-style: italic; padding: 18px 14px; line-height: 1.7; color: var(--text); }
 
@@ -358,12 +390,12 @@ input[type="datetime-local"] { font-family: 'Nunito', sans-serif; font-size: 14p
 .todo-item:last-child { border: none; }
 .todo-item:hover { padding-left: 4px; }
 .todo-check {
-  width: 26px; height: 26px;
+  width: 44px; height: 44px;
   border-radius: 50%;
   border: 2px solid var(--pink);
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; font-size: 0.7rem;
+  flex-shrink: 0; font-size: 1.1rem;
   transition: all 0.2s var(--ease-bounce);
   background: var(--cream);
   color: transparent;
@@ -435,24 +467,62 @@ input[type="datetime-local"] { font-family: 'Nunito', sans-serif; font-size: 14p
 }
 @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
 
+/* New challenge styles */
+.challenge-theme { font-family:'Press Start 2P',monospace; font-size:8px; color:var(--lavender); margin-bottom:6px; }
+.challenge-question { font-size:1rem; font-weight:700; padding:16px; background:var(--cream); border-radius:var(--radius-sm); margin:10px 0; line-height:1.6; }
+.challenge-answer { font-size:0.9rem; padding:14px; background:var(--cream); border-radius:var(--radius-sm); margin:8px 0; border-left:3px solid var(--pink); }
+.notif-dot { position:absolute; top:-2px; right:-4px; width:8px; height:8px; background:var(--pink-dark); border-radius:50%; border:2px solid white; }
+.notif-card { background:var(--cream); border-radius:var(--radius-sm); padding:14px; margin-bottom:10px; border-left:3px solid var(--pink); cursor:pointer; transition:all 0.2s ease; }
+.notif-card:hover { background:white; transform:translateX(4px); }
+.notif-card .notif-title { font-weight:700; font-size:0.85rem; }
+.notif-card .notif-meta { font-family:'Press Start 2P',monospace; font-size:7px; color:var(--text-light); margin-top:4px; }
+.memory-item { padding:14px; margin-bottom:10px; background:var(--cream); border-radius:var(--radius-sm); border:2px solid rgba(255,181,194,0.15); transition:all 0.2s ease; }
+.memory-item:hover { border-color:var(--pink); background:white; }
+.memory-item .memory-date { font-family:'Press Start 2P',monospace; font-size:7px; color:var(--text-light); }
+.memory-item .memory-q { font-weight:700; font-size:0.85rem; margin:6px 0 4px; }
+.memory-item .memory-a { font-size:0.85rem; color:var(--text-light); line-height:1.6; }
+
+.photo-preview {
+  max-width:100%; border-radius:var(--radius-sm);
+  margin:10px 0; box-shadow:var(--shadow);
+  filter: sepia(0.3) contrast(0.9) brightness(1.05) saturate(0.7);
+  image-rendering:pixelated;
+}
+.photo-preview:hover { filter: sepia(0.2) contrast(1) brightness(1.1) saturate(0.8); }
+.photo-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:10px 0; }
+.photo-grid img { width:100%; border-radius:var(--radius-sm); aspect-ratio:1; object-fit:cover;
+  filter: sepia(0.3) contrast(0.9) brightness(1.05);
+  box-shadow:var(--shadow-sm); cursor:pointer;
+  transition:all 0.25s var(--ease-bounce);
+}
+.photo-grid img:hover { transform:scale(1.03); filter: sepia(0.2) contrast(1); }
+
 @media (max-width: 600px) {
   .app-header { margin: 12px 10px 0; padding: 24px 16px 20px; }
   .app-header h1 { font-size: 9px; }
   .app-header .subtitle { font-size: 0.8rem; }
   .section { padding: 10px 10px 4px; }
   .card { padding: 22px 18px; }
-  .nav-item { font-size: 6px; }
+  .nav-item { font-size: 7px; min-height: 40px; padding: 4px 2px; }
   .nav-item .nav-icon { font-size: 1.2rem; }
   .stat-pill { padding: 10px 6px; }
   .stat-pill .num { font-size: 14px; }
+  .stat-row { gap: 6px; }
+  .challenge-word { font-size: 1.2rem; letter-spacing: 6px; padding: 14px; }
 }
 @media (max-width: 400px) {
   .app-header { margin: 8px 6px 0; padding: 20px 12px 16px; }
   .app-header h1 { font-size: 8px; }
   .card { padding: 18px 14px; border-radius: var(--radius-sm); }
   .section { padding: 8px 6px 2px; }
-  .nav-item { font-size: 5px; }
-  .nav-item .nav-icon { font-size: 1.1rem; }
+  .nav-item { font-size: 7px; min-height: 36px; padding: 2px 1px; }
+  .nav-item .nav-icon { font-size: 1rem; }
+  .challenge-word { font-size: 1rem; letter-spacing: 4px; padding: 10px; }
+}
+@keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(30px) scale(0.9); } to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  .floating-items, .stars { display: none; }
 }
 </style>
 </head>
@@ -483,6 +553,7 @@ input[type="datetime-local"] { font-family: 'Nunito', sans-serif; font-size: 14p
   <div class="nav-item" data-nav="question" onclick="showSection('question')"><span class="nav-icon">💭</span>Pergunta</div>
   <div class="nav-item" data-nav="diary" onclick="showSection('diary')"><span class="nav-icon">📖</span>Diário</div>
   <div class="nav-item" data-nav="challenge" onclick="showSection('challenge')"><span class="nav-icon">🎯</span>Desafio</div>
+  <div class="nav-item" data-nav="quiz" onclick="showSection('quiz')"><span class="nav-icon">❓</span>Quiz</div>
   <div class="nav-item" data-nav="more" onclick="toggleMoreMenu()"><span class="nav-icon">📋</span>Mais</div>
 </div>
 
@@ -497,20 +568,10 @@ input[type="datetime-local"] { font-family: 'Nunito', sans-serif; font-size: 14p
     </div>
     <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--text);margin-bottom:16px;">Still Learning</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-      <div class="more-card" onclick="showSection('agenda');closeMoreMenu()">
-        <div style="font-size:2rem;">📅</div>
-        <div style="font-weight:700;font-size:0.85rem;margin-top:4px;">Agenda</div>
-        <div style="font-size:0.7rem;color:var(--text-light);margin-top:2px;" data-i18n="more_agenda">Eventos do casal</div>
-      </div>
-      <div class="more-card" onclick="showSection('todos');closeMoreMenu()">
-        <div style="font-size:2rem;">📋</div>
-        <div style="font-weight:700;font-size:0.85rem;margin-top:4px;">Listas</div>
-        <div style="font-size:0.7rem;color:var(--text-light);margin-top:2px;" data-i18n="more_todos">Tarefas juntos</div>
-      </div>
-      <div class="more-card" onclick="showSection('review');closeMoreMenu()">
+      <div class="more-card" onclick="showSection('memories');closeMoreMenu()">
         <div style="font-size:2rem;">📖</div>
-        <div style="font-weight:700;font-size:0.85rem;margin-top:4px;">Revisão</div>
-        <div style="font-size:0.7rem;color:var(--text-light);margin-top:2px;" data-i18n="more_review">Semanal</div>
+        <div style="font-weight:700;font-size:0.85rem;margin-top:4px;" id="mixedMemoriesLabel">Mixed Memories</div>
+        <div style="font-size:0.7rem;color:var(--text-light);margin-top:2px;" data-i18n="more_mixed_memories">Nossas memórias misturadas</div>
       </div>
       <div class="more-card" onclick="logout()">
         <div style="font-size:2rem;">🚪</div>
@@ -523,7 +584,7 @@ input[type="datetime-local"] { font-family: 'Nunito', sans-serif; font-size: 14p
 
 <script>
 const _t = {};
-const _lang = '{{ lang }}' || 'pt';
+const _lang = 'pt';
 const COUPLE_ID = localStorage.getItem('couple_id') || '';
 const USER_NAME = localStorage.getItem('user_name') || '';
 const USER_DISPLAY = localStorage.getItem('user_display') || '';
@@ -531,30 +592,32 @@ const PARTNER_NAME = localStorage.getItem('partner_name') || '';
 let state = { section: 'dashboard', data: {} };
 
 function initDecorations() {
-  // Floating emojis
-  const emojis = ['💕', '❤️', '💗', '💖', '✨'];
+  const isMobile = window.innerWidth <= 600;
+  const emojis = ['💕', '❤️', '💗', '💖', '❤️‍🔥', '🐱', '🐰', '🐶', '🦊', '🐼', '🌸', '✨'];
   const items = document.getElementById('floatingItems');
-  for (let i = 0; i < 6; i++) {
+  const bgCount = isMobile ? 4 : 8;
+  for (let i = 0; i < bgCount; i++) {
     const span = document.createElement('span');
     span.textContent = emojis[i % emojis.length];
-    span.style.left = (10 + Math.random() * 75) + '%';
-    span.style.top = (5 + Math.random() * 80) + '%';
-    span.style.fontSize = (12 + Math.random() * 10) + 'px';
+    span.style.left = (8 + Math.random() * 80) + '%';
+    span.style.top = (8 + Math.random() * 80) + '%';
+    span.style.fontSize = (isMobile ? 8 + Math.random() * 6 : 12 + Math.random() * 12) + 'px';
     span.style.animationDelay = (Math.random() * 5) + 's';
-    span.style.animationDuration = (6 + Math.random() * 6) + 's';
+    span.style.animationDuration = (8 + Math.random() * 6) + 's';
     items.appendChild(span);
   }
   // Stars
   const stars = document.getElementById('stars');
   const starChars = ['✦', '★', '✧'];
-  for (let i = 0; i < 12; i++) {
+  const starCount = isMobile ? 4 : 10;
+  for (let i = 0; i < starCount; i++) {
     const span = document.createElement('span');
     span.textContent = starChars[i % starChars.length];
-    span.style.left = (5 + Math.random() * 85) + '%';
-    span.style.top = (5 + Math.random() * 85) + '%';
-    span.style.fontSize = (10 + Math.random() * 8) + 'px';
+    span.style.left = (10 + Math.random() * 80) + '%';
+    span.style.top = (10 + Math.random() * 80) + '%';
+    span.style.fontSize = (10 + Math.random() * 6) + 'px';
     span.style.animationDelay = (Math.random() * 4) + 's';
-    span.style.animationDuration = (2 + Math.random() * 3) + 's';
+    span.style.animationDuration = (3 + Math.random() * 4) + 's';
     stars.appendChild(span);
   }
 }
@@ -572,11 +635,12 @@ async function api(path, opts = {}) {
 }
 
 function toggleLang() {
+  sessionStorage.setItem('lang_section', state.section || 'dashboard');
   document.cookie = 'lang=' + (getLang() === 'pt' ? 'en' : 'pt') + ';path=/;max-age=31536000';
   location.reload();
 }
 function getLang() { const m = document.cookie.match(/lang=([^;]+)/); return m ? m[1] : 'pt'; }
-function t(key) { return _t[key] || (typeof LANG_DATA !== 'undefined' && LANG_DATA[key]) || key; }
+function t(key) { return _t[key] || key; }
 function esc(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
 function logout() { localStorage.clear(); window.location.href = '/'; }
@@ -587,14 +651,12 @@ function updateNavLang() {
   document.getElementById('headerSub').textContent = isEn ? 'Learning each other, one day at a time 💕' : 'Aprendendo um ao outro, um dia de cada vez 💕';
   document.querySelectorAll('[data-nav]').forEach(el => {
     const nav = el.dataset.nav;
-    const labels = { dashboard: isEn ? 'Home' : 'Início', question: isEn ? 'Question' : 'Pergunta', diary: isEn ? 'Diary' : 'Diário', challenge: isEn ? 'Challenge' : 'Desafio', more: isEn ? 'More' : 'Mais' };
+    const labels = { dashboard: isEn ? 'Home' : 'Início', question: isEn ? 'Question' : 'Pergunta', diary: isEn ? 'Diary' : 'Diário', challenge: isEn ? 'Challenge' : 'Desafio', quiz: isEn ? 'Quiz' : 'Quiz', more: isEn ? 'More' : 'Mais' };
     el.childNodes[el.childNodes.length - 1].textContent = labels[nav] || nav;
   });
   // More menu i18n
   const moreLabels = {
-    'more_agenda': isEn ? 'Couple events' : 'Eventos do casal',
-    'more_todos': isEn ? 'Tasks together' : 'Tarefas juntos',
-    'more_review': isEn ? 'Weekly' : 'Semanal',
+    'more_mixed_memories': isEn ? 'Our mixed memories' : 'Nossas memórias misturadas',
     'more_logout': isEn ? 'Disconnect' : 'Desconectar'
   };
   document.querySelectorAll('[data-i18n]').forEach(el => {
@@ -602,17 +664,14 @@ function updateNavLang() {
     if (moreLabels[key]) el.textContent = moreLabels[key];
   });
   // More menu titles
+  const titles = {
+    'Mixed Memories': isEn ? 'Mixed Memories' : 'Mixed Memories',
+    'Sair': isEn ? 'Exit' : 'Sair'
+  };
+  document.querySelector('#mixedMemoriesLabel').textContent = isEn ? 'Mixed Memories' : 'Memórias Misturadas';
   document.querySelectorAll('.more-card').forEach(el => {
     const titleEl = el.querySelector('div:nth-child(2)');
-    if (!titleEl) return;
-    const txt = titleEl.textContent;
-    const map = {
-      'Agenda': isEn ? 'Agenda' : 'Agenda',
-      'Listas': isEn ? 'Lists' : 'Listas',
-      'Revisão': isEn ? 'Review' : 'Revisão',
-      'Sair': isEn ? 'Exit' : 'Sair'
-    };
-    if (map[txt]) titleEl.textContent = map[txt];
+    if (titleEl && titles[titleEl.textContent]) titleEl.textContent = titles[titleEl.textContent];
   });
 }
 function toggleMoreMenu() { document.getElementById('moreModal').classList.toggle('show'); }
@@ -620,7 +679,7 @@ function closeMoreMenu() { document.getElementById('moreModal').classList.remove
 
 function backLink() {
   const isEn = getLang() === 'en';
-  return `<a onclick="showSection('dashboard')" style="margin-left:auto;font-family:'Press Start 2P',monospace;font-size:8px;color:var(--pink-dark);text-decoration:none;cursor:pointer;transition:all 0.2s var(--ease-bounce);display:flex;align-items:center;gap:4px;">← ${isEn ? 'Back' : 'Voltar'}</a>`;
+  return `<button onclick="showSection('dashboard')" style="margin-left:auto;font-family:'Press Start 2P',monospace;font-size:8px;color:var(--pink-dark);background:none;border:none;cursor:pointer;transition:all 0.2s var(--ease-bounce);display:flex;align-items:center;gap:4px;padding:8px 4px;">← ${isEn ? 'Back' : 'Voltar'}</button>`;
 }
 
 function showSection(name) {
@@ -636,6 +695,9 @@ function showSection(name) {
   else if (name === 'agenda') loadAgenda();
   else if (name === 'todos') loadTodos();
   else if (name === 'review') loadReview();
+  else if (name === 'quote') loadQuote();
+  else if (name === 'memories') loadMemories();
+  else if (name === 'quiz') loadQuiz();
 }
 
 function monthsPt(m) { return ['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][m]; }
@@ -685,16 +747,54 @@ function loadDashboard() {
         ${d.diary_count > 0 ? (isEn ? `${d.diary_count} entry today` : `${d.diary_count} registro hoje`) : (isEn ? 'No entries yet' : 'Nenhum registro ainda')}
       </div>
     </div>
-    <button class="card-action" onclick="showSection('diary')">📝 ${isEn ? 'Write' : 'Escrever'}</button></div>`;
+    <button class="card-action" onclick="showSection('diary')">📝 ${isEn ? 'Write' : 'Escrever'}</button>
+    ${d.diary_partner_today ? `<button class="card-action" onclick="showSection('diary')" style="margin-top:6px;">👀 ${isEn ? "View partner's" : 'Ver parceiro'}</button>` : ''}
+    </div>`;
 
-    html += `<div class="card"><div class="card-row">
+    html += `<div class="card"><div class="card-row" style="position:relative;">
       <span style="font-size:1.8rem;">🎯</span>
       <div class="card-text">
         <strong>${isEn ? "Today's Challenge" : 'Desafio de Hoje'}</strong><br>
-        ${d.challenge?.exists ? (d.challenge.done ? (isEn ? 'Completed ✅' : 'Completado ✅') : (isEn ? 'Pending' : 'Pendente')) : (isEn ? 'No challenge today' : 'Nenhum desafio hoje')}
+        ${d.challenge?.exists
+          ? (d.challenge.done
+            ? (isEn ? 'Completed ✅' : 'Completado ✅')
+            : (isEn ? `Type: ${d.challenge.type}` : `Tipo: ${d.challenge.type}`))
+          : (isEn ? 'No challenge today' : 'Nenhum desafio hoje')}
       </div>
+      ${d.challenge?.exists && d.challenge.type === 'partner_question' && d.challenge.partner_answered && !d.challenge.my_answered ? '<span class="notif-dot" style="top:2px;right:0;"></span>' : ''}
     </div>
     <button class="card-action" onclick="showSection('challenge')">🎯 ${isEn ? 'Start' : 'Começar'}</button></div>`;
+
+    // Quote card
+    html += `<div class="card" id="dashQuoteCard">
+      <div class="card-row">
+        <span style="font-size:1.8rem;">💌</span>
+        <div class="card-text">
+          <strong>${isEn ? "Today's Quote" : 'Citação do Dia'}</strong><br>
+          <span id="dashQuoteText" style="font-size:0.82rem;">${isEn ? 'Loading...' : 'Carregando...'}</span>
+        </div>
+      </div>
+      <button class="card-action" onclick="showSection('quote')">💌 ${isEn ? 'Read' : 'Ler'}</button>
+    </div>`;
+
+    // Notifications section
+    if (d.notifications && d.notifications.length) {
+      html += `<div class="card">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">
+          <span style="font-size:1.2rem;">🔔</span>
+          <span style="font-weight:800;font-size:0.9rem;">${isEn ? 'Notifications' : 'Notificações'}</span>
+          <span style="background:var(--pink-dark);color:white;border-radius:20px;padding:2px 10px;font-family:'Press Start 2P',monospace;font-size:7px;">${d.notifications.length}</span>
+        </div>`;
+      d.notifications.forEach(n => {
+        const msg = isEn ? (n.msg_en || n.msg_pt || '') : (n.msg_pt || n.msg_en || '');
+        const emojiMap = { daily_answer: '💭', partner_challenge_resp: '💪', question_answered: '💌' };
+        const emoji = emojiMap[n.type] || '🔔';
+        html += `<div class="notif-card">
+          <div class="notif-title">${emoji} ${esc(msg)}</div>
+        </div>`;
+      });
+      html += `</div>`;
+    }
 
     const hasEvents = d.events && d.events.length;
     html += `<div class="card"><div class="card-row">
@@ -714,6 +814,23 @@ function loadDashboard() {
 
     html += `</div>`;
     main.innerHTML = html;
+
+    // Fetch quote inline
+    api('/api/couple/quote').then(qd => {
+      const el = document.getElementById('dashQuoteText');
+      if (el) {
+        if (qd.exists) {
+          const q = qd.data;
+          const text = isEn ? (q.quote_en || q.quote_pt || '') : (q.quote_pt || q.quote_en || '');
+          el.textContent = text.length > 60 ? text.slice(0, 60) + '…' : text;
+        } else {
+          el.textContent = isEn ? 'No quote today' : 'Nenhuma citação hoje';
+        }
+      }
+    }).catch(() => {
+      const el = document.getElementById('dashQuoteText');
+      if (el) el.textContent = isEn ? 'No quote today' : 'Nenhuma citação hoje';
+    });
   }).catch(e => {
     main.innerHTML = `<div class="empty-state" style="padding:60px;">${esc(e.message)}</div>`;
   });
@@ -829,6 +946,7 @@ async function saveDiary() {
 }
 
 function loadChallenge() {
+  _photoData = null;
   const main = document.getElementById('mainContent');
   const isEn = getLang() === 'en';
   api('/api/couple/challenge').then(d => {
@@ -839,53 +957,320 @@ function loadChallenge() {
         <defs><linearGradient id="hc" x1="14" y1="4.5" x2="14" y2="24.5"><stop stop-color="var(--pink)"/><stop offset="1" stop-color="var(--pink-dark)"/></linearGradient></defs>
       </svg>
     </div>`;
-    html += `<div class="challenge-box"><div class="challenge-type-badge">${d.type || ''}</div>`;
 
-    if (d.type === 'wordle') {
-      const word = d.data.word || '????';
-      html += `<div style="font-weight:700;margin-bottom:4px;font-size:0.85rem;color:var(--text-light);">${isEn ? 'Guess the word of the day!' : 'Descubra a palavra do dia!'}</div>`;
-      const reveal = d.my_done;
-      html += `<div class="challenge-word">${reveal ? word : word.split('').map(() => '_').join(' ')}</div>`;
-      if (d.my_done) {
-        html += `<div style="margin-top:10px;color:var(--pink-dark);font-weight:800;font-size:1rem;">✅ ${isEn ? 'You got it!' : 'Você acertou!'}</div>`;
-      } else {
-        html += `<button class="card-action" onclick="completeChallenge()" style="margin-top:14px;">✅ ${isEn ? 'I got it!' : 'Acertei!'}</button>`;
-      }
-    } else if (d.type === 'riddle') {
+    const tlabel = { riddle: isEn ? 'Riddle' : 'Enigma', partner_question: isEn ? 'Partner Question' : 'Pergunta do Parceiro', partner_challenge: isEn ? 'Partner Challenge' : 'Desafio do Parceiro', quote: isEn ? 'Quote' : 'Citação', photo: isEn ? 'Photo' : 'Foto' };
+    const typeName = tlabel[d.type] || d.type;
+    html += `<div class="challenge-box"><div class="challenge-type-badge">${typeName}</div>`;
+
+    if (d.type === 'riddle') {
       const riddle = isEn ? (d.data.riddle_en || '') : (d.data.riddle_pt || '');
-      const answer = isEn ? (d.data.answer_en || '') : (d.data.answer_pt || '');
       html += `<div class="challenge-riddle">${esc(riddle)}</div>`;
-      if (d.my_done) {
+      if (!d.my_done && !d.my_guess) {
+        html += `<input id="guessInput" type="text" placeholder="${isEn ? 'Your answer...' : 'Sua resposta...'}" style="margin-top:12px;text-align:center;">`;
+        html += `<button class="card-action" onclick="submitRiddleGuess()" style="margin-top:10px;">💭 ${isEn ? 'Guess' : 'Palpitar'}</button>`;
+      } else if (d.my_guess && !d.my_done) {
+        html += `<div style="margin-top:10px;color:var(--text-light);font-weight:600;">❌ ${isEn ? 'Wrong guess. Try again?' : 'Palpite errado. Tentar de novo?'}</div>`;
+        html += `<input id="guessInput" type="text" placeholder="${isEn ? 'Another guess...' : 'Outro palpite...'}" style="margin-top:12px;text-align:center;" value="${esc(d.my_guess)}">`;
+        html += `<button class="card-action" onclick="submitRiddleGuess()" style="margin-top:10px;">💭 ${isEn ? 'Guess' : 'Palpitar'}</button>`;
+      } else {
+        const answer = isEn ? (d.data.answer_en || '') : (d.data.answer_pt || '');
         html += `<div style="margin-top:8px;"><span style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--text-light);">${isEn ? 'Answer' : 'Resposta'}:</span> <span style="font-weight:700;">${esc(answer)}</span></div>`;
-        html += `<div style="margin-top:8px;color:var(--pink-dark);font-weight:800;">✅ ${isEn ? 'You solved it!' : 'Você resolveu!'}</div>`;
-      } else {
-        html += `<button class="card-action" onclick="completeChallenge()" style="margin-top:14px;">✅ ${isEn ? 'I solved it!' : 'Resolvi!'}</button>`;
+        html += `<div style="margin-top:8px;color:var(--pink-dark);font-weight:800;">✅ ${isEn ? 'Solved!' : 'Resolvido!'}</div>`;
       }
-    } else {
-      const prompt = isEn ? (d.data.prompt_en || '') : (d.data.prompt_pt || '');
-      html += `<div style="font-weight:700;margin-bottom:8px;font-size:0.85rem;color:var(--text-light);">📸 ${isEn ? 'Photo Challenge' : 'Desafio de Foto'}</div>`;
-      html += `<div style="font-size:1rem;line-height:1.7;">${esc(prompt)}</div>`;
-      if (!d.my_done) {
-        html += `<button class="card-action" onclick="completeChallenge()" style="margin-top:14px;">✅ ${isEn ? 'Done!' : 'Feito!'}</button>`;
+    } else if (d.type === 'partner_question') {
+      const theme = d.data.chosen_theme || d.data.custom_theme || (d.data.themes && d.data.themes.length > 0 ? d.data.themes[0] : '');
+      if (d.created_by && d.created_by === USER_NAME) {
+        html += `<div style="margin-bottom:8px;color:var(--text-light);font-size:0.85rem;">${isEn ? 'You created a question. Your partner answers it.' : 'Você criou uma pergunta. Seu parceiro responde.'}</div>`;
+        if (d.data.question) {
+          html += `<div class="challenge-question">${esc(d.data.question)}</div>`;
+          html += `<div style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--text-light);margin-top:8px;">${isEn ? 'Theme' : 'Tema'}: ${esc(theme)}</div>`;
+          if (d.my_answered) {
+            html += `<div class="challenge-answer"><strong>${isEn ? 'Your answer' : 'Sua resposta'}:</strong> ${esc(d.my_guess)}</div>`;
+          }
+          if (d.partner_answered) {
+            html += `<div class="challenge-answer" style="border-left-color:var(--lavender);"><strong>${esc(d.partner_name)} ${isEn ? 'answered' : 'respondeu'}:</strong> ${esc(d.partner_guess)}</div>`;
+          } else {
+            html += `<div class="empty-state">⏳ ${isEn ? 'Waiting for' : 'Aguardando'} ${esc(d.partner_name)}...</div>`;
+          }
+        }
+      } else if (d.created_by && d.created_by !== USER_NAME) {
+        if (d.data.question && !d.my_answered) {
+          html += `<div style="margin-bottom:8px;color:var(--text-light);font-size:0.85rem;">${esc(d.partner_name)} ${isEn ? 'asks' : 'pergunta'}:</div>`;
+          html += `<div class="challenge-question">${esc(d.data.question)}</div>`;
+          if (theme) html += `<div style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--text-light);margin-top:8px;">${isEn ? 'Theme' : 'Tema'}: ${esc(theme)}</div>`;
+          html += `<textarea id="partnerQAnswer" rows=3 placeholder="${isEn ? 'Your answer...' : 'Sua resposta...'}" style="margin-top:12px;"></textarea>`;
+          html += `<button class="card-action" onclick="answerPartnerQuestion()" style="margin-top:10px;">💕 ${isEn ? 'Answer' : 'Responder'}</button>`;
+        } else if (d.data.question && d.my_answered) {
+          html += `<div class="challenge-question">${esc(d.data.question)}</div>`;
+          html += `<div class="challenge-answer"><strong>${isEn ? 'Your answer' : 'Sua resposta'}:</strong> ${esc(d.my_guess)}</div>`;
+          if (d.partner_answered) {
+            html += `<div class="challenge-answer" style="border-left-color:var(--lavender);"><strong>${esc(d.partner_name)} ${isEn ? 'answers' : 'responde'} (${isEn ? 'my question' : 'minha pergunta'}):</strong> ${esc(d.partner_guess)}</div>`;
+          }
+          if (d.both_answered) {
+            html += `<div style="margin-top:12px;text-align:center;"><button class="btn btn-ghost" onclick="showSection('memories')">📸 ${isEn ? 'View in Mixed Memories' : 'Ver em Mixed Memories'}</button></div>`;
+          }
+        }
       } else {
-        html += `<div style="margin-top:8px;color:var(--pink-dark);font-weight:800;">✅ ${isEn ? 'You completed it!' : 'Você completou!'}</div>`;
+        if (d.data.themes && d.data.themes.length) {
+          html += `<div style="font-size:0.9rem;font-weight:600;margin-bottom:10px;">${isEn ? 'Choose a theme and create a question for your partner' : 'Escolha um tema e crie uma pergunta para seu parceiro'}</div>`;
+          html += `<div class="section-title" style="font-size:8px;margin-bottom:6px;">${isEn ? 'Themes' : 'Temas'}</div>`;
+          html += `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">`;
+          d.data.themes.forEach((th, i) => {
+            html += `<span class="mood-btn" data-idx="${i}" onclick="document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('selected'));this.classList.add('selected');window._themeIdx=${i};">${esc(th)}</span>`;
+          });
+          html += `</div>`;
+          html += `<div class="add-form">`;
+          html += `<textarea id="partnerQuestion" rows=2 placeholder="${isEn ? 'Write a question for your partner...' : 'Escreva uma pergunta para seu parceiro...'}"></textarea>`;
+          html += `<input id="customTheme" placeholder="${isEn ? 'Or type a custom theme' : 'Ou digite um tema personalizado'}" style="margin-top:6px;">`;
+          html += `<button class="card-action" onclick="createPartnerQuestion()" style="margin-top:6px;">💕 ${isEn ? 'Send Question' : 'Enviar Pergunta'}</button>`;
+          html += `</div>`;
+        } else {
+          html += `<div class="add-form">`;
+          html += `<textarea id="partnerQuestion" rows=2 placeholder="${isEn ? 'Write a question for your partner...' : 'Escreva uma pergunta para seu parceiro...'}"></textarea>`;
+          html += `<button class="card-action" onclick="createPartnerQuestion()" style="margin-top:6px;">💕 ${isEn ? 'Send Question' : 'Enviar Pergunta'}</button>`;
+          html += `</div>`;
+        }
+      }
+    } else if (d.type === 'quote') {
+      const qd = d.data;
+      const qText = isEn ? (qd.quote_en || qd.quote_pt || '') : (qd.quote_pt || qd.quote_en || '');
+      html += `<div style="text-align:center;padding:10px 0;">
+        <div style="font-size:1.1rem;line-height:1.7;font-style:italic;padding:16px;background:var(--cream);border-radius:var(--radius-sm);">"${esc(qText)}"</div>
+        <div style="margin-top:10px;font-weight:800;">${esc(qd.author || '')}</div>
+        <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--text-light);margin-top:4px;">${esc(qd.source || '')}</div>
+        ${qd.original && qd.original !== qText ? `<div style="margin-top:8px;font-size:0.85rem;color:var(--text-light);font-style:italic;padding:10px;background:rgba(255,255,255,0.5);border-radius:var(--radius-sm);">"${esc(qd.original)}"</div>` : ''}
+      </div>`;
+    } else if (d.type === 'photo') {
+      const prompt = isEn ? (d.data.prompt_en || d.data.prompt_pt || '') : (d.data.prompt_pt || d.data.prompt_en || '');
+      html += `<div style="font-size:0.9rem;font-weight:600;margin-bottom:10px;line-height:1.6;">${esc(prompt)}</div>`;
+      if (d.data.photo_url && d.data.photo_by === USER_NAME) {
+        html += `<img src="${d.data.photo_url}" class="photo-preview" alt="photo">`;
+        html += `<div style="margin-top:8px;color:var(--pink-dark);font-weight:800;">✅ ${isEn ? 'Photo uploaded!' : 'Foto enviada!'}</div>`;
+        if (d.data.caption) html += `<div style="font-size:0.85rem;color:var(--text-light);margin-top:4px;">"${esc(d.data.caption)}"</div>`;
+      } else if (d.data.photo_url && d.data.photo_by !== USER_NAME) {
+        html += `<img src="${d.data.photo_url}" class="photo-preview" alt="partner photo">`;
+        html += `<div style="margin-top:8px;color:var(--text-light);font-size:0.85rem;">${esc(d.partner_name)} ${isEn ? 'uploaded' : 'enviou'}</div>`;
+        if (d.data.caption) html += `<div style="font-size:0.85rem;color:var(--text-light);">"${esc(d.data.caption)}"</div>`;
+        if (!d.my_done) {
+          html += `<button class="card-action" onclick="uploadPhotoNow()" style="margin-top:10px;">📸 ${isEn ? 'Take your photo too' : 'Tire sua foto também'}</button>`;
+        }
+      } else {
+        html += `<div id="photoCaptureArea">
+          <input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none;" onchange="handlePhotoSelect(event)">
+          <button class="card-action" onclick="document.getElementById('photoInput').click()" style="margin-top:10px;">📸 ${isEn ? 'Take Photo' : 'Tirar Foto'}</button>
+          <canvas id="photoCanvas" style="display:none;"></canvas>
+          <div id="photoPreview" style="margin-top:10px;"></div>
+          <input id="photoCaption" type="text" placeholder="${isEn ? 'Add a caption...' : 'Adicione uma legenda...'}" style="margin-top:8px;display:none;">
+          <button class="card-action" id="uploadPhotoBtn" onclick="uploadPhotoNow()" style="margin-top:10px;display:none;">💕 ${isEn ? 'Upload' : 'Enviar'}</button>
+        </div>`;
       }
     }
 
     html += `<div style="margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,181,194,0.15);display:flex;gap:20px;justify-content:center;font-family:'Press Start 2P',monospace;font-size:8px;">
-      <div><span style="color:var(--text-light);">${isEn ? 'You' : 'Você'}:</span> ${d.my_done ? '✅' : '⏳'}</div>
-      <div><span style="color:var(--text-light);">${esc(d.partner_name)}:</span> ${d.partner_done ? '✅' : '⏳'}</div>
-    </div></div></div></div>`;
+      <div><span style="color:var(--text-light);">${isEn ? 'You' : 'Você'}:</span> ${d.my_done ? '✅' : (d.my_answered ? '💬' : '⏳')}</div>
+      <div><span style="color:var(--text-light);">${esc(d.partner_name)}:</span> ${d.partner_done ? '✅' : (d.partner_answered ? '💬' : '⏳')}</div>
+    </div></div>`;
+
+    // ── Always show partner challenge creation ──
+    html += `<div class="card" style="margin-top:14px;">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+        <span style="font-size:1.2rem;">💪</span>
+        <span style="font-weight:800;font-size:0.9rem;">${isEn ? 'Create a Challenge for Your Partner' : 'Criar Desafio para seu Parceiro'}</span>
+      </div>
+      <div id="partnerChallengeList"></div>
+      <button class="card-action small" onclick="showCreatePartnerChallenge()" style="margin-top:8px;">+ ${isEn ? 'New Challenge' : 'Novo Desafio'}</button>
+      <div id="partnerChallengeForm" class="add-form" style="display:none;margin-top:12px;">
+        <textarea id="newPartnerChallenge" rows=2 placeholder="${isEn ? 'Write a challenge for your partner...' : 'Escreva um desafio para seu parceiro...'}"></textarea>
+        <button class="card-action small" onclick="savePartnerChallenge()">💕 ${isEn ? 'Send Challenge' : 'Enviar Desafio'}</button>
+        <button class="btn btn-ghost" onclick="document.getElementById('partnerChallengeForm').style.display='none'" style="font-size:0.75rem;">${isEn ? 'Cancel' : 'Cancelar'}</button>
+      </div>
+      <div id="partnerChallengeRefresh" style="margin-top:8px;"></div>
+    </div>`;
+
+    html += `</div>`;
     main.innerHTML = html;
+
+    // Always load partner challenges
+    loadPartnerChallengeList();
   });
 }
 
-async function completeChallenge() {
+let _photoData = null;
+function handlePhotoSelect(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    compressPhotoAnalog(e.target.result);
+  };
+  reader.readAsDataURL(file);
+}
+
+function compressPhotoAnalog(dataUrl) {
+  const img = new Image();
+  img.onload = function() {
+    const canvas = document.getElementById('photoCanvas');
+    const maxW = 480, maxH = 640;
+    let w = img.width, h = img.height;
+    if (w > maxW) { h *= maxW / w; w = maxW; }
+    if (h > maxH) { w *= maxH / h; h = maxH; }
+    canvas.width = w; canvas.height = h;
+    const ctx = canvas.getContext('2d');
+
+    // Analog camera effect: dilute colors, light sepia, grain
+    ctx.fillStyle = '#f5efe0';
+    ctx.fillRect(0, 0, w, h);
+    ctx.globalAlpha = 0.85;
+    ctx.drawImage(img, 0, 0, w, h);
+    ctx.globalAlpha = 1;
+
+    const imageData = ctx.getImageData(0, 0, w, h);
+    const data = imageData.data;
+    for (let i = 0; i < data.length; i += 4) {
+      // Sepia-like wash
+      data[i] = Math.min(255, data[i] * 0.9 + 30);
+      data[i+1] = Math.min(255, data[i+1] * 0.85 + 20);
+      data[i+2] = Math.min(255, data[i+2] * 0.75 + 10);
+      // Grain
+      const grain = (Math.random() - 0.5) * 20;
+      data[i] = Math.max(0, Math.min(255, data[i] + grain));
+      data[i+1] = Math.max(0, Math.min(255, data[i+1] + grain));
+      data[i+2] = Math.max(0, Math.min(255, data[i+2] + grain));
+    }
+    ctx.putImageData(imageData, 0, 0);
+
+    // Vignette
+    const gradient = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w,h)/2);
+    gradient.addColorStop(0, 'rgba(0,0,0,0)');
+    gradient.addColorStop(0.6, 'rgba(0,0,0,0)');
+    gradient.addColorStop(1, 'rgba(0,0,0,0.25)');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, w, h);
+
+    const compressed = canvas.toDataURL('image/jpeg', 0.75);
+    _photoData = compressed;
+
+    // Show preview
+    const preview = document.getElementById('photoPreview');
+    preview.innerHTML = `<img src="${compressed}" class="photo-preview" style="max-height:250px;">`;
+    document.getElementById('photoCaption').style.display = 'block';
+    document.getElementById('uploadPhotoBtn').style.display = 'inline-flex';
+  };
+  img.src = dataUrl;
+}
+
+async function uploadPhotoNow() {
+  if (!_photoData) {
+    document.getElementById('photoInput').click();
+    return;
+  }
+  const caption = document.getElementById('photoCaption')?.value?.trim() || '';
   const isEn = getLang() === 'en';
   try {
-    await api('/api/couple/challenge/complete', { method: 'POST', body: { couple_id: COUPLE_ID, name: USER_NAME } });
-    showToast(isEn ? 'Challenge completed! 🎉' : 'Desafio completo! 🎉');
+    await api('/api/couple/challenge/photo', { method: 'POST', body: { couple_id: COUPLE_ID, name: USER_NAME, photo: _photoData, caption } });
+    showToast(isEn ? 'Photo uploaded! 📸' : 'Foto enviada! 📸');
     loadChallenge();
+  } catch(e) { showToast(e.message, true); }
+}
+
+async function submitRiddleGuess() {
+  const guess = document.getElementById('guessInput')?.value?.trim();
+  if (!guess) return;
+  const isEn = getLang() === 'en';
+  try {
+    const r = await api('/api/couple/challenge/guess', { method: 'POST', body: { couple_id: COUPLE_ID, name: USER_NAME, guess } });
+    if (r.correct) {
+      showToast(isEn ? 'Correct! 🎉' : 'Correto! 🎉');
+    } else {
+      showToast(isEn ? 'Wrong! Try again 💭' : 'Errado! Tente de novo 💭');
+    }
+    loadChallenge();
+  } catch(e) { showToast(e.message, true); }
+}
+
+async function createPartnerQuestion() {
+  const question = document.getElementById('partnerQuestion')?.value?.trim();
+  if (!question) return;
+  const isEn = getLang() === 'en';
+  const themeIdx = window._themeIdx;
+  const customTheme = document.getElementById('customTheme')?.value?.trim() || '';
+  try {
+    await api('/api/couple/challenge/create-question', { method: 'POST', body: { couple_id: COUPLE_ID, name: USER_NAME, question, theme_idx: themeIdx, custom_theme: customTheme } });
+    showToast(isEn ? 'Question sent! 💕' : 'Pergunta enviada! 💕');
+    loadChallenge();
+  } catch(e) { showToast(e.message, true); }
+}
+
+async function answerPartnerQuestion() {
+  const answer = document.getElementById('partnerQAnswer')?.value?.trim();
+  if (!answer) return;
+  const isEn = getLang() === 'en';
+  try {
+    await api('/api/couple/challenge/answer-question', { method: 'POST', body: { couple_id: COUPLE_ID, name: USER_NAME, answer } });
+    showToast(isEn ? 'Answer sent! 💕' : 'Resposta enviada! 💕');
+    loadChallenge();
+  } catch(e) { showToast(e.message, true); }
+}
+
+async function loadPartnerChallengeList() {
+  const container = document.getElementById('partnerChallengeList');
+  const refresh = document.getElementById('partnerChallengeRefresh');
+  if (!container) return;
+  const isEn = getLang() === 'en';
+  try {
+    const chals = await api('/api/couple/challenge/partner');
+    if (!chals.length) {
+      container.innerHTML = `<div class="empty-state">${isEn ? 'No challenges yet. Create one!' : 'Nenhum desafio ainda. Crie um!'}</div>`;
+    } else {
+      container.innerHTML = chals.map(c => {
+        const isMine = c.created_by === USER_NAME;
+        return `<div class="challenge-answer" style="margin-bottom:8px;">
+          <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--text-light);margin-bottom:4px;">${isMine ? (isEn ? 'You proposed' : 'Você propôs') : esc(c.created_by)}</div>
+          <div style="font-weight:700;font-size:0.9rem;">${esc(c.challenge)}</div>
+          <div style="display:flex;gap:12px;margin-top:6px;font-family:'Press Start 2P',monospace;font-size:7px;color:var(--text-light);">
+            <span>${isEn ? 'Me' : 'Eu'}: ${c.my_done ? '✅' : '⏳'}</span>
+            <span>${c.created_by}: ${c.partner_done ? '✅' : '⏳'}</span>
+          </div>
+          ${!c.my_done ? `<button class="card-action small" onclick="completePartnerChallenge(${c.id})" style="margin-top:8px;">✅ ${isEn ? 'Done!' : 'Feito!'}</button>` : ''}
+        </div>`;
+      }).join('');
+    }
+    refresh.innerHTML = `<button class="btn btn-ghost" onclick="loadPartnerChallengeList()" style="font-size:0.72rem;">🔄 ${isEn ? 'Refresh' : 'Atualizar'}</button>`;
+  } catch(e) {
+    if (container) container.innerHTML = `<div class="empty-state">${esc(e.message)}</div>`;
+  }
+}
+
+function showCreatePartnerChallenge() {
+  const form = document.getElementById('partnerChallengeForm');
+  if (form) form.style.display = form.style.display === 'none' ? 'block' : 'none';
+}
+
+function useChallengeSuggestion(el, text) {
+  const ta = document.getElementById('newPartnerChallenge');
+  if (ta) ta.value = text;
+  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+  if (el) el.classList.add('selected');
+}
+
+async function savePartnerChallenge() {
+  const text = document.getElementById('newPartnerChallenge')?.value?.trim();
+  if (!text) return;
+  const isEn = getLang() === 'en';
+  try {
+    await api('/api/couple/challenge/partner/create', { method: 'POST', body: { couple_id: COUPLE_ID, name: USER_NAME, challenge: text } });
+    showToast(isEn ? 'Challenge created! 💪' : 'Desafio criado! 💪');
+    document.getElementById('partnerChallengeForm').style.display = 'none';
+    loadChallenge();
+  } catch(e) { showToast(e.message, true); }
+}
+
+async function completePartnerChallenge(id) {
+  const isEn = getLang() === 'en';
+  try {
+    await api('/api/couple/challenge/partner/complete', { method: 'POST', body: { id, name: USER_NAME } });
+    showToast(isEn ? 'Challenge completed! 🎉' : 'Desafio completo! 🎉');
+    loadPartnerChallengeList();
   } catch(e) { showToast(e.message, true); }
 }
 
@@ -1065,6 +1450,548 @@ async function saveReview() {
   } catch(e) { showToast(e.message, true); }
 }
 
+function loadQuote() {
+  const main = document.getElementById('mainContent');
+  const isEn = getLang() === 'en';
+  api('/api/couple/quote').then(d => {
+    if (!d.exists && d.exhausted) {
+      main.innerHTML = `<div class="section"><div class="section-title">💌 ${isEn ? "Today's Quote" : 'Citação do Dia'}${backLink()}</div>
+        <div class="card" style="text-align:center;"><div class="empty-state">${esc(isEn ? 'No quote today' : 'Nenhuma citação hoje')}</div></div></div>`;
+      return;
+    }
+    if (!d.exists) {
+      main.innerHTML = `<div class="section"><div class="card"><div class="empty-state">💌 ${isEn ? 'No quote today' : 'Nenhuma citação hoje'}</div></div></div>`;
+      return;
+    }
+    renderQuote(d, isEn, main);
+  }).catch(e => {
+    main.innerHTML = `<div class="empty-state">${esc(e.message)}</div>`;
+  });
+}
+
+function renderQuote(d, isEn, main) {
+  const q = d.data;
+  let html = `<div class="section"><div class="section-title">💌 ${isEn ? "Today's Quote" : 'Citação do Dia'}${backLink()}</div>`;
+  html += `<div class="card" style="text-align:center;"><div class="card-heart">
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M14 24.5L5.25 15.75C3.25 13.75 2.5 10.5 4.5 7.75C6.5 5 10 4.5 12.5 7L14 8.5L15.5 7C18 4.5 21.5 5 23.5 7.75C25.5 10.5 24.75 13.75 22.75 15.75L14 24.5Z" fill="url(#hq)" stroke="var(--pink-dark)" stroke-width="0.8"/>
+      <defs><linearGradient id="hq" x1="14" y1="4.5" x2="14" y2="24.5"><stop stop-color="var(--pink)"/><stop offset="1" stop-color="var(--pink-dark)"/></linearGradient></defs>
+    </svg>
+  </div>`;
+
+  // Navigation
+  html += `<div style="display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:10px;">`;
+  if (d.has_prev) {
+    html += `<button class="card-action small" onclick="navigateQuote(${d.current_offset - 1})" style="padding:8px 16px;font-size:1.2rem;">‹</button>`;
+  } else {
+    html += `<div style="width:44px;"></div>`;
+  }
+  html += `<div style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--text-light);">${d.current_offset + 1} / ${d.max_offset + 1}</div>`;
+  if (d.has_next) {
+    html += `<button class="card-action small" onclick="navigateQuote(${d.current_offset + 1})" style="padding:8px 16px;font-size:1.2rem;">›</button>`;
+  } else {
+    html += `<div style="width:44px;"></div>`;
+  }
+  html += `</div>`;
+
+  const qText = isEn ? (q.quote_en || q.quote_pt || '') : (q.quote_pt || q.quote_en || '');
+  html += `<div style="padding:6px 0;">
+    <div style="font-size:1.2rem;line-height:1.8;font-style:italic;padding:20px;background:var(--cream);border-radius:var(--radius-sm);">"${esc(qText)}"</div>
+    <div style="margin-top:12px;font-weight:800;font-size:1rem;">${esc(q.author || '')}</div>
+    <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--text-light);margin-top:6px;">${esc(q.source || '')}</div>`;
+  if (q.original && q.original !== qText) {
+    html += `<div style="margin-top:12px;font-size:0.9rem;color:var(--text-light);font-style:italic;padding:14px;background:rgba(255,255,255,0.5);border-radius:var(--radius-sm);">"${esc(q.original)}"</div>`;
+  }
+  if (q.curiosity_pt || q.curiosity_en) {
+    const curiosityText = isEn ? (q.curiosity_en || q.curiosity_pt) : (q.curiosity_pt || q.curiosity_en);
+    html += `<div style="margin-top:12px;font-size:0.85rem;color:var(--text-light);padding:14px;background:var(--cream);border-radius:var(--radius-sm);text-align:left;">
+      <span style="font-weight:700;">💡 ${isEn ? 'Did you know?' : 'Sabia que?'}</span><br>${esc(curiosityText)}</div>`;
+  }
+
+  // Heart like
+  const isLiked = d.liked_offset === d.current_offset;
+  html += `<button style="margin-top:16px;font-size:2.5rem;background:none;border:none;cursor:pointer;padding:8px;" onclick="likeQuote()" aria-label="${isEn ? 'Like this quote' : 'Curtir este quote'}">${isLiked ? '❤️' : '🤍'}</button>`;
+  html += `<div style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--text-light);margin-top:2px;">${isEn ? 'Like your favorite quote' : 'Curtir seu quote favorito'}</div>`;
+
+  // Unlock button
+  if (d.can_unlock) {
+    html += `<div style="margin-top:16px;"><button class="card-action small" onclick="unlockQuote()">🔓 ${isEn ? 'Unlock next quote' : 'Liberar próximo quote'} (${d.remaining} ${isEn ? 'left' : 'restam'})</button></div>`;
+  } else if (d.current_offset === d.max_offset && d.max_offset > 0) {
+    html += `<div style="margin-top:16px;font-size:0.75rem;color:var(--text-light);font-style:italic;">💫 ${isEn ? "That's all for today!" : 'É isso por hoje!'}</div>`;
+  }
+
+  html += `</div></div>`;
+  main.innerHTML = html;
+}
+
+function navigateQuote(offset) {
+  const main = document.getElementById('mainContent');
+  const isEn = getLang() === 'en';
+  main.innerHTML = `<div class="loading"><div class="spinner"></div><div class="loading-text">${isEn ? 'Loading...' : 'Carregando...'}</div></div>`;
+  api('/api/couple/quote?offset=' + offset).then(d => renderQuote(d, isEn, main)).catch(e => {
+    main.innerHTML = `<div class="empty-state">${esc(e.message)}</div>`;
+  });
+}
+
+function unlockQuote() {
+  const main = document.getElementById('mainContent');
+  const isEn = getLang() === 'en';
+  main.innerHTML = `<div class="loading"><div class="spinner"></div><div class="loading-text">${isEn ? 'Loading...' : 'Carregando...'}</div></div>`;
+  api('/api/couple/quote?unlock=1').then(d => {
+    if (d.exhausted) {
+      main.innerHTML = `<div class="section"><div class="section-title">💌 ${isEn ? "Today's Quote" : 'Citação do Dia'}${backLink()}</div>
+        <div class="card" style="text-align:center;"><div class="empty-state">${esc(isEn ? "Today's quotes are done! Come back tomorrow." : 'Os quotes de hoje acabaram! Volte amanhã.')}</div></div></div>`;
+      return;
+    }
+    renderQuote(d, isEn, main);
+  }).catch(e => {
+    main.innerHTML = `<div class="empty-state">${esc(e.message)}</div>`;
+  });
+}
+
+function likeQuote() {
+  const main = document.getElementById('mainContent');
+  const isEn = getLang() === 'en';
+  api('/api/couple/quote?like=1').then(d => renderQuote(d, isEn, main)).catch(e => {
+    showToast(e.message, true);
+  });
+}
+
+function loadMemories() {
+  const main = document.getElementById('mainContent');
+  const isEn = getLang() === 'en';
+  api('/api/couple/memories').then(d => {
+    let html = `<div class="section"><div class="section-title">📖 ${isEn ? 'Mixed Memories' : 'Mixed Memories'}${backLink()}</div>`;
+    const hasQuestions = d.questions && d.questions.length;
+    const hasChallenges = d.challenges && d.challenges.length;
+    const hasReviews = d.reviews && d.reviews.length;
+    const hasPhotos = d.photos && d.photos.length;
+    const hasDiary = d.diary && d.diary.length;
+
+    if (!hasQuestions && !hasChallenges && !hasReviews && !hasPhotos && !hasDiary) {
+      html += `<div class="card"><div class="empty-state">📖 ${isEn ? 'No memories yet. Answer questions, take photos, and complete challenges together!' : 'Nenhuma memória ainda. Respondam perguntas, tirem fotos e completem desafios juntos!'}</div></div>`;
+      html += `</div>`;
+      main.innerHTML = html;
+      return;
+    }
+
+    // ── PHOTOS ──
+    if (hasPhotos) {
+let _photosData = [];
+// ... (after loadMemories)
+      html += `<div class="card"><div class="card-title">📸 ${isEn ? 'Photos' : 'Fotos'}</div>`;
+      html += `<div class="photo-grid">`;
+      _photosData = (d.photos || []).map(p => p.data);
+      d.photos.forEach((p, pi) => {
+        html += `<div style="position:relative;">
+          <img src="${esc(p.data)}" alt="photo" onclick="showFullPhoto(${pi})">
+          ${p.caption ? `<div style="font-size:0.7rem;color:var(--text-light);margin-top:4px;">"${esc(p.caption)}"</div>` : ''}
+          <div style="font-family:'Press Start 2P',monospace;font-size:6px;color:var(--text-light);margin-top:2px;">${p.date} · ${p.author_id === USER_NAME ? (isEn ? 'You' : 'Você') : esc(p.author_id)}</div>
+        </div>`;
+      });
+      html += `</div></div>`;
+    }
+
+    // ── DIARY ENTRIES ──
+    if (hasDiary) {
+      html += `<div class="card"><div class="card-title">📖 ${isEn ? 'Diary' : 'Diário'}</div>`;
+      d.diary.slice(0, 10).forEach(e => {
+        const author = e.author_id === USER_NAME ? (isEn ? 'You' : 'Você') : esc(e.author_id);
+        html += `<div class="memory-item">
+          <div class="memory-date">${e.date} · ${author} ${e.mood || ''}</div>
+          <div class="memory-a">${esc(e.content)}</div>
+        </div>`;
+      });
+      html += `</div>`;
+    }
+
+    // ── QUESTIONS ──
+    if (hasQuestions) {
+      html += `<div class="card"><div class="card-title">💭 ${isEn ? 'Answered Questions' : 'Perguntas Respondidas'}</div>`;
+      d.questions.slice(0, 10).forEach(q => {
+        html += `<div class="memory-item">
+          <div class="memory-date">${q.date}</div>
+          <div class="memory-q">${esc(isEn ? (q.question_en || q.question_pt) : (q.question_pt || q.question_en))}</div>
+          <div class="memory-a"><span style="font-weight:600;">${isEn ? 'You' : 'Você'}:</span> ${esc(q.my_answer)}</div>
+          <div class="memory-a" style="border-left-color:var(--lavender);"><span style="font-weight:600;">${isEn ? 'Partner' : 'Parceiro'}:</span> ${esc(q.partner_answer)}</div>
+        </div>`;
+      });
+      html += `</div>`;
+    }
+
+    // ── CHALLENGES ──
+    if (hasChallenges) {
+      html += `<div class="card"><div class="card-title">🎯 ${isEn ? 'Completed Challenges' : 'Desafios Completados'}</div>`;
+      d.challenges.slice(0, 10).forEach(c => {
+        const tlabel = { riddle: isEn ? 'Riddle' : 'Enigma', partner_question: isEn ? 'Question' : 'Pergunta', partner_challenge: isEn ? 'Partner Challenge' : 'Desafio do Parceiro', quote: isEn ? 'Quote' : 'Citação', photo: isEn ? 'Photo' : 'Foto' };
+        html += `<div class="memory-item">
+          <div class="memory-date">${c.date} · ${tlabel[c.type] || c.type}</div>
+          ${c.data?.riddle_pt || c.data?.riddle_en ? `<div class="memory-q">${esc(isEn ? (c.data.riddle_en || c.data.riddle_pt) : (c.data.riddle_pt || c.data.riddle_en))}</div>` : ''}
+          ${c.data?.question ? `<div class="memory-q">${esc(c.data.question)}</div>` : ''}
+          ${c.data?.challenge ? `<div class="memory-q">${esc(c.data.challenge)}</div>` : ''}
+          ${c.data?.quote_pt || c.data?.quote_en ? `<div class="memory-q">"${esc(isEn ? (c.data.quote_en || c.data.quote_pt) : (c.data.quote_pt || c.data.quote_en))}"</div>` : ''}
+          ${c.data?.photo_url ? `<img src="${c.data.photo_url}" class="photo-preview" style="max-height:150px;" onclick="showFullPhoto(-1, '${esc(c.data.photo_url)}')">` : ''}
+        </div>`;
+      });
+      html += `</div>`;
+    }
+
+    // ── REVIEWS ──
+    if (hasReviews) {
+      html += `<div class="card"><div class="card-title">📖 ${isEn ? 'Weekly Reviews' : 'Revisões Semanais'}</div>`;
+      d.reviews.slice(0, 5).forEach(r => {
+        html += `<div class="memory-item">
+          <div class="memory-date">${r.week_start}</div>
+          <div class="memory-a"><span style="font-weight:600;">${isEn ? 'You' : 'Você'}:</span> ${esc(r.my_reflection)}</div>
+          <div class="memory-a" style="border-left-color:var(--lavender);"><span style="font-weight:600;">${isEn ? 'Partner' : 'Parceiro'}:</span> ${esc(r.partner_reflection)}</div>
+        </div>`;
+      });
+      html += `</div>`;
+    }
+
+    html += `</div>`;
+    main.innerHTML = html;
+  }).catch(e => {
+    main.innerHTML = `<div class="empty-state">${esc(e.message)}</div>`;
+  });
+}
+
+const QUIZ_QUESTIONS = [
+  { category: 'basic', pt: 'O que te faz sentir mais amado(a) por mim?', en: 'What makes you feel most loved by me?', opts_pt: ['Palavras de afirmação', 'Tempo de qualidade', 'Toque físico', 'Atos de serviço'], opts_en: ['Words of affirmation', 'Quality time', 'Physical touch', 'Acts of service'] },
+  { category: 'basic', pt: 'Qual foi o momento mais especial que vivemos juntos(as)?', en: 'What was the most special moment we shared?', opts_pt: ['Nosso primeiro encontro', 'Nossa primeira viagem', 'Um momento simples do dia a dia', 'Superar um desafio juntos'], opts_en: ['Our first date', 'Our first trip', 'A simple everyday moment', 'Overcoming a challenge together'] },
+  { category: 'basic', pt: 'O que você mais admira em mim?', en: 'What do you admire most about me?', opts_pt: ['Minha gentileza', 'Minha força', 'Meu senso de humor', 'Minha dedicação'], opts_en: ['My kindness', 'My strength', 'My sense of humor', 'My dedication'] },
+  { category: 'basic', pt: 'Qual é o seu jeito favorito de passar tempo comigo?', en: 'What is your favorite way to spend time with me?', opts_pt: ['Conversando', 'Vendo um filme/série', 'Cozinhando juntos', 'Apenas estando juntos em silêncio'], opts_en: ['Talking', 'Watching a movie/series', 'Cooking together', 'Just being together in silence'] },
+  { category: 'basic', pt: 'O que te faz sentir seguro(a) na nossa relação?', en: 'What makes you feel safe in our relationship?', opts_pt: ['Confiança', 'Honestidade', 'Respeito', 'Apoio emocional'], opts_en: ['Trust', 'Honesty', 'Respect', 'Emotional support'] },
+  { category: 'basic', pt: 'Como você prefere que eu demonstre amor por você?', en: 'How do you prefer I show love to you?', opts_pt: ['Com palavras', 'Com gestos', 'Com presentes', 'Com presença'], opts_en: ['With words', 'With gestures', 'With gifts', 'With presence'] },
+  { category: 'basic', pt: 'O que você mais gosta em nós como casal?', en: 'What do you like most about us as a couple?', opts_pt: ['Nossa comunicação', 'Nossa cumplicidade', 'Nossa diversão', 'Nossa parceria'], opts_en: ['Our communication', 'Our connection', 'Our fun', 'Our partnership'] },
+  { category: 'basic', pt: 'Qual lembrança nossa te faz sorrir?', en: 'What memory of ours makes you smile?', opts_pt: ['Uma viagem especial', 'Um momento engraçado', 'Uma conquista juntos', 'Nosso começo'], opts_en: ['A special trip', 'A funny moment', 'An achievement together', 'Our beginning'] },
+  { category: 'spicy', pt: 'O que mais te atrai em mim?', en: 'What attracts you most to me?', opts_pt: ['Meu sorriso', 'Meu olhar', 'Minha confiança', 'Minha energia'], opts_en: ['My smile', 'My eyes', 'My confidence', 'My energy'] },
+  { category: 'spicy', pt: 'Qual é o seu lugar favorito para um momento íntimo?', en: 'What is your favorite place for an intimate moment?', opts_pt: ['Em casa', 'Na natureza', 'Em um hotel', 'Surpresa'], opts_en: ['At home', 'In nature', 'At a hotel', 'Surprise me'] },
+  { category: 'spicy', pt: 'O que você gostaria de explorar mais comigo?', en: 'What would you like to explore more with me?', opts_pt: ['Novas experiências', 'Mais conexão emocional', 'Aventuras', 'Intimidade física'], opts_en: ['New experiences', 'More emotional connection', 'Adventures', 'Physical intimacy'] },
+  { category: 'spicy', pt: 'O que te faz sentir mais conectado(a) a mim?', en: 'What makes you feel most connected to me?', opts_pt: ['Conversas profundas', 'Toque e carinho', 'Rir juntos', 'Superar desafios'], opts_en: ['Deep conversations', 'Touch and affection', 'Laughing together', 'Overcoming challenges'] },
+  { category: 'spicy', pt: 'Como você gosta de ser surpreendido(a)?', en: 'How do you like to be surprised?', opts_pt: ['Com um gesto romântico', 'Com uma saída inesperada', 'Com uma mensagem criativa', 'Com algo que eu mesmo(a) fiz'], opts_en: ['With a romantic gesture', 'With an unexpected outing', 'With a creative message', 'With something I made myself'] },
+  { category: 'spicy', pt: 'O que faz a chama continuar acesa pra você?', en: 'What keeps the flame alive for you?', opts_pt: ['Novidades e surpresas', 'Qualidade de tempo juntos', 'Intimidade física', 'Crescimento pessoal e do casal'], opts_en: ['Novelty and surprises', 'Quality time together', 'Physical intimacy', 'Personal and couple growth'] },
+  { category: 'spicy', pt: 'Qual foi o momento mais intenso que já vivemos?', en: 'What was the most intense moment we have lived?', opts_pt: ['Nosso primeiro beijo', 'Uma reconciliação', 'Uma viagem marcante', 'Uma noite especial'], opts_en: ['Our first kiss', 'A reconciliation', 'A memorable trip', 'A special night'] },
+  { category: 'spicy', pt: 'O que você nunca me contou mas gostaria de experimentar?', en: 'What have you never told me but would like to try?', opts_pt: ['Uma fantasia', 'Um lugar diferente', 'Um papel ou dinâmica nova', 'Algo criativo e inusitado'], opts_en: ['A fantasy', 'A different place', 'A new role or dynamic', 'Something creative and unusual'] },
+];
+
+function formatAnswer(answer, opts) {
+  if (answer === null || answer === undefined) return '?';
+  const num = typeof answer === 'number' ? answer : (typeof answer === 'string' && /^\d+$/.test(answer) ? parseInt(answer, 10) : NaN);
+  if (!isNaN(num) && opts && opts[num] !== undefined) return opts[num];
+  return answer;
+}
+
+let quizState = { step: 'load', idx: 0, category: 'basic', answers: [] };
+let quizGen = 0;
+
+function loadQuiz() {
+  const gen = ++quizGen;
+  quizState = { step: 'load', idx: 0, category: 'basic', answers: [] };
+  api('/api/couple/quiz', {
+    headers: { 'X-Couple-Id': COUPLE_ID, 'X-User-Name': USER_NAME }
+  }).then(d => {
+    if (gen !== quizGen) return;
+    const qs = QUIZ_QUESTIONS;
+    const myAnswers = {};
+    (d.answers || []).forEach(a => { myAnswers[a.question_idx] = a; });
+    quizState.partnerName = d.partner_name || PARTNER_NAME;
+
+    const basicQs = qs.filter(q => q.category === 'basic');
+    const spicyQs = qs.filter(q => q.category === 'spicy');
+
+    function firstUnanswered(arr, field) {
+      for (let i = 0; i < arr.length; i++) {
+        const idx = QUIZ_QUESTIONS.indexOf(arr[i]);
+        const a = myAnswers[idx];
+        if (!a || a[field] === null || a[field] === undefined) return i;
+      }
+      return -1;
+    }
+
+    // Resume self about self (basic)
+    let idx = firstUnanswered(basicQs, 'my_self');
+    if (idx >= 0) {
+      quizState.step = 'self'; quizState.category = 'basic'; quizState.idx = idx;
+      renderQuizSelf('basic'); return;
+    }
+    // Resume partner about partner (basic)
+    idx = firstUnanswered(basicQs, 'my_partner');
+    if (idx >= 0) {
+      quizState.step = 'partner'; quizState.category = 'basic'; quizState.idx = idx;
+      renderQuizPartner('basic'); return;
+    }
+    // Resume self about self (spicy)
+    idx = firstUnanswered(spicyQs, 'my_self');
+    if (idx >= 0) {
+      quizState.step = 'self'; quizState.category = 'spicy'; quizState.idx = idx;
+      renderQuizSelf('spicy'); return;
+    }
+    // Resume partner about partner (spicy)
+    idx = firstUnanswered(spicyQs, 'my_partner');
+    if (idx >= 0) {
+      quizState.step = 'partner'; quizState.category = 'spicy'; quizState.idx = idx;
+      renderQuizPartner('spicy'); return;
+    }
+    // All done
+    quizState.step = 'results';
+    renderQuizResults();
+  }).catch(e => {
+    const main = document.getElementById('mainContent');
+    main.innerHTML = `<div class="empty-state">${esc(e.message)}</div>`;
+  });
+}
+
+function renderQuizSelf(category) {
+  const main = document.getElementById('mainContent');
+  const isEn = getLang() === 'en';
+  const qs = QUIZ_QUESTIONS.filter(q => q.category === category);
+  if (quizState.idx >= qs.length) {
+    // Move to partner phase
+    quizState.idx = 0;
+    quizState.step = 'partner';
+    renderQuizPartner(category);
+    return;
+  }
+  const q = qs[quizState.idx];
+  const label = isEn ? `About me (${quizState.idx + 1}/${qs.length})` : `Sobre mim (${quizState.idx + 1}/${qs.length})`;
+  const qText = isEn ? q.en : q.pt;
+  const qOpts = isEn ? q.opts_en : q.opts_pt;
+  const opts = qOpts.map((o, i) => `<button class="answer-option" onclick="answerSelf(${i}, '${category}')">${esc(o)}</button>`).join('');
+
+  main.innerHTML = `<div class="section"><div class="section-title">❓ ${isEn ? 'Quiz' : 'Quiz'}${backLink()}</div>
+    <div class="card" style="text-align:center;">
+      <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--pink-dark);margin-bottom:10px;background:var(--cream);padding:8px 14px;border-radius:var(--radius-sm);">
+        💡 ${isEn ? 'Answer honestly! Once you both answer, you\'ll see each other\'s responses.' : 'Responda com sinceridade! Depois que ambos responderem, vocês verão as respostas um do outro.'}
+      </div>
+      <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--text-light);margin-bottom:8px;">${label}</div>
+      <div style="font-size:0.9rem;font-weight:700;margin-bottom:12px;line-height:1.5;">${qText.replace('minha','sua').replace('meu','seu').replace('my','your').replace('me','you')}</div>
+      <div>${opts}</div>
+      <div style="margin-top:14px;border-top:1px dashed rgba(0,0,0,0.08);padding-top:14px;">
+        <button class="card-action small" onclick="this.style.display='none';document.getElementById('customSelfArea').style.display='block'">✏️ ${isEn ? 'Other...' : 'Outro...'}</button>
+        <div id="customSelfArea" style="display:none;margin-top:8px;">
+          <input type="text" id="customSelfInput" placeholder="${isEn ? 'Type your answer...' : 'Digite sua resposta...'}" style="width:100%;">
+          <button class="card-action small" onclick="answerSelfCustom('${category}')" style="margin-top:8px;">💕 ${isEn ? 'Submit' : 'Enviar'}</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function answerSelfCustom(category) {
+  const text = document.getElementById('customSelfInput').value.trim();
+  if (!text) return;
+  answerSelf(text, category);
+}
+
+function answerSelf(selected, category) {
+  const isEn = getLang() === 'en';
+  const qs = QUIZ_QUESTIONS.filter(q => q.category === category);
+  const q = qs[quizState.idx];
+  api('/api/couple/quiz/save', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: { couple_id: COUPLE_ID, author_id: USER_NAME, question_idx: QUIZ_QUESTIONS.indexOf(q), category, about_self: String(selected) }
+  }).then(() => {
+    showToast(isEn ? 'Saved! 💕' : 'Salvo! 💕');
+    quizState.idx++;
+    renderQuizSelf(category);
+  }).catch(e => showToast(e.message, true));
+}
+
+function renderQuizPartner(category) {
+  const main = document.getElementById('mainContent');
+  const isEn = getLang() === 'en';
+  const qs = QUIZ_QUESTIONS.filter(q => q.category === category);
+  if (quizState.idx >= qs.length) {
+    // Check spicy
+    if (category === 'basic') {
+      quizState.idx = 0;
+      quizState.category = 'spicy';
+      renderQuizSelf('spicy');
+      return;
+    }
+    // Show results
+    quizState.step = 'results';
+    renderQuizResults();
+    return;
+  }
+  const q = qs[quizState.idx];
+  const partner = quizState.partnerName || PARTNER_NAME;
+  const label = isEn ? `About ${partner} (${quizState.idx + 1}/${qs.length})` : `Sobre ${partner} (${quizState.idx + 1}/${qs.length})`;
+  const qText = isEn ? q.en : q.pt;
+  const qOpts = isEn ? q.opts_en : q.opts_pt;
+  const replaced = isEn ? qText.replace('my', `${partner}'s`).replace(' me ', ' ' + partner + ' ') : qText.replace('minha', `da ${partner}`).replace('meu', `do ${partner}`).replace(' minha ', ' da ' + partner).replace(' meu ', ' do ' + partner);
+  const opts = qOpts.map((o, i) => `<button class="answer-option" onclick="answerPartner(${i}, '${category}')">${esc(o)}</button>`).join('');
+
+  main.innerHTML = `<div class="section"><div class="section-title">❓ ${isEn ? 'Quiz' : 'Quiz'}${backLink()}</div>
+    <div class="card" style="text-align:center;">
+      <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--pink-dark);margin-bottom:10px;background:var(--cream);padding:8px 14px;border-radius:var(--radius-sm);">
+        💡 ${isEn ? 'Think about what you know about your partner... The results will appear when you both finish!' : 'Pense no que você conhece sobre seu parceiro... Os resultados aparecerão quando ambos terminarem!'}
+      </div>
+      <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--text-light);margin-bottom:8px;">${label}</div>
+      <div style="font-size:0.9rem;font-weight:700;margin-bottom:12px;line-height:1.5;">${esc(replaced)}</div>
+      <div>${opts}</div>
+      <div style="margin-top:14px;border-top:1px dashed rgba(0,0,0,0.08);padding-top:14px;">
+        <button class="card-action small" onclick="this.style.display='none';document.getElementById('customPartnerArea').style.display='block'">✏️ ${isEn ? 'Other...' : 'Outro...'}</button>
+        <div id="customPartnerArea" style="display:none;margin-top:8px;">
+          <input type="text" id="customPartnerInput" placeholder="${isEn ? 'Type your answer...' : 'Digite sua resposta...'}" style="width:100%;">
+          <button class="card-action small" onclick="answerPartnerCustom('${category}')" style="margin-top:8px;">💕 ${isEn ? 'Submit' : 'Enviar'}</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function answerPartnerCustom(category) {
+  const text = document.getElementById('customPartnerInput').value.trim();
+  if (!text) return;
+  answerPartner(text, category);
+}
+
+function answerPartner(selected, category) {
+  const isEn = getLang() === 'en';
+  const qs = QUIZ_QUESTIONS.filter(q => q.category === category);
+  const q = qs[quizState.idx];
+  api('/api/couple/quiz/save', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: { couple_id: COUPLE_ID, author_id: USER_NAME, question_idx: QUIZ_QUESTIONS.indexOf(q), category, about_partner: String(selected) }
+  }).then(() => {
+    showToast(isEn ? 'Saved! 💕' : 'Salvo! 💕');
+    quizState.idx++;
+    renderQuizPartner(category);
+  }).catch(e => showToast(e.message, true));
+}
+
+function renderQuizResults() {
+  const main = document.getElementById('mainContent');
+  const isEn = getLang() === 'en';
+  const partner = quizState.partnerName || PARTNER_NAME;
+
+  api('/api/couple/quiz', {
+    headers: { 'X-Couple-Id': COUPLE_ID, 'X-User-Name': USER_NAME }
+  }).then(d => {
+    const answerMap = {};
+    (d.answers || []).forEach(a => { answerMap[a.question_idx] = a; });
+
+    const mySelfAnswers = {};
+    const myPartnerAnswers = {};
+    const partnerSelfAnswers = {};
+    const partnerPartnerAnswers = {};
+    (d.answers || []).forEach(a => {
+      if (a.my_self !== null && a.my_self !== undefined) mySelfAnswers[a.question_idx] = a.my_self;
+      if (a.my_partner !== null && a.my_partner !== undefined) myPartnerAnswers[a.question_idx] = a.my_partner;
+      if (a.partner_self !== null && a.partner_self !== undefined) partnerSelfAnswers[a.question_idx] = a.partner_self;
+      if (a.partner_partner !== null && a.partner_partner !== undefined) partnerPartnerAnswers[a.question_idx] = a.partner_partner;
+    });
+
+    const totalBasic = QUIZ_QUESTIONS.filter(q => q.category === 'basic').length;
+    const totalSpicy = QUIZ_QUESTIONS.filter(q => q.category === 'spicy').length;
+    const partnerSelfCount = Object.keys(partnerSelfAnswers).length;
+    const partnerPartnerCount = Object.keys(partnerPartnerAnswers).length;
+    const mySelfCount = Object.keys(mySelfAnswers).length;
+    const myPartnerCount = Object.keys(myPartnerAnswers).length;
+
+    let html = `<div class="section"><div class="section-title">❓ ${isEn ? 'Quiz Results' : 'Resultados do Quiz'}${backLink()}</div>`;
+
+    if (!d.partner_answered) {
+      html += `<div class="card"><div class="empty-state">⏳ ${isEn ? `Waiting for ${partner} to answer...` : `Aguardando ${partner} responder...`}</div></div>`;
+      html += `</div>`;
+      main.innerHTML = html;
+      return;
+    }
+
+    // Compare basic
+    let matchCount = 0;
+    let totalCompared = 0;
+    html += `<div class="card"><div class="card-title">💕 ${isEn ? 'Basic Questions' : 'Perguntas Básicas'}</div>`;
+    QUIZ_QUESTIONS.filter(q => q.category === 'basic').forEach((q, i) => {
+      const idx = QUIZ_QUESTIONS.indexOf(q);
+      const mySelf = mySelfAnswers[idx];
+      const partnerAboutMe = partnerPartnerAnswers[idx]; // partner's guess about me
+      const partnerSelf = partnerSelfAnswers[idx];
+      const myAboutPartner = myPartnerAnswers[idx];
+
+      if (mySelf !== undefined && partnerAboutMe !== undefined) {
+        totalCompared++;
+        const matchVal = String(mySelf) === String(partnerAboutMe);
+        if (matchVal) matchCount++;
+        const match = matchVal ? '✅' : '❌';
+        html += `<div class="diary-entry"><div class="meta">${match} ${isEn ? q.en : q.pt}</div>
+          <div class="content" style="font-size:0.82rem;">
+            <div>${esc(USER_DISPLAY || USER_NAME)} ${isEn ? 'said about self' : 'disse sobre si'}: <strong>${esc(formatAnswer(mySelf, isEn ? q.opts_en : q.opts_pt))}</strong></div>
+            <div>${esc(partner)} ${isEn ? 'thinks about you' : 'acha sobre você'}: <strong>${esc(formatAnswer(partnerAboutMe, isEn ? q.opts_en : q.opts_pt))}</strong></div>
+          </div></div>`;
+      } else if (mySelf !== undefined && partnerAboutMe === undefined) {
+        html += `<div class="diary-entry"><div class="meta">⏳ ${isEn ? q.en : q.pt}</div>
+          <div class="content" style="font-size:0.82rem;color:var(--text-light);">
+            ${isEn ? `Waiting for ${partner} to answer about you...` : `Aguardando ${partner} responder sobre você...`}
+          </div></div>`;
+      }
+    });
+    html += `<div style="text-align:center;padding:8px;font-weight:700;">${isEn ? `Match: ${matchCount}/${totalCompared}` : `Acertos: ${matchCount}/${totalCompared}`}</div>`;
+    html += `</div>`;
+
+    // Compare spicy
+    let spicyMatch = 0;
+    let spicyTotal = 0;
+    html += `<div class="card"><div class="card-title">🔥 ${isEn ? 'Spicy Questions' : 'Perguntas Apimentadas'}</div>`;
+    QUIZ_QUESTIONS.filter(q => q.category === 'spicy').forEach((q, i) => {
+      const idx = QUIZ_QUESTIONS.indexOf(q);
+      const mySelf = mySelfAnswers[idx];
+      const partnerAboutMe = partnerPartnerAnswers[idx];
+      const partnerSelf = partnerSelfAnswers[idx];
+      const myAboutPartner = myPartnerAnswers[idx];
+
+      if (mySelf !== undefined && partnerAboutMe !== undefined) {
+        spicyTotal++;
+        const matchVal = String(mySelf) === String(partnerAboutMe);
+        if (matchVal) spicyMatch++;
+        const match = matchVal ? '✅' : '❌';
+        html += `<div class="diary-entry"><div class="meta">${match} ${isEn ? q.en : q.pt}</div>
+          <div class="content" style="font-size:0.82rem;">
+            <div>${esc(USER_DISPLAY || USER_NAME)}: <strong>${esc(formatAnswer(mySelf, isEn ? q.opts_en : q.opts_pt))}</strong></div>
+            <div>${esc(partner)} ${isEn ? 'thinks' : 'acha'}: <strong>${esc(formatAnswer(partnerAboutMe, isEn ? q.opts_en : q.opts_pt))}</strong></div>
+          </div></div>`;
+      } else if (mySelf !== undefined && partnerAboutMe === undefined) {
+        html += `<div class="diary-entry"><div class="meta">⏳ ${isEn ? q.en : q.pt}</div>
+          <div class="content" style="font-size:0.82rem;color:var(--text-light);">
+            ${isEn ? `Waiting for ${partner}...` : `Aguardando ${partner}...`}
+          </div></div>`;
+      }
+    });
+    html += `<div style="text-align:center;padding:8px;font-weight:700;">${isEn ? `Match: ${spicyMatch}/${spicyTotal}` : `Acertos: ${spicyMatch}/${spicyTotal}`}</div>`;
+    html += `</div>`;
+
+    if (d.partner_answered && !d.my_answered) {
+      html += `<div class="card"><div class="empty-state">💭 ${isEn ? 'Answer about yourself first!' : 'Responda sobre você primeiro!'}</div></div>`;
+    }
+
+    html += `<div class="card" style="text-align:center;">
+      <button class="card-action" onclick="loadQuiz()">🔄 ${isEn ? 'Refresh' : 'Atualizar'}</button>
+    </div>`;
+
+    html += `</div>`;
+    main.innerHTML = html;
+  }).catch(e => {
+    main.innerHTML = `<div class="empty-state">${esc(e.message)}</div>`;
+  });
+}
+
+function showFullPhoto(idx, url) {
+  const dataUrl = url || (idx >= 0 ? _photosData[idx] : null);
+  if (!dataUrl) return;
+  const modal = document.getElementById('moreModal');
+  modal.querySelector('.modal-box').innerHTML = `
+    <div style="text-align:center;">
+      <img src="${esc(dataUrl)}" style="max-width:100%;max-height:70vh;border-radius:var(--radius-sm);filter:sepia(0.3) contrast(0.9);box-shadow:var(--shadow);">
+      <br><br>
+      <button class="btn btn-outline" onclick="closeMoreMenu()">${getLang() === 'en' ? 'Close' : 'Fechar'}</button>
+    </div>`;
+  modal.classList.add('show');
+}
+
 let toastTimer;
 function showToast(msg, isError = false) {
   const existing = document.getElementById('toast');
@@ -1099,13 +2026,14 @@ function init() {
   const display = USER_DISPLAY || USER_NAME;
   document.getElementById('userGreeting').innerHTML = `✦ ${display} ✦`;
   updateNavLang();
-  loadDashboard();
+  const savedSection = sessionStorage.getItem('lang_section');
+  if (savedSection) {
+    sessionStorage.removeItem('lang_section');
+    showSection(savedSection);
+  } else {
+    loadDashboard();
+  }
 }
-
-// Toast keyframes
-document.head.appendChild(Object.assign(document.createElement('style'), {
-  textContent: `@keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(30px) scale(0.9); } to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); } }`
-}));
 
 setTimeout(init, 100);
 </script>

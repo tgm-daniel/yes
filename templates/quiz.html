@@ -212,11 +212,8 @@
       document.getElementById('welcomeText').textContent = welcomeMessage;
       document.getElementById('welcomeOverlay').classList.add('show');
 
-      // Show the right SVG
-      if (profileId !== 'vanessa') {
-        document.getElementById('welcomeHorseSvg').style.display = 'none';
-        document.getElementById('welcomeHeartSvg').style.display = 'block';
-      }
+      document.getElementById('welcomeHorseSvg').style.display = 'none';
+      document.getElementById('welcomeHeartSvg').style.display = 'block';
 
       // character eye tracking (throttled)
       const charEl = document.getElementById('welcomeCharacter');

@@ -1,14 +1,31 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Column, String, Integer, Boolean, DateTime, Text, JSON, Date
+from sqlalchemy import Column, String, Integer, Boolean, DateTime, Text, JSON, Date, ForeignKey
 from database import Base
+
+
+class Profile(Base):
+    __tablename__ = "profiles"
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4())[:12])
+    type = Column(String, default="quiz")
+    display_name = Column(String, default="")
+    data = Column(JSON, default=dict)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class LoginCredential(Base):
+    __tablename__ = "login_credentials"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    login_name = Column(String, unique=True, nullable=False)
+    profile_id = Column(String, ForeignKey("profiles.id"), nullable=False)
+    password_hash = Column(String, nullable=False)
 
 
 class QuizSession(Base):
     __tablename__ = "quiz_sessions"
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4())[:8])
-    profile_id = Column(String, default="vanessa")
+    profile_id = Column(String, default="")
     started_at = Column(DateTime, default=datetime.utcnow)
     completed_at = Column(DateTime, nullable=True)
     current_question = Column(Integer, default=0)
@@ -64,6 +81,13 @@ class Challenge(Base):
     date = Column(Date, nullable=False)
     type = Column(String, nullable=False)
     data = Column(JSON, default=dict)
+    created_by = Column(String, nullable=True)
+    guess_a = Column(Text, nullable=True)
+    guess_b = Column(Text, nullable=True)
+    answered_a = Column(Boolean, default=False)
+    answered_b = Column(Boolean, default=False)
+    seen_a = Column(Boolean, default=False)
+    seen_b = Column(Boolean, default=False)
     done_a = Column(Boolean, default=False)
     done_b = Column(Boolean, default=False)
 
@@ -98,3 +122,37 @@ class WeeklyReview(Base):
     reflection_a = Column(Text, nullable=True)
     reflection_b = Column(Text, nullable=True)
     completed = Column(Boolean, default=False)
+
+
+class QuizAnswer(Base):
+    __tablename__ = "quiz_answers"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    couple_id = Column(String, index=True, nullable=False)
+    author_id = Column(String, nullable=False)
+    question_idx = Column(Integer, nullable=False)
+    category = Column(String, default="basic")
+    about_self = Column(Text, nullable=True)
+    about_partner = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class QuoteRefresh(Base):
+    __tablename__ = "quote_refreshes"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    couple_id = Column(String, index=True, nullable=False)
+    date = Column(Date, nullable=False)
+    current_offset = Column(Integer, default=0)
+    max_offset = Column(Integer, default=0)
+    unlock_count = Column(Integer, default=0)
+    liked_offset = Column(Integer, nullable=True)
+
+
+class Photo(Base):
+    __tablename__ = "photos"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    couple_id = Column(String, index=True, nullable=False)
+    author_id = Column(String, nullable=False)
+    date = Column(Date, nullable=False)
+    data = Column(Text, nullable=False)  # base64-encoded JPEG
+    caption = Column(String, default="")
+    created_at = Column(DateTime, default=datetime.utcnow)

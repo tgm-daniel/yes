@@ -118,28 +118,31 @@
       applyLang();
     }
 
-    // Minimal decorations
-    const flowEmoji = ['💕','❤️','💗','💖'];
+    // Floating decorations
+    const isMobile = window.innerWidth <= 600;
+    const flowEmoji = ['💕','❤️','💗','💖','❤️‍🔥','🐱','🐰','🐶','🦊','🐼','🌸','⭐'];
+    const bgCount = isMobile ? 6 : 10;
     const fc = document.getElementById('floatingItems');
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < bgCount; i++) {
       const s = document.createElement('span');
       s.textContent = flowEmoji[i % flowEmoji.length];
-      s.style.left = (10 + Math.random() * 80) + '%';
-      s.style.top = (10 + Math.random() * 80) + '%';
-      s.style.animationDelay = (Math.random() * 4) + 's';
-      s.style.animationDuration = (8 + Math.random() * 4) + 's';
-      s.style.fontSize = (16 + Math.random() * 14) + 'px';
+      s.style.left = (5 + Math.random() * 85) + '%';
+      s.style.top = (5 + Math.random() * 85) + '%';
+      s.style.animationDelay = (Math.random() * 5) + 's';
+      s.style.animationDuration = (7 + Math.random() * 5) + 's';
+      s.style.fontSize = (isMobile ? 12 + Math.random() * 10 : 16 + Math.random() * 16) + 'px';
       fc.appendChild(s);
     }
     const starChars = ['✦','★','✧'];
     const st = document.getElementById('stars');
-    for (let i = 0; i < 6; i++) {
+    const starCount = isMobile ? 4 : 8;
+    for (let i = 0; i < starCount; i++) {
       const s = document.createElement('span');
       s.textContent = starChars[i % starChars.length];
       s.style.left = Math.random() * 100 + '%';
       s.style.top = Math.random() * 100 + '%';
       s.style.animationDelay = (Math.random() * 3) + 's';
-      s.style.fontSize = (12 + Math.random() * 8) + 'px';
+      s.style.fontSize = (isMobile ? 8 + Math.random() * 6 : 12 + Math.random() * 10) + 'px';
       st.appendChild(s);
     }
 
@@ -232,7 +235,7 @@
         if (data.type === 'couple') {
           localStorage.setItem('couple_id', data.couple_id);
           localStorage.setItem('user_name', data.name);
-          localStorage.setItem('user_display', data.name === 'trs' ? 'trs' : 'Jojo');
+          localStorage.setItem('user_display', data.name);
           localStorage.setItem('partner_name', data.partner_name);
           window.location.href = '/still-learning';
         } else if (data.incomplete) {
@@ -240,7 +243,7 @@
         } else if (data.already_completed) {
           window.location.href = `/retry/${data.session_id}`;
         } else {
-          window.location.href = `/start/${name}`;
+          window.location.href = `/start/${data.profile_id}`;
         }
       } catch (err) {
         error.textContent = err.message;

@@ -338,6 +338,12 @@ body.dark .q-table tr { background: var(--surface2); }
   <div class="tabs">
     <button class="tab-btn active" data-tab="sessions">📊 Sessões</button>
     <button class="tab-btn" data-tab="profiles">👤 Perfis</button>
+    <button class="tab-btn" data-tab="couple">💑 Casal</button>
+    <button class="tab-btn" data-tab="questions">❓ Perguntas</button>
+    <button class="tab-btn" data-tab="challenges">🎯 Desafios</button>
+    <button class="tab-btn" data-tab="diary">📖 Diário</button>
+    <button class="tab-btn" data-tab="agenda">📅 Agenda</button>
+    <button class="tab-btn" data-tab="todos">✅ Tarefas</button>
     <button class="tab-btn" data-tab="log">📋 Log</button>
   </div>
 
@@ -387,6 +393,56 @@ body.dark .q-table tr { background: var(--surface2); }
       <div class="profile-list" id="profileList"></div>
       <div class="profile-editor" id="profileEditor"></div>
     </div>
+  </div>
+
+  <!-- COUPLE TAB -->
+  <div class="tab-content" id="tabCouple">
+    <div id="coupleStats"></div>
+  </div>
+
+  <!-- QUESTIONS TAB -->
+  <div class="tab-content" id="tabQuestions">
+    <div id="questionsToolbar" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div><span style="font-weight:700;font-size:0.95rem;">Perguntas Diárias</span><div style="font-size:0.75rem;color:var(--text-light);">gerencie as perguntas do casal</div></div>
+      <button class="btn-sm primary" onclick="addDailyQuestion()">+ Nova Pergunta</button>
+    </div>
+    <div id="dailyQuestionsList"></div>
+    <div class="save-bar" id="dailyQuestionsSaveBar" style="display:none;">
+      <button class="btn btn-primary" onclick="saveDailyQuestions()">💾 Salvar</button>
+    </div>
+  </div>
+
+  <!-- CHALLENGES TAB -->
+  <div class="tab-content" id="tabChallenges">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div><span style="font-weight:700;font-size:0.95rem;">Desafios & Fotos</span><div style="font-size:0.75rem;color:var(--text-light);">histórico de desafios e fotos enviadas</div></div>
+    </div>
+    <div id="challengesList"></div>
+  </div>
+
+  <!-- DIARY TAB -->
+  <div class="tab-content" id="tabDiary">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div><span style="font-weight:700;font-size:0.95rem;">Diário</span><div style="font-size:0.75rem;color:var(--text-light);">entradas do diário do casal</div></div>
+      <span style="font-size:0.78rem;color:var(--text-light);" id="diaryCount"></span>
+    </div>
+    <div id="diaryList"></div>
+  </div>
+
+  <!-- AGENDA TAB -->
+  <div class="tab-content" id="tabAgenda">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div><span style="font-weight:700;font-size:0.95rem;">Agenda</span><div style="font-size:0.75rem;color:var(--text-light);">eventos agendados do casal</div></div>
+    </div>
+    <div id="agendaList"></div>
+  </div>
+
+  <!-- TODOS TAB -->
+  <div class="tab-content" id="tabTodos">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div><span style="font-weight:700;font-size:0.95rem;">Tarefas</span><div style="font-size:0.75rem;color:var(--text-light);">lista de tarefas do casal</div></div>
+    </div>
+    <div id="todosList"></div>
   </div>
 </div>
 
@@ -628,6 +684,12 @@ async function loadAll() {
     renderProfileList();
     selectProfile(Object.keys(ALL_PROFILES)[0] || null);
     loadLoginEvents();
+    loadCoupleStats();
+    loadDailyQuestions();
+    loadChallenges();
+    loadDiary();
+    loadAgenda();
+    loadTodos();
   } catch(e) {
     showToast('Erro ao carregar dados: ' + e.message, 'error');
   }
@@ -1095,10 +1157,8 @@ function previewWelcome() {
   const msg = document.getElementById('pf_welcome')?.value || '';
   document.getElementById('previewText').textContent = msg || '(sem mensagem de boas-vindas)';
 
-  const key = SELECTED_PROFILE;
-  const isVanessa = key === 'vanessa';
-  document.getElementById('previewSvgHorse').style.display = isVanessa ? 'inline-block' : 'none';
-  document.getElementById('previewSvgHeart').style.display = isVanessa ? 'none' : 'inline-block';
+  document.getElementById('previewSvgHorse').style.display = 'none';
+  document.getElementById('previewSvgHeart').style.display = 'inline-block';
 
   document.getElementById('previewOverlay').classList.add('show');
 }
@@ -1120,6 +1180,291 @@ function duplicateProfile() {
   showToast(`Perfil "${key}" duplicado como "${newKey}"`, 'success');
   renderProfileList();
   selectProfile(newKey);
+}
+
+// ---- COUPLE TAB ----
+let COUPLE_STATS = null;
+async function loadCoupleStats() {
+  try {
+    const r = await fetch('/api/admin/couple/stats', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(AUTH)
+    });
+    if (!r.ok) return;
+    COUPLE_STATS = await r.json();
+    renderCoupleStats();
+  } catch(e) { /* silent */ }
+}
+
+function renderCoupleStats() {
+  if (!COUPLE_STATS) {
+    document.getElementById('coupleStats').innerHTML = '<div style="text-align:center;color:var(--text-light);padding:40px 0;">Nenhum dado do casal disponível.</div>';
+    return;
+  }
+  const s = COUPLE_STATS;
+  let html = `<div class="stats-row">`;
+  const cards = [
+    { num: s.total_sessions || 0, label: 'Sessões' },
+    { num: s.total_questions || 0, label: 'Perguntas' },
+    { num: s.total_challenges || 0, label: 'Desafios' },
+    { num: s.total_photos || 0, label: 'Fotos' },
+  ];
+  cards.forEach(c => { html += `<div class=stat-card><div class=num>${c.num}</div><div class=label>${c.label}</div></div>`; });
+  html += `</div>`;
+
+  html += `<div style="margin-top:16px;"><div class=q-table-wrap><table class=q-table style="min-width:auto;"><tbody>`;
+  const rows = [
+    { label: 'Dias Juntos', value: s.days_together || '—' },
+    { label: 'Aniversário', value: s.couple_anniversary || '—' },
+    { label: 'Diário (total)', value: s.total_diary || 0 },
+    { label: 'Agenda (total)', value: s.total_agenda || 0 },
+    { label: 'Tarefas (total)', value: s.total_todos || 0 },
+  ];
+  rows.forEach(r => {
+    html += `<tr><td style="padding:8px 12px;font-weight:600;">${r.label}</td><td style="padding:8px 12px;">${r.value}</td></tr>`;
+  });
+  html += `</tbody></table></div></div>`;
+
+  document.getElementById('coupleStats').innerHTML = html;
+}
+
+// ---- QUESTIONS TAB ----
+let DAILY_QUESTIONS = [];
+async function loadDailyQuestions() {
+  try {
+    const r = await fetch('/api/admin/couple/questions', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(AUTH)
+    });
+    if (!r.ok) return;
+    const d = await r.json();
+    DAILY_QUESTIONS = d.questions || [];
+    renderDailyQuestions();
+  } catch(e) { /* silent */ }
+}
+
+function renderDailyQuestions() {
+  const el = document.getElementById('dailyQuestionsList');
+  const saveBar = document.getElementById('dailyQuestionsSaveBar');
+  if (!DAILY_QUESTIONS.length) {
+    el.innerHTML = '<div style="text-align:center;color:var(--text-light);padding:40px 0;">Nenhuma pergunta diária cadastrada.</div>';
+    saveBar.style.display = 'none';
+    return;
+  }
+  saveBar.style.display = 'flex';
+  let html = '<div class=q-table-wrap><table class=q-table><thead><tr><th style="min-width:40px;">#</th><th style="min-width:200px;">Pergunta (PT)</th><th style="min-width:200px;">Pergunta (EN)</th><th style="min-width:60px;">Tema</th><th style="min-width:40px;"></th></tr></thead><tbody>';
+  DAILY_QUESTIONS.forEach((q, i) => {
+    html += `<tr data-dqidx="${i}">
+      <td data-label="#">${i + 1}</td>
+      <td data-label="PT"><textarea rows=2 class="dq_field" data-field="pt" style="width:100%;">${esc(q.pt || '')}</textarea></td>
+      <td data-label="EN"><textarea rows=2 class="dq_field" data-field="en" style="width:100%;">${esc(q.en || '')}</textarea></td>
+      <td data-label="Tema"><input class="dq_field" data-field="theme" value="${esc(q.theme || '')}" style="width:100%;"></td>
+      <td data-label=""><span class="q-del" onclick="deleteDailyQuestion(${i})" style="cursor:pointer;color:var(--pink-dark);font-size:1.1rem;">✕</span></td>
+    </tr>`;
+  });
+  html += '</tbody></table></div>';
+  el.innerHTML = html;
+}
+
+function addDailyQuestion() {
+  DAILY_QUESTIONS.push({ pt: '', en: '', theme: '' });
+  renderDailyQuestions();
+}
+
+function deleteDailyQuestion(idx) {
+  DAILY_QUESTIONS.splice(idx, 1);
+  renderDailyQuestions();
+}
+
+async function saveDailyQuestions() {
+  const rows = document.querySelectorAll('#dailyQuestionsList .dq_field');
+  const questions = [];
+  const els = document.querySelectorAll('#dailyQuestionsList tbody tr');
+  els.forEach((tr, i) => {
+    const pt = tr.querySelector('.dq_field[data-field="pt"]')?.value || '';
+    const en = tr.querySelector('.dq_field[data-field="en"]')?.value || '';
+    const theme = tr.querySelector('.dq_field[data-field="theme"]')?.value || '';
+    if (pt || en) questions.push({ pt, en, theme });
+  });
+  try {
+    const r = await fetch('/api/admin/couple/question/save', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ username: AUTH.username, password: AUTH.password, questions })
+    });
+    if (!r.ok) { const d = await r.json(); throw new Error(d.detail || 'Erro ao salvar'); }
+    showToast('Perguntas salvas com sucesso! ✅', 'success');
+    await loadDailyQuestions();
+  } catch(e) {
+    showToast('Erro: ' + e.message, 'error');
+  }
+}
+
+// ---- CHALLENGES TAB ----
+let CHALLENGES_DATA = { challenges: [], photos: [] };
+async function loadChallenges() {
+  try {
+    const r = await fetch('/api/admin/couple/challenges', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(AUTH)
+    });
+    if (!r.ok) return;
+    const d = await r.json();
+    CHALLENGES_DATA = d;
+    renderChallenges();
+  } catch(e) { /* silent */ }
+}
+
+function renderChallenges() {
+  const el = document.getElementById('challengesList');
+  let html = '';
+
+  // Photos
+  const photos = CHALLENGES_DATA.photos || [];
+  html += `<div style="margin-bottom:20px;"><h4 style="margin:0 0 10px;">📸 Fotos (${photos.length})</h4>`;
+  if (!photos.length) {
+    html += '<div style="color:var(--text-light);padding:12px 0;">Nenhuma foto enviada.</div>';
+  } else {
+    html += '<div style="display:flex;flex-wrap:wrap;gap:8px;">';
+    photos.forEach(p => {
+      html += `<div style="width:120px;border-radius:var(--radius-sm);overflow:hidden;border:2px solid rgba(255,181,194,0.15);">
+        <img src="${esc(p.data)}" style="width:100%;height:120px;object-fit:cover;display:block;" onclick="window.open('${esc(p.data)}','_blank')">
+        <div style="padding:4px 6px;font-size:0.65rem;color:var(--text-light);text-align:center;">${esc(p.author_id || '')} · ${esc(p.date || '')}</div>
+      </div>`;
+    });
+    html += '</div>';
+  }
+  html += '</div>';
+
+  // Challenges
+  const challenges = CHALLENGES_DATA.challenges || [];
+  html += `<div><h4 style="margin:0 0 10px;">🎯 Desafios (${challenges.length})</h4>`;
+  if (!challenges.length) {
+    html += '<div style="color:var(--text-light);padding:12px 0;">Nenhum desafio registrado.</div>';
+  } else {
+    html += '<div class=q-table-wrap><table class=q-table><thead><tr><th>Tipo</th><th>Conteúdo</th><th>Autor</th><th>Status</th><th>Data</th></tr></thead><tbody>';
+    challenges.forEach(c => {
+      const typeIcons = { daily: '🎯', riddle: '🧩', partner_question: '💑', partner_challenge: '🤝', photo: '📸', quote: '💌' };
+      const icon = typeIcons[c.type] || '🎯';
+      const content = c.question_text || c.riddle_text || c.quote_text || c.photo_caption || '—';
+      const status = c.completed ? '✅' : '⏳';
+      html += `<tr><td data-label="Tipo">${icon} ${c.type || '—'}</td><td data-label="Conteúdo">${esc(content).slice(0, 80)}${(content||'').length > 80 ? '…' : ''}</td><td data-label="Autor">${esc(c.author_id || c.created_by || '—')}</td><td data-label="Status">${status}</td><td data-label="Data">${esc(c.date || c.created_at || '—')}</td></tr>`;
+    });
+    html += '</tbody></table></div>';
+  }
+  html += '</div>';
+
+  el.innerHTML = html;
+}
+
+// ---- DIARY TAB ----
+let DIARY_ENTRIES = [];
+async function loadDiary() {
+  try {
+    const r = await fetch('/api/admin/couple/diary', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(AUTH)
+    });
+    if (!r.ok) return;
+    const d = await r.json();
+    DIARY_ENTRIES = d.entries || [];
+    renderDiary();
+  } catch(e) { /* silent */ }
+}
+
+function renderDiary() {
+  const el = document.getElementById('diaryList');
+  document.getElementById('diaryCount').textContent = `${DIARY_ENTRIES.length} entrada${DIARY_ENTRIES.length !== 1 ? 's' : ''}`;
+  if (!DIARY_ENTRIES.length) {
+    el.innerHTML = '<div style="text-align:center;color:var(--text-light);padding:40px 0;">Nenhuma entrada no diário.</div>';
+    return;
+  }
+  let html = '';
+  DIARY_ENTRIES.forEach((e, i) => {
+    html += `<div class="session-card">
+      <div class="session-hd" style="cursor:default;">
+        <span class=profile-tag>${esc(e.author_id || '—')}</span>
+        <span class=date>${esc(e.date || '—')}</span>
+        <button class="btn-sm danger" onclick="deleteDiaryEntry(${i})">🗑</button>
+      </div>
+      <div class="session-bd" style="display:block;padding:12px 16px;">
+        <div style="font-size:0.85rem;line-height:1.7;white-space:pre-wrap;">${esc(e.text || '')}</div>
+      </div>
+    </div>`;
+  });
+  el.innerHTML = html;
+}
+
+async function deleteDiaryEntry(idx) {
+  const entry = DIARY_ENTRIES[idx];
+  if (!entry) return;
+  if (!confirm('Deletar esta entrada do diário?')) return;
+  try {
+    const r = await fetch('/api/admin/couple/diary/delete', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ username: AUTH.username, password: AUTH.password, date: entry.date, author_id: entry.author_id })
+    });
+    if (!r.ok) { const d = await r.json(); throw new Error(d.detail || 'Erro ao deletar'); }
+    showToast('Entrada deletada ✅', 'success');
+    await loadDiary();
+  } catch(e) {
+    showToast('Erro: ' + e.message, 'error');
+  }
+}
+
+// ---- AGENDA TAB ----
+let AGENDA_EVENTS = [];
+async function loadAgenda() {
+  try {
+    const r = await fetch('/api/admin/couple/agenda', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(AUTH)
+    });
+    if (!r.ok) return;
+    const d = await r.json();
+    AGENDA_EVENTS = d.events || [];
+    renderAgenda();
+  } catch(e) { /* silent */ }
+}
+
+function renderAgenda() {
+  const el = document.getElementById('agendaList');
+  if (!AGENDA_EVENTS.length) {
+    el.innerHTML = '<div style="text-align:center;color:var(--text-light);padding:40px 0;">Nenhum evento na agenda.</div>';
+    return;
+  }
+  let html = '<div class=q-table-wrap><table class=q-table><thead><tr><th>Data</th><th>Evento</th><th>Autor</th></tr></thead><tbody>';
+  AGENDA_EVENTS.forEach(e => {
+    html += `<tr><td data-label="Data">${esc(e.date || '—')}</td><td data-label="Evento">${esc(e.event || e.text || '—')}</td><td data-label="Autor">${esc(e.author_id || '—')}</td></tr>`;
+  });
+  html += '</tbody></table></div>';
+  el.innerHTML = html;
+}
+
+// ---- TODOS TAB ----
+let TODOS = [];
+async function loadTodos() {
+  try {
+    const r = await fetch('/api/admin/couple/todos', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(AUTH)
+    });
+    if (!r.ok) return;
+    const d = await r.json();
+    TODOS = d.todos || [];
+    renderTodos();
+  } catch(e) { /* silent */ }
+}
+
+function renderTodos() {
+  const el = document.getElementById('todosList');
+  if (!TODOS.length) {
+    el.innerHTML = '<div style="text-align:center;color:var(--text-light);padding:40px 0;">Nenhuma tarefa cadastrada.</div>';
+    return;
+  }
+  let html = '';
+  TODOS.forEach(t => {
+    const done = t.done ? '✅' : '⬜';
+    html += `<div class="session-card" style="padding:12px 16px;margin-bottom:6px;display:flex;align-items:center;gap:10px;">
+      <span style="font-size:1.2rem;">${done}</span>
+      <span style="flex:1;font-size:0.85rem;${t.done ? 'text-decoration:line-through;color:var(--text-light);' : ''}">${esc(t.text || '')}</span>
+      <span style="font-size:0.7rem;color:var(--text-light);">${esc(t.author_id || '—')}</span>
+    </div>`;
+  });
+  el.innerHTML = html;
 }
 
 // ---- INIT ----
