@@ -222,6 +222,24 @@ def get_couple_db(couple_id: str, db: Session):
     return db.query(Couple).filter(Couple.id == couple_id).first()
 
 
+def get_challenge_streak(couple_id: str, db: Session) -> int:
+    today = date.today()
+    streak = 0
+    for i in range(365):
+        d = today - timedelta(days=i)
+        both = db.query(Challenge).filter(
+            Challenge.couple_id == couple_id,
+            Challenge.date == d,
+            Challenge.answered_a == True,
+            Challenge.answered_b == True,
+        ).first()
+        if both:
+            streak += 1
+        else:
+            break
+    return streak
+
+
 # ---- PÁGINAS ----
 
 @app.get("/", response_class=HTMLResponse)
@@ -692,11 +710,26 @@ RIDDLES_PT = ["O que é meu, mas os outros usam mais que eu?", "Quanto mais se t
 RIDDLES_EN = ["What is mine but others use more than me?", "The more you take, the more you leave behind.", "What can run but never walks?", "What has keys but can't open doors?", "What is light as a feather but nobody can hold for long?"]
 ANSWERS_PT = ["Meu nome", "Um buraco", "O vento", "Um piano", "O ar"]
 ANSWERS_EN = ["My name", "A hole", "The wind", "A piano", "Your breath"]
+HINTS_PT = [
+    ["Está sempre com você, mas outros o pronunciam.", "Começa com a primeira letra do seu nome."],
+    ["Se você cavar, ele aumenta.", "Pode ser encontrado no chão ou na parede."],
+    ["Não tem pernas, mas se movimenta rápido.", "Você sente, mas não pode ver."],
+    ["É musical e tem teclas.", "Tem teclas pretas e brancas."],
+    ["Você precisa dele para viver.", "Está ao seu redor agora mesmo."],
+]
+HINTS_EN = [
+    ["It's always with you, but others say it more.", "It starts with the first letter of your name."],
+    ["If you dig, it gets bigger.", "Can be found in the ground or wall."],
+    ["It has no legs but moves fast.", "You feel it but cannot see it."],
+    ["It's musical and has keys.", "It has black and white keys."],
+    ["You need it to live.", "It's all around you right now."],
+]
 
 def get_riddle(today):
     idx = today.toordinal() % len(RIDDLES_PT)
     return {"riddle_pt": RIDDLES_PT[idx], "riddle_en": RIDDLES_EN[idx],
-            "answer_pt": ANSWERS_PT[idx], "answer_en": ANSWERS_EN[idx]}
+            "answer_pt": ANSWERS_PT[idx], "answer_en": ANSWERS_EN[idx],
+            "hints_pt": HINTS_PT[idx], "hints_en": HINTS_EN[idx]}
 
 def get_quote(today, offset=0):
     quotes = t("daily_quotes", "pt")
@@ -796,6 +829,14 @@ def api_get_challenge(request: Request, db: Session = Depends(get_db), auth: dic
         "partner_guess": challenge.guess_b if is_a else challenge.guess_a,
         "both_answered": my_answered and partner_answered,
         "_is_a": is_a,
+        "streak": get_challenge_streak(couple_id, db),
+        "timestamps": {
+            "created_question_at": challenge.data.get("created_question_at", ""),
+            "answered_question_at": challenge.data.get("answered_question_at", ""),
+            "guessed_at": challenge.data.get("guessed_at", ""),
+            "photo_uploaded_at_a": challenge.data.get("photo_uploaded_at_a", ""),
+            "photo_uploaded_at_b": challenge.data.get("photo_uploaded_at_b", ""),
+        },
     }
     return result
 
@@ -826,8 +867,13 @@ def api_challenge_guess(body: dict, db: Session = Depends(get_db), auth: dict = 
     if correct:
         if is_a: challenge.done_a = True
         else: challenge.done_b = True
+    else:
+        data["hints_used"] = data.get("hints_used", 0) + 1
+    data["guessed_at"] = datetime.utcnow().isoformat()
+    challenge.data = data
     db.commit()
-    return {"ok": True, "correct": correct, "answer_pt": data.get("answer_pt"), "answer_en": data.get("answer_en")}
+    return {"ok": True, "correct": correct, "answer_pt": data.get("answer_pt"), "answer_en": data.get("answer_en"),
+            "hints_used": data.get("hints_used", 0), "hints": [data.get("hints_pt", []), data.get("hints_en", [])]}
 
 
 @app.post("/api/couple/challenge/create-question")
@@ -862,6 +908,7 @@ def api_create_question(body: dict, db: Session = Depends(get_db), auth: dict = 
         themes = data.get("themes", [])
         if isinstance(themes, list) and theme_idx < len(themes):
             data["chosen_theme"] = themes[theme_idx]
+    data["created_question_at"] = datetime.utcnow().isoformat()
     challenge.data = data
     db.commit()
     return {"ok": True}
@@ -890,6 +937,9 @@ def api_answer_question(body: dict, db: Session = Depends(get_db), auth: dict = 
         challenge.answered_b = True
         challenge.done_b = True
         challenge.guess_b = answer
+    data = challenge.data
+    data["answered_question_at"] = datetime.utcnow().isoformat()
+    challenge.data = data
     db.commit()
     both = challenge.answered_a and challenge.answered_b
     return {"ok": True, "both_answered": both}
@@ -939,6 +989,7 @@ def api_complete_partner_challenge(body: dict, db: Session = Depends(get_db), au
     if chal.data.get("type") == "photo" and photo_data:
         d = chal.data
         d["photo_" + ("a" if is_a else "b")] = photo_data
+        d["photo_submitted_at_" + ("a" if is_a else "b")] = datetime.utcnow().isoformat()
         chal.data = d
         # Save to photos table for memories
         photo = Photo(couple_id=couple_id, author_id=name, date=chal.date, data=photo_data, caption="")
@@ -949,6 +1000,9 @@ def api_complete_partner_challenge(body: dict, db: Session = Depends(get_db), au
     else:
         chal.done_b = True
         chal.answered_b = True
+    d = chal.data
+    d["completed_at_" + ("a" if is_a else "b")] = datetime.utcnow().isoformat()
+    chal.data = d
     db.commit()
     return {"ok": True}
 
@@ -972,6 +1026,11 @@ def api_get_partner_challenges(db: Session = Depends(get_db), auth: dict = Depen
         "partner_answered": c.answered_b if is_a else c.answered_a,
         "my_photo": c.data.get("photo_" + ("a" if is_a else "b"), ""),
         "partner_photo": c.data.get("photo_" + ("b" if is_a else "a"), ""),
+        "completed_at_a": c.data.get("completed_at_a", ""),
+        "completed_at_b": c.data.get("completed_at_b", ""),
+        "photo_submitted_at_a": c.data.get("photo_submitted_at_a", ""),
+        "photo_submitted_at_b": c.data.get("photo_submitted_at_b", ""),
+        "streak": get_challenge_streak(couple_id, db),
     } for c in challenges]
 
 
@@ -1035,7 +1094,30 @@ def api_get_quote(request: Request, offset: int = None, unlock: int = 0, like: i
         "has_next": state.current_offset < state.max_offset,
         "can_unlock": state.unlock_count < MAX_QUOTE_UNLOCK,
         "exhausted": False,
+        "note": (state.notes or {}).get(str(state.current_offset), ""),
     }
+
+
+@app.post("/api/couple/quote/note")
+def api_save_quote_note(body: dict, db: Session = Depends(get_db), auth: dict = Depends(require_auth)):
+    couple_id = auth["couple_id"]
+    note = body.get("note", "")
+    offset = body.get("offset", 0)
+    today = date.today()
+    state = db.query(QuoteRefresh).filter(
+        QuoteRefresh.couple_id == couple_id,
+        QuoteRefresh.date == today
+    ).first()
+    if not state:
+        return {"ok": False}
+    notes = state.notes or {}
+    if note:
+        notes[str(offset)] = note
+    else:
+        notes.pop(str(offset), None)
+    state.notes = notes
+    db.commit()
+    return {"ok": True}
 
 
 @app.get("/api/couple/quiz")
@@ -1122,6 +1204,7 @@ def api_upload_photo(body: dict, db: Session = Depends(get_db), auth: dict = Dep
         data[key] = photo_data
         data["photo_by_" + ("a" if is_a else "b")] = name
         data["caption_" + ("a" if is_a else "b")] = caption
+        data["photo_uploaded_at_" + ("a" if is_a else "b")] = datetime.utcnow().isoformat()
         challenge.data = data
         if is_a:
             challenge.done_a = True
@@ -1222,6 +1305,18 @@ def api_challenge_history(db: Session = Depends(get_db), auth: dict = Depends(re
         "created_by": c.created_by,
         "partner_name": partner_name,
         "_is_a": is_a,
+        "streak": get_challenge_streak(couple_id, db),
+        "timestamps": {
+            "guessed_at": c.data.get("guessed_at", ""),
+            "created_question_at": c.data.get("created_question_at", ""),
+            "answered_question_at": c.data.get("answered_question_at", ""),
+            "completed_at_a": c.data.get("completed_at_a", ""),
+            "completed_at_b": c.data.get("completed_at_b", ""),
+            "photo_uploaded_at_a": c.data.get("photo_uploaded_at_a", ""),
+            "photo_uploaded_at_b": c.data.get("photo_uploaded_at_b", ""),
+            "photo_submitted_at_a": c.data.get("photo_submitted_at_a", ""),
+            "photo_submitted_at_b": c.data.get("photo_submitted_at_b", ""),
+        },
     } for c in challenges]
 
 

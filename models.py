@@ -132,6 +132,7 @@ class QuoteRefresh(Base):
     max_offset = Column(Integer, default=0)
     unlock_count = Column(Integer, default=0)
     liked_offset = Column(Integer, nullable=True)
+    notes = Column(JSON, default=dict)
 
 
 class Photo(Base):

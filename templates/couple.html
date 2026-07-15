@@ -468,8 +468,97 @@ input[type="datetime-local"] { font-family: 'Nunito', sans-serif; font-size: 14p
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
-.more-card:hover { background: white; border-color: var(--pink); transform: translateY(-3px) scale(1.02); box-shadow: 0 6px 20px rgba(255,143,160,0.15); }
-.more-card:active { transform: scale(0.97); }
+  .more-card:hover { background: white; border-color: var(--pink); transform: translateY(-3px) scale(1.02); box-shadow: 0 6px 20px rgba(255,143,160,0.15); }
+  .more-card:active { transform: scale(0.97); }
+
+.streak-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: var(--radius-cloud);
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  background: linear-gradient(135deg, #ff9a56, #ff6b6b, #ff4757);
+  color: white;
+  box-shadow: 0 2px 10px rgba(255, 75, 87, 0.3);
+  animation: pulse 2s ease-in-out infinite;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 4;
+}
+.hint-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 8px 18px;
+  background: linear-gradient(135deg, #ffc107, #ff9800);
+  color: white; border: none;
+  border-radius: var(--radius-cloud);
+  font-weight: 800; font-size: 0.8rem;
+  font-family: 'Nunito', sans-serif;
+  cursor: pointer;
+  transition: all 0.25s var(--ease-bounce);
+  box-shadow: 0 4px 14px rgba(255, 152, 0, 0.3);
+  margin-top: 10px;
+}
+.hint-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255, 152, 0, 0.4); }
+.hint-btn:active { transform: scale(0.97); }
+.hint-text {
+  font-size: 0.82rem; font-style: italic; color: var(--text-light);
+  padding: 8px 12px; background: rgba(255,193,7,0.08);
+  border-radius: var(--radius-sm); margin-top: 6px;
+  border-left: 3px solid #ffc107;
+}
+.timestamp-text {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 6px; color: var(--text-light);
+  opacity: 0.8;
+}
+.quote-note-area {
+  margin-top: 12px; padding-top: 12px;
+  border-top: 1px solid rgba(255,181,194,0.15);
+}
+.quote-note-saved {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: var(--radius-cloud);
+  font-family: 'Press Start 2P', monospace;
+  font-size: 6px;
+  background: var(--correct);
+  color: white;
+  margin-left: 6px;
+}
+.history-month-header {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px; color: var(--pink-dark);
+  padding: 10px 0 6px;
+  border-bottom: 2px solid rgba(255,181,194,0.2);
+  margin-bottom: 8px;
+  margin-top: 14px;
+}
+.history-month-header:first-child { margin-top: 0; }
+.history-card {
+  background: rgba(255,255,255,0.6);
+  border: 2px solid rgba(255,181,194,0.12);
+  border-radius: var(--radius-sm);
+  padding: 14px; margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.2s var(--ease-bounce);
+}
+.history-card:hover { border-color: var(--pink); background: white; transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+.history-card:active { transform: scale(0.98); }
+.history-card-date {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px; font-weight: 800; color: var(--text);
+}
+.history-card-type {
+  display: inline-block;
+  padding: 2px 8px; margin-left: 6px;
+  border-radius: var(--radius-cloud);
+  font-family: 'Press Start 2P', monospace;
+  font-size: 6px;
+  background: var(--pink-light);
+  color: var(--pink-dark);
+}
+
 
 .loading { text-align: center; padding: 60px 20px; color: var(--text-light); display: flex; flex-direction: column; align-items: center; gap: 14px; }
 .spinner { display: inline-block; width: 24px; height: 24px; border: 3px solid rgba(255, 181, 194, 0.2); border-top-color: var(--pink); border-radius: 50%; animation: spin 0.6s linear infinite; }
@@ -989,6 +1078,29 @@ async function saveDiary() {
   } catch(e) { showToast(e.message, true); }
 }
 
+function fmtTime(isoStr) {
+  if (!isoStr) return '';
+  const isEn = getLang() === 'en';
+  try {
+    const d = new Date(isoStr);
+    const now = new Date();
+    const diffMs = now - d;
+    const diffMin = Math.floor(diffMs / 60000);
+    const diffH = Math.floor(diffMs / 3600000);
+    const diffD = Math.floor(diffMs / 86400000);
+    if (diffMin < 1) return isEn ? 'just now' : 'agora';
+    if (diffMin < 60) return isEn ? diffMin + 'm ago' : diffMin + 'min atrás';
+    if (diffH < 24) return isEn ? diffH + 'h ago' : diffH + 'h atrás';
+    if (diffD === 1) {
+      const time = d.toLocaleTimeString(isEn ? 'en-US' : 'pt-BR', { hour: '2-digit', minute: '2-digit' });
+      return isEn ? 'ontem ' + time : 'ontem ' + time;
+    }
+    return d.toLocaleDateString(isEn ? 'en-US' : 'pt-BR', { day: '2-digit', month: 'short' }) + ' ' + d.toLocaleTimeString(isEn ? 'en-US' : 'pt-BR', { hour: '2-digit', minute: '2-digit' });
+  } catch(_) { return ''; }
+}
+
+let _riddleHintsRevealed = 0;
+
 function loadChallenge() {
   const main = document.getElementById('mainContent');
   const isEn = getLang() === 'en';
@@ -1000,6 +1112,9 @@ function loadChallenge() {
         <defs><linearGradient id="hc" x1="14" y1="4.5" x2="14" y2="24.5"><stop stop-color="var(--pink)"/><stop offset="1" stop-color="var(--pink-dark)"/></linearGradient></defs>
       </svg>
     </div>`;
+    if (d.streak && d.streak > 0) {
+      html += `<span class="streak-badge">🔥 ${isEn ? 'Streak' : 'Sequência'}: ${d.streak} ${isEn ? 'd' : (d.streak === 1 ? 'dia' : 'dias')}</span>`;
+    }
 
     const tlabel = { riddle: isEn ? 'Riddle' : 'Enigma', partner_question: isEn ? 'Partner Question' : 'Pergunta do Parceiro', partner_challenge: isEn ? 'Partner Challenge' : 'Desafio do Parceiro', quote: isEn ? 'Quote' : 'Citação', photo: isEn ? 'Photo' : 'Foto' };
     const typeName = tlabel[d.type] || d.type;
@@ -1019,17 +1134,36 @@ function loadChallenge() {
     if (d.type === 'riddle') {
       const riddle = isEn ? (d.data.riddle_en || '') : (d.data.riddle_pt || '');
       html += `<div class="challenge-riddle">${esc(riddle)}</div>`;
+      _riddleHintsRevealed = d.data.hints_used || 0;
       if (!d.my_done && !d.my_guess) {
         html += `<input id="guessInput" type="text" placeholder="${isEn ? 'Your answer...' : 'Sua resposta...'}" style="margin-top:12px;text-align:center;">`;
         html += `<button class="card-action" onclick="submitRiddleGuess()" style="margin-top:10px;">💭 ${isEn ? 'Guess' : 'Palpitar'}</button>`;
+        if (d.data.hints_pt || d.data.hints_en) {
+          html += `<div id="hintsArea"></div>`;
+        }
       } else if (d.my_guess && !d.my_done) {
         html += `<div style="margin-top:10px;color:var(--text-light);font-weight:600;">❌ ${isEn ? 'Wrong guess. Try again?' : 'Palpite errado. Tentar de novo?'}</div>`;
+        if (d.data.hints_pt || d.data.hints_en) {
+          const hints = isEn ? (d.data.hints_en || d.data.hints_pt || []) : (d.data.hints_pt || d.data.hints_en || []);
+          const used = d.data.hints_used || 0;
+          html += `<div id="hintsArea">`;
+          for (let i = 0; i < Math.min(used, hints.length); i++) {
+            html += `<div class="hint-text">💡 ${esc(hints[i])}</div>`;
+          }
+          if (used < hints.length) {
+            html += `<button class="hint-btn" onclick="revealHint()">💡 ${isEn ? 'Hint' : 'Dica'} (${used}/${hints.length})</button>`;
+          }
+          html += `</div>`;
+        }
         html += `<input id="guessInput" type="text" placeholder="${isEn ? 'Another guess...' : 'Outro palpite...'}" style="margin-top:12px;text-align:center;" value="${esc(d.my_guess)}">`;
         html += `<button class="card-action" onclick="submitRiddleGuess()" style="margin-top:10px;">💭 ${isEn ? 'Guess' : 'Palpitar'}</button>`;
       } else {
         const answer = isEn ? (d.data.answer_en || '') : (d.data.answer_pt || '');
         html += `<div style="margin-top:8px;"><span style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--text-light);">${isEn ? 'Answer' : 'Resposta'}:</span> <span style="font-weight:700;">${esc(answer)}</span></div>`;
         html += `<div style="margin-top:8px;color:var(--pink-dark);font-weight:800;">✅ ${isEn ? 'Solved!' : 'Resolvido!'}</div>`;
+        if (d.timestamps && d.timestamps.guessed_at) {
+          html += `<div class="timestamp-text" style="margin-top:6px;">✅ ${isEn ? 'Solved' : 'Resolvido'} ${fmtTime(d.timestamps.guessed_at)}</div>`;
+        }
       }
     } else if (d.type === 'partner_question') {
       const theme = d.data.chosen_theme || d.data.custom_theme || (d.data.themes && d.data.themes.length > 0 ? d.data.themes[0] : '');
@@ -1039,10 +1173,14 @@ function loadChallenge() {
           html += `<div class="challenge-question">${esc(d.data.question)}</div>`;
           html += `<div style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--text-light);margin-top:8px;">${isEn ? 'Theme' : 'Tema'}: ${esc(theme)}</div>`;
           if (d.my_answered) {
-            html += `<div class="challenge-answer"><strong>${isEn ? 'Your answer' : 'Sua resposta'}:</strong> ${esc(d.my_guess)}</div>`;
+            html += `<div class="challenge-answer"><strong>${isEn ? 'Your answer' : 'Sua resposta'}:</strong> ${esc(d.my_guess)}`;
+            if (d.timestamps && d.timestamps.answered_question_at) html += ` <span class="timestamp-text">${fmtTime(d.timestamps.answered_question_at)}</span>`;
+            html += `</div>`;
           }
           if (d.partner_answered) {
-            html += `<div class="challenge-answer" style="border-left-color:var(--lavender);"><strong>${esc(d.partner_name)} ${isEn ? 'answered' : 'respondeu'}:</strong> ${esc(d.partner_guess)}</div>`;
+            html += `<div class="challenge-answer" style="border-left-color:var(--lavender);"><strong>${esc(d.partner_name)} ${isEn ? 'answered' : 'respondeu'}:</strong> ${esc(d.partner_guess)}`;
+            if (d.timestamps && d.timestamps.created_question_at) html += ` <span class="timestamp-text">${fmtTime(d.timestamps.created_question_at)}</span>`;
+            html += `</div>`;
           } else {
             html += `<div class="empty-state">⏳ ${isEn ? 'Waiting for' : 'Aguardando'} ${esc(d.partner_name)}...</div>`;
           }
@@ -1056,9 +1194,13 @@ function loadChallenge() {
           html += `<button class="card-action" onclick="answerPartnerQuestion()" style="margin-top:10px;">💕 ${isEn ? 'Answer' : 'Responder'}</button>`;
         } else if (d.data.question && d.my_answered) {
           html += `<div class="challenge-question">${esc(d.data.question)}</div>`;
-          html += `<div class="challenge-answer"><strong>${isEn ? 'Your answer' : 'Sua resposta'}:</strong> ${esc(d.my_guess)}</div>`;
+          html += `<div class="challenge-answer"><strong>${isEn ? 'Your answer' : 'Sua resposta'}:</strong> ${esc(d.my_guess)}`;
+          if (d.timestamps && d.timestamps.answered_question_at) html += ` <span class="timestamp-text">${fmtTime(d.timestamps.answered_question_at)}</span>`;
+          html += `</div>`;
           if (d.partner_answered) {
-            html += `<div class="challenge-answer" style="border-left-color:var(--lavender);"><strong>${esc(d.partner_name)} ${isEn ? 'answers' : 'responde'} (${isEn ? 'my question' : 'minha pergunta'}):</strong> ${esc(d.partner_guess)}</div>`;
+            html += `<div class="challenge-answer" style="border-left-color:var(--lavender);"><strong>${esc(d.partner_name)} ${isEn ? 'answers' : 'responde'} (${isEn ? 'my question' : 'minha pergunta'}):</strong> ${esc(d.partner_guess)}`;
+            if (d.timestamps && d.timestamps.created_question_at) html += ` <span class="timestamp-text">${fmtTime(d.timestamps.created_question_at)}</span>`;
+            html += `</div>`;
           }
           if (d.both_answered) {
             html += `<div style="margin-top:12px;text-align:center;"><button class="btn btn-ghost" onclick="showSection('memories')">📸 ${isEn ? 'View in Mixed Memories' : 'Ver em Memórias Misturadas'}</button></div>`;
@@ -1087,12 +1229,21 @@ function loadChallenge() {
       }
     } else if (d.type === 'quote') {
       const qd = d.data;
+      window._quoteOffset = d.current_offset || qd.offset || 0;
       const qText = isEn ? (qd.quote_en || qd.quote_pt || '') : (qd.quote_pt || qd.quote_en || '');
       html += `<div style="text-align:center;padding:10px 0;">
         <div style="font-size:1.1rem;line-height:1.7;font-style:italic;padding:16px;background:var(--cream);border-radius:var(--radius-sm);">"${esc(qText)}"</div>
         <div style="margin-top:10px;font-weight:800;">${esc(qd.author || '')}</div>
         <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--text-light);margin-top:4px;">${esc(qd.source || '')}</div>
         ${qd.original && qd.original !== qText ? `<div style="margin-top:8px;font-size:0.85rem;color:var(--text-light);font-style:italic;padding:10px;background:rgba(255,255,255,0.5);border-radius:var(--radius-sm);">"${esc(qd.original)}"</div>` : ''}
+        <div class="quote-note-area" style="text-align:left;">
+          <div style="font-size:0.82rem;color:var(--text-light);margin-bottom:6px;">${isEn ? 'Your thought on this quote...' : 'Seu pensamento sobre essa citação...'}</div>
+          <textarea id="quoteNoteInput" rows=2 placeholder="${isEn ? 'Write your reflection...' : 'Escreva seu pensamento...'}" style="font-size:0.85rem;">${esc(d.note || '')}</textarea>
+          <div style="margin-top:6px;display:flex;align-items:center;gap:8px;">
+            <button class="card-action small" onclick="saveQuoteNote()" style="margin-top:0;">💾 ${isEn ? 'Save' : 'Salvar'}</button>
+            ${d.note ? `<span class="quote-note-saved">${isEn ? 'Saved' : 'Salvo'}</span>` : ''}
+          </div>
+        </div>
       </div>`;
     } else if (d.type === 'photo') {
       const prompt = isEn ? (d.data.prompt_en || d.data.prompt_pt || '') : (d.data.prompt_pt || d.data.prompt_en || '');
@@ -1106,11 +1257,19 @@ function loadChallenge() {
         html += `<div style="margin-top:8px;"><strong>${isEn ? 'Your photo' : 'Sua foto'}:</strong></div>`;
         html += `<img src="${myPhoto}" class="photo-preview" style="max-height:180px;cursor:pointer;" onclick="showFullPhoto(-1,'${myPhoto.replace(/'/g, "\\'")}')">`;
         html += `<div style="margin-top:4px;color:var(--pink-dark);font-weight:800;">✅ ${isEn ? 'Uploaded!' : 'Enviada!'}</div>`;
+        if (d.timestamps) {
+          const myTsKey = d._is_a ? 'photo_uploaded_at_a' : 'photo_uploaded_at_b';
+          if (d.timestamps[myTsKey]) html += `<div class="timestamp-text" style="margin-top:2px;">📸 ${isEn ? 'uploaded' : 'enviada'} ${fmtTime(d.timestamps[myTsKey])}</div>`;
+        }
         if (d.data['caption_' + (d._is_a ? 'a' : 'b')]) html += `<div style="font-size:0.85rem;color:var(--text-light);">"${esc(d.data['caption_' + (d._is_a ? 'a' : 'b')])}"</div>`;
       }
       if (partnerPhoto) {
         html += `<div style="margin-top:12px;"><strong>${esc(d.partner_name)}:</strong></div>`;
         html += `<img src="${partnerPhoto}" class="photo-preview" style="max-height:180px;cursor:pointer;" onclick="showFullPhoto(-1,'${partnerPhoto.replace(/'/g, "\\'")}')">`;
+        if (d.timestamps) {
+          const partnerTsKey = d._is_a ? 'photo_uploaded_at_b' : 'photo_uploaded_at_a';
+          if (d.timestamps[partnerTsKey]) html += `<div class="timestamp-text" style="margin-top:2px;">📸 ${isEn ? 'uploaded' : 'enviada'} ${fmtTime(d.timestamps[partnerTsKey])}</div>`;
+        }
         if (d.data['caption_' + (d._is_a ? 'b' : 'a')]) html += `<div style="font-size:0.85rem;color:var(--text-light);">"${esc(d.data['caption_' + (d._is_a ? 'b' : 'a')])}"</div>`;
       }
       if (bothPhotos) {
@@ -1130,9 +1289,10 @@ function loadChallenge() {
 
     // ── Always show partner challenge creation ──
     html += `<div class="card" style="margin-top:14px;">
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
         <span style="font-size:1.2rem;">💪</span>
         <span style="font-weight:800;font-size:0.9rem;">${isEn ? 'Create a Challenge for Your Partner' : 'Criar Desafio para seu Parceiro'}</span>
+        ${d.streak && d.streak > 0 ? `<span style="margin-left:auto;font-family:'Press Start 2P',monospace;font-size:7px;padding:3px 10px;border-radius:20px;background:linear-gradient(135deg,#ff9a56,#ff4757);color:white;">🔥 ${isEn ? 'Streak' : 'Sequência'}: ${d.streak}</span>` : ''}
       </div>
       <div style="font-size:0.7rem;color:var(--text-light);margin-bottom:8px;line-height:1.5;">${isEn ? 'Challenge your partner! Choose text (a task to complete) or photo (they take a picture). Once they complete it, their response appears here.' : 'Desafie seu parceiro! Escolha texto (uma tarefa para cumprir) ou foto (eles tiram uma foto). Quando completarem, a resposta aparece aqui.'}</div>
       <div id="partnerChallengeList"></div>
@@ -1291,6 +1451,26 @@ async function submitRiddleGuess() {
     } else {
       showToast(isEn ? 'Wrong! Try again 💭' : 'Errado! Tente de novo 💭');
     }
+    _riddleHintsRevealed = r.hints_used || _riddleHintsRevealed;
+    loadChallenge();
+  } catch(e) { showToast(e.message, true); }
+}
+
+async function revealHint() {
+  const isEn = getLang() === 'en';
+  try {
+    const r = await api('/api/couple/challenge/guess', { method: 'POST', body: { couple_id: COUPLE_ID, name: USER_NAME, guess: '__hint__' } });
+    _riddleHintsRevealed = r.hints_used || (_riddleHintsRevealed + 1);
+    loadChallenge();
+  } catch(e) { showToast(e.message, true); }
+}
+
+async function saveQuoteNote() {
+  const note = document.getElementById('quoteNoteInput')?.value?.trim();
+  const isEn = getLang() === 'en';
+  try {
+    await api('/api/couple/quote/note', { method: 'POST', body: { note: note || '', offset: window._quoteOffset || 0 } });
+    showToast(isEn ? 'Note saved! 💕' : 'Nota salva! 💕');
     loadChallenge();
   } catch(e) { showToast(e.message, true); }
 }
@@ -1345,6 +1525,15 @@ async function loadPartnerChallengeList() {
           if (c.my_photo) photoHtml += `<img src="${c.my_photo}" class="photo-preview" style="max-height:150px;margin-top:6px;">`;
           if (c.partner_photo && !isMine) photoHtml += `<div style="font-size:0.75rem;color:var(--text-light);margin-top:4px;">📸 ${esc(c.created_by)}</div><img src="${c.partner_photo}" class="photo-preview" style="max-height:150px;">`;
         }
+        let tsHtml = '';
+        if (c.completed_at_a || c.completed_at_b || c.photo_submitted_at_a || c.photo_submitted_at_b) {
+          tsHtml += `<div style="margin-top:6px;">`;
+          if (c.completed_at_a) tsHtml += `<div class="timestamp-text">${esc(c.partner_a || 'A')}: ${isEn ? 'done' : 'feito'} ${fmtTime(c.completed_at_a)}</div>`;
+          if (c.completed_at_b) tsHtml += `<div class="timestamp-text">${esc(c.partner_b || 'B')}: ${isEn ? 'done' : 'feito'} ${fmtTime(c.completed_at_b)}</div>`;
+          if (c.photo_submitted_at_a) tsHtml += `<div class="timestamp-text">📸 ${esc(c.partner_a || 'A')}: ${fmtTime(c.photo_submitted_at_a)}</div>`;
+          if (c.photo_submitted_at_b) tsHtml += `<div class="timestamp-text">📸 ${esc(c.partner_b || 'B')}: ${fmtTime(c.photo_submitted_at_b)}</div>`;
+          tsHtml += `</div>`;
+        }
         return `<div class="challenge-answer" style="margin-bottom:8px;">
           <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--text-light);margin-bottom:4px;">${isPhoto ? '📸 ' : ''}${isMine ? (isEn ? 'You proposed' : 'Você propôs') : esc(c.created_by)}</div>
           <div style="font-weight:700;font-size:0.9rem;">${esc(c.challenge)}</div>
@@ -1353,6 +1542,7 @@ async function loadPartnerChallengeList() {
             <span>${isEn ? 'Me' : 'Eu'}: ${c.my_done ? '✅' : '⏳'}</span>
             <span>${c.created_by}: ${c.partner_done ? '✅' : '⏳'}</span>
           </div>
+          ${tsHtml}
           ${actions}
         </div>`;
       }).join('');
@@ -1446,43 +1636,83 @@ async function loadChallengeHistory() {
       return;
     }
     const tlabel = { riddle: isEn ? 'Riddle' : 'Enigma', partner_question: isEn ? 'Question' : 'Pergunta', partner_challenge: isEn ? 'Partner Challenge' : 'Desafio do Parceiro', quote: isEn ? 'Quote' : 'Citação', photo: isEn ? 'Photo' : 'Foto' };
+    const iconMap = { riddle: '🧩', partner_question: '💬', partner_challenge: '🎯', quote: '💫', photo: '📸' };
+
+    // Group by month
+    const months = {};
+    chals.forEach(c => {
+      const dt = c.date || '';
+      const ym = dt.slice(0, 7) || 'unknown';
+      if (!months[ym]) months[ym] = [];
+      months[ym].push(c);
+    });
+
     let html = '';
-    chals.forEach(function(c) {
-      const iconMap = { riddle: '🧩', partner_question: '💌', partner_challenge: '💪', quote: '💬', photo: '📸' };
-      const icon = iconMap[c.type] || '🎯';
-      let desc = '';
-      if (c.type === 'riddle') {
-        desc = isEn ? (c.data.riddle_en || '') : (c.data.riddle_pt || '');
-      } else if (c.type === 'quote') {
-        desc = isEn ? (c.data.quote_en || '') : (c.data.quote_pt || '');
-      } else if (c.type === 'partner_question') {
-        desc = c.data.question || '';
-      } else if (c.type === 'partner_challenge') {
-        desc = c.data.challenge || '';
-      } else if (c.type === 'photo') {
-        desc = isEn ? (c.data.prompt_en || '') : (c.data.prompt_pt || '');
-      }
-      const myPhoto = c.data && c.data['photo_url_' + (c._is_a ? 'a' : 'b')];
-      const partnerPhoto = c.data && c.data['photo_url_' + (c._is_a ? 'b' : 'a')];
-      html += '<div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,181,194,0.1);align-items:flex-start;">' +
-        '<div style="font-size:1.3rem;min-width:30px;text-align:center;">' + icon + '</div>' +
-        '<div style="flex:1;min-width:0;">' +
-          '<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">' +
-            '<span style="font-family:\'Press Start 2P\',monospace;font-size:6px;color:var(--text-light);">' + c.date + '</span>' +
-            '<span style="font-family:\'Press Start 2P\',monospace;font-size:6px;color:var(--pink-dark);background:var(--pink-light);padding:2px 8px;border-radius:20px;">' + (tlabel[c.type] || c.type) + '</span>' +
-          '</div>' +
-          '<div style="font-weight:700;font-size:0.85rem;margin-top:3px;line-height:1.5;">' + esc(desc) + '</div>';
-      if (myPhoto) {
-        html += '<img src="' + myPhoto + '" class="photo-preview" style="max-height:100px;margin-top:6px;cursor:pointer;" onclick="showFullPhoto(-1,\'' + myPhoto.replace(/'/g, "\\'") + '\')">';
-      }
-      if (partnerPhoto) {
-        html += '<div style="font-size:0.7rem;color:var(--text-light);margin-top:4px;">' + esc(c.partner_name) + ':</div>';
-        html += '<img src="' + partnerPhoto + '" class="photo-preview" style="max-height:100px;cursor:pointer;" onclick="showFullPhoto(-1,\'' + partnerPhoto.replace(/'/g, "\\'") + '\')">';
-      }
-      html += '<div style="display:flex;gap:10px;margin-top:5px;font-family:\'Press Start 2P\',monospace;font-size:6px;color:var(--text-light);">' +
-        '<span>' + (isEn ? 'You' : 'Você') + ': ' + (c.my_done ? '✅' : '⏳') + '</span>' +
-        '<span>' + esc(c.partner_name) + ': ' + (c.partner_done ? '✅' : '⏳') + '</span>' +
-      '</div></div></div>';
+
+    // Show streak at top
+    if (chals[0] && chals[0].streak !== undefined && chals[0].streak > 0) {
+      html += `<div style="text-align:center;padding:8px 0 4px;"><span style="font-family:'Press Start 2P',monospace;font-size:8px;padding:4px 14px;border-radius:20px;background:linear-gradient(135deg,#ff9a56,#ff4757);color:white;">🔥 ${isEn ? 'Current streak' : 'Sequência atual'}: ${chals[0].streak} ${isEn ? 'd' : (chals[0].streak === 1 ? 'dia' : 'dias')}</span></div>`;
+    }
+
+    const monthNamesPt = ['','Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    const monthNamesEn = ['','January','February','March','April','May','June','July','August','September','October','November','December'];
+
+    Object.keys(months).sort().reverse().forEach(ym => {
+      const [y, m] = ym.split('-');
+      const mNum = parseInt(m) || 0;
+      const monthName = isEn ? (monthNamesEn[mNum] || ym) : (monthNamesPt[mNum] || ym);
+      html += `<div class="history-month-header">${monthName} ${y}</div>`;
+
+      months[ym].forEach(c => {
+        const icon = iconMap[c.type] || '🎯';
+        let desc = '';
+        if (c.type === 'riddle') {
+          const answer = isEn ? (c.data.answer_en || '') : (c.data.answer_pt || '');
+          desc = answer ? (isEn ? 'Answer: ' : 'Resposta: ') + esc(answer) : esc(isEn ? (c.data.riddle_en || '') : (c.data.riddle_pt || ''));
+        } else if (c.type === 'quote') {
+          const qText = isEn ? (c.data.quote_en || '') : (c.data.quote_pt || '');
+          desc = '"' + esc(qText.length > 80 ? qText.slice(0, 80) + '…' : qText) + '"';
+        } else if (c.type === 'partner_question') {
+          desc = esc(c.data.question || '');
+        } else if (c.type === 'partner_challenge') {
+          desc = esc(c.data.challenge || '');
+        } else if (c.type === 'photo') {
+          desc = esc(isEn ? (c.data.prompt_en || '') : (c.data.prompt_pt || ''));
+        }
+
+        const bothDone = c.my_done && c.partner_done;
+        const statusText = bothDone ? (isEn ? 'Both ✅' : 'Ambos ✅') : (c.my_done ? (isEn ? 'You ✅' : 'Você ✅') : (isEn ? 'Pending' : 'Pendente'));
+
+        let tsInfo = '';
+        if (c.timestamps) {
+          const ts = [];
+          if (c.timestamps.guessed_at) ts.push((isEn ? 'solved ' : 'resolvido ') + fmtTime(c.timestamps.guessed_at));
+          if (c.timestamps.completed_at_a) ts.push(fmtTime(c.timestamps.completed_at_a));
+          if (c.timestamps.completed_at_b) ts.push(fmtTime(c.timestamps.completed_at_b));
+          if (c.timestamps.photo_submitted_at_a) ts.push('📸 ' + fmtTime(c.timestamps.photo_submitted_at_a));
+          if (c.timestamps.photo_submitted_at_b) ts.push('📸 ' + fmtTime(c.timestamps.photo_submitted_at_b));
+          if (ts.length) tsInfo = `<div class="timestamp-text" style="margin-top:4px;">${ts.join(' · ')}</div>`;
+        }
+
+        const myPhoto = c.data && c.data['photo_url_' + (c._is_a ? 'a' : 'b')];
+        const partnerPhoto = c.data && c.data['photo_url_' + (c._is_a ? 'b' : 'a')];
+
+        html += `<div class="history-card">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+            <span style="font-size:1.3rem;">${icon}</span>
+            <span class="history-card-date">${c.date}</span>
+            <span class="history-card-type">${tlabel[c.type] || c.type}</span>
+          </div>
+          <div style="font-weight:600;font-size:0.85rem;line-height:1.5;color:var(--text);">${desc || '—'}</div>
+          ${myPhoto ? `<img src="${myPhoto}" class="photo-preview" style="max-height:80px;margin-top:6px;cursor:pointer;" onclick="event.stopPropagation();showFullPhoto(-1,'${myPhoto.replace(/'/g, "\\'")}')">` : ''}
+          ${partnerPhoto ? `<div style="font-size:0.7rem;color:var(--text-light);margin-top:4px;">${esc(c.partner_name)}:</div><img src="${partnerPhoto}" class="photo-preview" style="max-height:80px;cursor:pointer;" onclick="event.stopPropagation();showFullPhoto(-1,'${partnerPhoto.replace(/'/g, "\\'")}')">` : ''}
+          <div style="display:flex;gap:10px;margin-top:5px;align-items:center;">
+            <span style="font-family:'Press Start 2P',monospace;font-size:6px;color:var(--text-light);">${statusText}</span>
+            ${c.streak !== undefined && c.streak > 0 ? `<span style="font-family:'Press Start 2P',monospace;font-size:6px;color:var(--pink-dark);">🔥 ${c.streak}</span>` : ''}
+          </div>
+          ${tsInfo}
+        </div>`;
+      });
     });
     container.innerHTML = html;
   } catch(e) {
