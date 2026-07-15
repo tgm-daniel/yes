@@ -2,7 +2,7 @@
   "name": "Still Learning",
   "short_name": "StillLearning",
   "description": "App do casal — quiz, desafios, diário e memórias",
-  "start_url": "/couple",
+  "start_url": "/still-learning",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#fffaf5",

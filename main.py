@@ -25,16 +25,17 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 app = FastAPI(title="Still Learning")
 Base.metadata.create_all(bind=engine)
-# Migration: recreate quote_refreshes with new schema
+# Migration: recreate quote_refreshes with new schema (safe)
 try:
     from sqlalchemy import inspect, text as sql_text
     insp = inspect(engine)
-    cols = [c['name'] for c in insp.get_columns('quote_refreshes')]
-    if 'offset' in cols and 'current_offset' not in cols:
-        with engine.connect() as conn:
-            conn.execute(sql_text("DROP TABLE quote_refreshes"))
-            conn.commit()
-        Base.metadata.create_all(bind=engine)
+    if 'quote_refreshes' in insp.get_table_names():
+        cols = [c['name'] for c in insp.get_columns('quote_refreshes')]
+        if 'offset' in cols and 'current_offset' not in cols:
+            with engine.connect() as conn:
+                conn.execute(sql_text("DROP TABLE quote_refreshes"))
+                conn.commit()
+            Base.metadata.create_all(bind=engine)
 except Exception:
     pass
 
@@ -49,19 +50,6 @@ def startup_load_profiles():
     finally:
         db.close()
 
-
-# Load admin users from env var (JSON array)
-ADMIN_USERS = {}
-_admin_raw = os.environ.get("ADMIN_USERS", "")
-if _admin_raw:
-    try:
-        for entry in json.loads(_admin_raw):
-            ADMIN_USERS[entry["username"]] = entry["password"]
-    except: pass
-if not ADMIN_USERS:
-    ADMIN_USERS = {"ttt": "sisrat", "T": "trs123", "Tadmin": "trs123"}
-
-JWT_SECRET = os.environ.get("JWT_SECRET", "sl-jwt-dev-secret")
 JWT_ALGO = "HS256"
 
 
@@ -70,13 +58,27 @@ def hash_pw(pw: str) -> str:
 
 
 def verify_pw(pw: str, stored: str) -> bool:
-    # Try bcrypt first
     if stored.startswith("$2b$") or stored.startswith("$2a$"):
         return bcrypt.checkpw(pw.encode(), stored.encode())
-    # Fallback: legacy SHA-256 (migration)
     if hashlib.sha256((pw + "sl-hmac-2024").encode()).hexdigest() == stored:
         return True
     return False
+
+
+# Load admin users from env var (JSON array) — hashed on load
+ADMIN_USERS = {}
+_admin_raw = os.environ.get("ADMIN_USERS", "")
+if not _admin_raw:
+    raise ValueError("ADMIN_USERS environment variable is required")
+try:
+    for entry in json.loads(_admin_raw):
+        ADMIN_USERS[entry["username"]] = hash_pw(entry["password"])
+except Exception as e:
+    raise ValueError(f"Failed to parse ADMIN_USERS: {e}")
+
+JWT_SECRET = os.environ.get("JWT_SECRET", "")
+if not JWT_SECRET:
+    raise ValueError("JWT_SECRET environment variable is required")
 
 
 def create_jwt(data: dict) -> str:
@@ -91,7 +93,6 @@ def decode_jwt(token: str) -> Optional[dict]:
 
 
 def require_auth(authorization: Optional[str] = Header(None), request: Request = None):
-    """JWT auth dependency. Falls back to legacy X- headers."""
     if authorization and authorization.startswith("Bearer "):
         payload = decode_jwt(authorization[7:])
         if payload:
@@ -102,23 +103,14 @@ def require_auth(authorization: Optional[str] = Header(None), request: Request =
                 "role": payload.get("role", "user"),
                 "auth_method": "jwt",
             }
-    # Fallback to legacy headers (for backward compatibility)
-    if request:
-        cid = request.headers.get("X-Couple-Id", "")
-        uname = request.headers.get("X-User-Name", "")
-        if cid and uname:
-            return {
-                "login_name": uname,
-                "couple_id": cid,
-                "auth_method": "header",
-            }
     raise HTTPException(status_code=401, detail="Autenticação necessária")
 
 
 def check_admin(body: dict):
     user = body.get("username", "")
     pw = body.get("password", "")
-    if ADMIN_USERS.get(user) != pw:
+    stored = ADMIN_USERS.get(user)
+    if not stored or not verify_pw(pw, stored):
         raise HTTPException(status_code=401, detail="Credenciais inválidas")
 
 
@@ -171,12 +163,6 @@ def reload_profiles(db: Session):
     global PROFILES, LOGIN_MAP
     migrate_profiles(db)
     PROFILES, LOGIN_MAP = load_profiles_from_db(db)
-
-def check_admin(body: dict):
-    user = body.get("username", "")
-    pw = body.get("password", "")
-    if ADMIN_USERS.get(user) != pw:
-        raise HTTPException(status_code=401, detail="Credenciais inválidas")
 
 GENERIC_QUESTIONS = [
     {"id": 1, "question": "Qual seria seu destino dos sonhos pra viajar?", "options": ["Paris — romance e charme", "Tóquio — tecnologia e cultura", "Nova York — cidade que nunca dorme", "Uma praia paradisíaca — sol e mar"], "correct": 3, "fun_fact": "Praia paradisíaca! Bora sonhar juntos 🏖️"},
@@ -421,12 +407,11 @@ def api_login(body: dict, request: Request, db: Session = Depends(get_db)):
 
 @app.get("/api/couple/dashboard")
 def api_couple_dashboard(
-    request: Request,
     db: Session = Depends(get_db),
     auth: dict = Depends(require_auth)
 ):
-    couple_id = request.headers.get("X-Couple-Id", "") or auth.get("couple_id", "")
-    my_name = request.headers.get("X-User-Name", "") or auth.get("login_name", "")
+    couple_id = auth["couple_id"]
+    my_name = auth["login_name"]
     today = date.today()
     partner_name = get_partner_name(couple_id, my_name)
     week_start = today - timedelta(days=today.weekday())
@@ -527,12 +512,12 @@ def api_translations(request: Request):
 
 
 @app.post("/api/couple/question/answer")
-def api_question_answer(body: dict, request: Request, db: Session = Depends(get_db)):
-    couple_id = body.get("couple_id", "")
-    my_name = body.get("name", "")
+def api_question_answer(body: dict, db: Session = Depends(get_db), auth: dict = Depends(require_auth)):
+    couple_id = auth["couple_id"]
+    my_name = auth["login_name"]
     answer = body.get("answer", "")
-    if not couple_id or not my_name or not answer:
-        raise HTTPException(status_code=400, detail="Missing fields")
+    if not answer:
+        raise HTTPException(status_code=400, detail="Missing answer")
     today = date.today()
     question = db.query(DailyQuestion).filter(
         DailyQuestion.couple_id == couple_id, DailyQuestion.date == today
@@ -549,11 +534,9 @@ def api_question_answer(body: dict, request: Request, db: Session = Depends(get_
 
 
 @app.get("/api/couple/question")
-def api_get_question(request: Request, db: Session = Depends(get_db)):
-    couple_id = request.headers.get("X-Couple-Id", "")
-    my_name = request.headers.get("X-User-Name", "")
-    if not couple_id or not my_name:
-        raise HTTPException(status_code=400, detail="Missing headers")
+def api_get_question(request: Request, db: Session = Depends(get_db), auth: dict = Depends(require_auth)):
+    couple_id = auth["couple_id"]
+    my_name = auth["login_name"]
     today = date.today()
     lang = get_lang(request)
     question = db.query(DailyQuestion).filter(
@@ -610,13 +593,13 @@ def api_get_question(request: Request, db: Session = Depends(get_db)):
 
 
 @app.post("/api/couple/diary/save")
-def api_diary_save(body: dict, db: Session = Depends(get_db)):
-    couple_id = body.get("couple_id", "")
-    author_id = body.get("author_id", "")
+def api_diary_save(body: dict, db: Session = Depends(get_db), auth: dict = Depends(require_auth)):
+    couple_id = auth["couple_id"]
+    author_id = auth["login_name"]
     content = body.get("content", "")
     mood = body.get("mood", "")
-    if not couple_id or not author_id:
-        raise HTTPException(status_code=400, detail="Missing fields")
+    if not content:
+        raise HTTPException(status_code=400, detail="Missing content")
     today = date.today()
     entry = db.query(DiaryEntry).filter(
         DiaryEntry.couple_id == couple_id,
@@ -634,13 +617,9 @@ def api_diary_save(body: dict, db: Session = Depends(get_db)):
 
 
 @app.get("/api/couple/diary")
-def api_get_diary(request: Request, db: Session = Depends(get_db)):
-    couple_id = request.headers.get("X-Couple-Id", "")
-    my_name = request.headers.get("X-User-Name", "")
-    partner_name = request.headers.get("X-Partner-Name", "")
-    if not couple_id or not my_name:
-        raise HTTPException(status_code=400, detail="Missing headers")
-
+def api_get_diary(db: Session = Depends(get_db), auth: dict = Depends(require_auth)):
+    couple_id = auth["couple_id"]
+    my_name = auth["login_name"]
     today = date.today()
     entries = db.query(DiaryEntry).filter(
         DiaryEntry.couple_id == couple_id
@@ -671,13 +650,13 @@ def api_get_diary(request: Request, db: Session = Depends(get_db)):
 
 
 @app.post("/api/couple/agenda/add")
-def api_agenda_add(body: dict, db: Session = Depends(get_db)):
-    couple_id = body.get("couple_id", "")
+def api_agenda_add(body: dict, db: Session = Depends(get_db), auth: dict = Depends(require_auth)):
+    couple_id = auth["couple_id"]
     title = body.get("title", "")
     date_str = body.get("date", "")
     description = body.get("description", "")
-    created_by = body.get("created_by", "")
-    if not couple_id or not title or not date_str:
+    created_by = auth["login_name"]
+    if not title or not date_str:
         raise HTTPException(status_code=400, detail="Missing fields")
     try:
         event_date = datetime.fromisoformat(date_str)
@@ -691,10 +670,8 @@ def api_agenda_add(body: dict, db: Session = Depends(get_db)):
 
 
 @app.get("/api/couple/agenda")
-def api_get_agenda(request: Request, db: Session = Depends(get_db)):
-    couple_id = request.headers.get("X-Couple-Id", "")
-    if not couple_id:
-        raise HTTPException(status_code=400, detail="Missing couple_id")
+def api_get_agenda(db: Session = Depends(get_db), auth: dict = Depends(require_auth)):
+    couple_id = auth["couple_id"]
     now = datetime.utcnow()
     events = db.query(AgendaEvent).filter(
         AgendaEvent.couple_id == couple_id,
@@ -711,12 +688,12 @@ def api_get_agenda(request: Request, db: Session = Depends(get_db)):
 
 
 @app.post("/api/couple/todos/add")
-def api_todo_add(body: dict, db: Session = Depends(get_db)):
-    couple_id = body.get("couple_id", "")
+def api_todo_add(body: dict, db: Session = Depends(get_db), auth: dict = Depends(require_auth)):
+    couple_id = auth["couple_id"]
     title = body.get("title", "")
     description = body.get("description", "")
-    created_by = body.get("created_by", "")
-    if not couple_id or not title:
+    created_by = auth["login_name"]
+    if not title:
         raise HTTPException(status_code=400, detail="Missing fields")
     todo = TodoItem(couple_id=couple_id, title=title, description=description, created_by=created_by)
     db.add(todo)
@@ -726,9 +703,9 @@ def api_todo_add(body: dict, db: Session = Depends(get_db)):
 
 
 @app.post("/api/couple/todos/toggle")
-def api_todo_toggle(body: dict, db: Session = Depends(get_db)):
+def api_todo_toggle(body: dict, db: Session = Depends(get_db), auth: dict = Depends(require_auth)):
     todo_id = body.get("id")
-    my_name = body.get("name", "")
+    my_name = auth["login_name"]
     if not todo_id:
         raise HTTPException(status_code=400, detail="Missing id")
     todo = db.query(TodoItem).filter(TodoItem.id == todo_id).first()
@@ -745,10 +722,8 @@ def api_todo_toggle(body: dict, db: Session = Depends(get_db)):
 
 
 @app.get("/api/couple/todos")
-def api_get_todos(request: Request, db: Session = Depends(get_db)):
-    couple_id = request.headers.get("X-Couple-Id", "")
-    if not couple_id:
-        raise HTTPException(status_code=400, detail="Missing couple_id")
+def api_get_todos(db: Session = Depends(get_db), auth: dict = Depends(require_auth)):
+    couple_id = auth["couple_id"]
     items = db.query(TodoItem).filter(TodoItem.couple_id == couple_id).order_by(TodoItem.created_at.desc()).all()
     return {
         "items": [{"id": t.id, "title": t.title, "description": t.description, "done": t.done, "done_by": t.done_by, "created_by": t.created_by} for t in items]
@@ -756,11 +731,11 @@ def api_get_todos(request: Request, db: Session = Depends(get_db)):
 
 
 @app.post("/api/couple/review/save")
-def api_review_save(body: dict, db: Session = Depends(get_db)):
-    couple_id = body.get("couple_id", "")
-    name = body.get("name", "")
+def api_review_save(body: dict, db: Session = Depends(get_db), auth: dict = Depends(require_auth)):
+    couple_id = auth["couple_id"]
+    name = auth["login_name"]
     reflection = body.get("reflection", "")
-    if not couple_id or not name or not reflection:
+    if not reflection:
         raise HTTPException(status_code=400, detail="Missing fields")
     today = date.today()
     week_start = today - timedelta(days=today.weekday())
@@ -783,11 +758,9 @@ def api_review_save(body: dict, db: Session = Depends(get_db)):
 
 
 @app.get("/api/couple/review")
-def api_get_review(request: Request, db: Session = Depends(get_db)):
-    couple_id = request.headers.get("X-Couple-Id", "")
-    my_name = request.headers.get("X-User-Name", "")
-    if not couple_id or not my_name:
-        raise HTTPException(status_code=400, detail="Missing headers")
+def api_get_review(db: Session = Depends(get_db), auth: dict = Depends(require_auth)):
+    couple_id = auth["couple_id"]
+    my_name = auth["login_name"]
     today = date.today()
     week_start = today - timedelta(days=today.weekday())
 
@@ -848,11 +821,9 @@ def get_quote(today, offset=0):
 
 
 @app.get("/api/couple/challenge")
-def api_get_challenge(request: Request, db: Session = Depends(get_db)):
-    couple_id = request.headers.get("X-Couple-Id", "")
-    my_name = request.headers.get("X-User-Name", "")
-    if not couple_id or not my_name:
-        raise HTTPException(status_code=400, detail="Missing headers")
+def api_get_challenge(request: Request, db: Session = Depends(get_db), auth: dict = Depends(require_auth)):
+    couple_id = auth["couple_id"]
+    my_name = auth["login_name"]
     today = date.today()
     lang = request.cookies.get("lang", "pt")
     partner_name = get_partner_name(couple_id, my_name)
@@ -936,11 +907,11 @@ def api_get_challenge(request: Request, db: Session = Depends(get_db)):
 
 
 @app.post("/api/couple/challenge/guess")
-def api_challenge_guess(body: dict, db: Session = Depends(get_db)):
-    couple_id = body.get("couple_id", "")
-    name = body.get("name", "")
+def api_challenge_guess(body: dict, db: Session = Depends(get_db), auth: dict = Depends(require_auth)):
+    couple_id = auth["couple_id"]
+    name = auth["login_name"]
     guess = body.get("guess", "")
-    if not couple_id or not name or not guess:
+    if not guess:
         raise HTTPException(status_code=400, detail="Missing fields")
     today = date.today()
     challenge = db.query(Challenge).filter(
@@ -965,13 +936,13 @@ def api_challenge_guess(body: dict, db: Session = Depends(get_db)):
 
 
 @app.post("/api/couple/challenge/create-question")
-def api_create_question(body: dict, db: Session = Depends(get_db)):
-    couple_id = body.get("couple_id", "")
-    name = body.get("name", "")
+def api_create_question(body: dict, db: Session = Depends(get_db), auth: dict = Depends(require_auth)):
+    couple_id = auth["couple_id"]
+    name = auth["login_name"]
     question = body.get("question", "")
     theme_idx = body.get("theme_idx", None)
     custom_theme = body.get("custom_theme", "")
-    if not couple_id or not name or not question:
+    if not question:
         raise HTTPException(status_code=400, detail="Missing fields")
     today = date.today()
     challenge = db.query(Challenge).filter(
@@ -1001,11 +972,11 @@ def api_create_question(body: dict, db: Session = Depends(get_db)):
 
 
 @app.post("/api/couple/challenge/answer-question")
-def api_answer_question(body: dict, db: Session = Depends(get_db)):
-    couple_id = body.get("couple_id", "")
-    name = body.get("name", "")
+def api_answer_question(body: dict, db: Session = Depends(get_db), auth: dict = Depends(require_auth)):
+    couple_id = auth["couple_id"]
+    name = auth["login_name"]
     answer = body.get("answer", "")
-    if not couple_id or not name or not answer:
+    if not answer:
         raise HTTPException(status_code=400, detail="Missing fields")
     today = date.today()
     challenge = db.query(Challenge).filter(
@@ -1028,15 +999,13 @@ def api_answer_question(body: dict, db: Session = Depends(get_db)):
 
 
 @app.post("/api/couple/challenge/partner/create")
-def api_create_partner_challenge(body: dict, db: Session = Depends(get_db)):
-    couple_id = body.get("couple_id", "")
-    name = body.get("name", "")
+def api_create_partner_challenge(body: dict, db: Session = Depends(get_db), auth: dict = Depends(require_auth)):
+    couple_id = auth["couple_id"]
+    name = auth["login_name"]
     challenge_text = body.get("challenge", "")
     suggestion_idx = body.get("suggestion_idx", None)
     custom_challenge = body.get("custom_challenge", "")
     challenge_type = body.get("challenge_type", "text")
-    if not couple_id or not name:
-        raise HTTPException(status_code=400, detail="Missing fields")
     text = challenge_text or custom_challenge
     if not text:
         raise HTTPException(status_code=400, detail="Challenge text required")
@@ -1058,11 +1027,11 @@ def api_create_partner_challenge(body: dict, db: Session = Depends(get_db)):
 
 
 @app.post("/api/couple/challenge/partner/complete")
-def api_complete_partner_challenge(body: dict, db: Session = Depends(get_db)):
+def api_complete_partner_challenge(body: dict, db: Session = Depends(get_db), auth: dict = Depends(require_auth)):
     challenge_id = body.get("id")
-    name = body.get("name", "")
+    name = auth["login_name"]
     photo_data = body.get("photo", "")
-    if not challenge_id or not name:
+    if not challenge_id:
         raise HTTPException(status_code=400, detail="Missing fields")
     chal = db.query(Challenge).filter(Challenge.id == challenge_id).first()
     if not chal:
@@ -1087,11 +1056,9 @@ def api_complete_partner_challenge(body: dict, db: Session = Depends(get_db)):
 
 
 @app.get("/api/couple/challenge/partner")
-def api_get_partner_challenges(request: Request, db: Session = Depends(get_db)):
-    couple_id = request.headers.get("X-Couple-Id", "")
-    my_name = request.headers.get("X-User-Name", "")
-    if not couple_id or not my_name:
-        raise HTTPException(status_code=400, detail="Missing headers")
+def api_get_partner_challenges(db: Session = Depends(get_db), auth: dict = Depends(require_auth)):
+    couple_id = auth["couple_id"]
+    my_name = auth["login_name"]
     today = date.today()
     challenges = db.query(Challenge).filter(
         Challenge.couple_id == couple_id, Challenge.date == today, Challenge.type == "partner_challenge"
@@ -1112,10 +1079,8 @@ def api_get_partner_challenges(request: Request, db: Session = Depends(get_db)):
 MAX_QUOTE_UNLOCK = 3
 
 @app.get("/api/couple/quote")
-def api_get_quote(request: Request, offset: int = None, unlock: int = 0, like: int = 0, db: Session = Depends(get_db)):
-    couple_id = request.headers.get("X-Couple-Id", "")
-    if not couple_id:
-        raise HTTPException(status_code=400, detail="Missing headers")
+def api_get_quote(request: Request, offset: int = None, unlock: int = 0, like: int = 0, db: Session = Depends(get_db), auth: dict = Depends(require_auth)):
+    couple_id = auth["couple_id"]
     today = date.today()
 
     state = db.query(QuoteRefresh).filter(
@@ -1175,11 +1140,9 @@ def api_get_quote(request: Request, offset: int = None, unlock: int = 0, like: i
 
 
 @app.get("/api/couple/quiz")
-def api_get_quiz(request: Request, db: Session = Depends(get_db)):
-    couple_id = request.headers.get("X-Couple-Id", "")
-    my_name = request.headers.get("X-User-Name", "")
-    if not couple_id or not my_name:
-        raise HTTPException(status_code=400, detail="Missing headers")
+def api_get_quiz(db: Session = Depends(get_db), auth: dict = Depends(require_auth)):
+    couple_id = auth["couple_id"]
+    my_name = auth["login_name"]
     partner_name = get_partner_name(couple_id, my_name)
     answers = db.query(QuizAnswer).filter(QuizAnswer.couple_id == couple_id).all()
     my_answers = {a.question_idx: a for a in answers if a.author_id == my_name}
@@ -1204,9 +1167,9 @@ def api_get_quiz(request: Request, db: Session = Depends(get_db)):
 
 
 @app.post("/api/couple/quiz/save")
-def api_save_quiz(body: dict, db: Session = Depends(get_db)):
-    couple_id = body.get("couple_id", "")
-    author_id = body.get("author_id", "")
+def api_save_quiz(body: dict, db: Session = Depends(get_db), auth: dict = Depends(require_auth)):
+    couple_id = auth["couple_id"]
+    author_id = auth["login_name"]
     question_idx = body.get("question_idx")
     category = body.get("category", "basic")
     about_self = body.get("about_self")
@@ -1238,12 +1201,12 @@ def api_save_quiz(body: dict, db: Session = Depends(get_db)):
 MAX_PHOTO_SIZE = 300 * 1024  # 300KB max for base64
 
 @app.post("/api/couple/challenge/photo")
-def api_upload_photo(body: dict, db: Session = Depends(get_db)):
-    couple_id = body.get("couple_id", "")
-    name = body.get("name", "")
-    photo_data = body.get("photo", "")  # base64
+def api_upload_photo(body: dict, db: Session = Depends(get_db), auth: dict = Depends(require_auth)):
+    couple_id = auth["couple_id"]
+    name = auth["login_name"]
+    photo_data = body.get("photo", "")
     caption = body.get("caption", "")
-    if not couple_id or not name or not photo_data:
+    if not photo_data:
         raise HTTPException(status_code=400, detail="Missing fields")
     today = date.today()
     if len(photo_data) > MAX_PHOTO_SIZE:
@@ -1272,11 +1235,9 @@ def api_upload_photo(body: dict, db: Session = Depends(get_db)):
 
 
 @app.get("/api/couple/memories")
-def api_get_memories(request: Request, db: Session = Depends(get_db)):
-    couple_id = request.headers.get("X-Couple-Id", "")
-    my_name = request.headers.get("X-User-Name", "")
-    if not couple_id or not my_name:
-        raise HTTPException(status_code=400, detail="Missing headers")
+def api_get_memories(db: Session = Depends(get_db), auth: dict = Depends(require_auth)):
+    couple_id = auth["couple_id"]
+    my_name = auth["login_name"]
     is_a = my_name == couple_id.split("_")[0]
 
     # Daily questions answered
@@ -1339,11 +1300,9 @@ def api_get_memories(request: Request, db: Session = Depends(get_db)):
 
 
 @app.get("/api/couple/challenge/history")
-def api_challenge_history(request: Request, db: Session = Depends(get_db)):
-    couple_id = request.headers.get("X-Couple-Id", "")
-    my_name = request.headers.get("X-User-Name", "")
-    if not couple_id or not my_name:
-        raise HTTPException(status_code=400, detail="Missing headers")
+def api_challenge_history(db: Session = Depends(get_db), auth: dict = Depends(require_auth)):
+    couple_id = auth["couple_id"]
+    my_name = auth["login_name"]
     is_a = my_name == couple_id.split("_")[0]
     challenges = db.query(Challenge).filter(
         Challenge.couple_id == couple_id,

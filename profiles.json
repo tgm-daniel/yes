@@ -1,14 +1,14 @@
 {
   "T": {
     "type": "couple",
-    "password": "trs123",
+    "password": "CHANGE_ME_IN_PROD_1",
     "name": "T",
     "partner_name": "Jojo",
     "couple_id": "T_jojo"
   },
   "jojo": {
     "type": "couple",
-    "password": "jojo123",
+    "password": "CHANGE_ME_IN_PROD_2",
     "name": "Jojo",
     "partner_name": "T",
     "couple_id": "T_jojo"
