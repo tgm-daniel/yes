@@ -340,8 +340,7 @@ body.dark .q-table tr { background: var(--surface2); }
 
   <!-- TABS -->
   <div class="tabs">
-    <button class="tab-btn active" data-tab="sessions">📊 Sessões</button>
-    <button class="tab-btn" data-tab="profiles">👤 Perfis</button>
+    <button class="tab-btn active" data-tab="profiles">👤 Perfis</button>
     <button class="tab-btn" data-tab="couple">💑 Casal</button>
     <button class="tab-btn" data-tab="questions">❓ Perguntas</button>
     <button class="tab-btn" data-tab="challenges">🎯 Desafios</button>
@@ -349,21 +348,6 @@ body.dark .q-table tr { background: var(--surface2); }
     <button class="tab-btn" data-tab="agenda">📅 Agenda</button>
     <button class="tab-btn" data-tab="todos">✅ Tarefas</button>
     <button class="tab-btn" data-tab="log">📋 Log</button>
-  </div>
-
-  <!-- SESSIONS TAB -->
-  <div class="tab-content active" id="tabSessions">
-    <div class="stats-row" id="statsRow"></div>
-    <div class="profile-stats-row" id="profileStatsRow"></div>
-    <div class="filter-row">
-      <select id="profileFilter" onchange="renderSessions()">
-        <option value="">Todos os perfis</option>
-      </select>
-      <input type="text" id="sessionSearch" placeholder="buscar por ID ou nome..." oninput="debouncedRenderSessions()">
-      <button class="sort-btn" id="sortBtn" onclick="toggleSort()">📅 mais recentes</button>
-      <button class="sort-btn" onclick="exportCSV()">📥 CSV</button>
-    </div>
-    <div id="sessionList"></div>
   </div>
 
   <!-- LOG TAB -->
@@ -391,7 +375,7 @@ body.dark .q-table tr { background: var(--surface2); }
   </div>
 
   <!-- PROFILES TAB -->
-  <div class="tab-content" id="tabProfiles">
+  <div class="tab-content active" id="tabProfiles">
     <div id="adminMsg" class="admin-msg"></div>
     <div class="profiles-layout">
       <div class="profile-list" id="profileList"></div>
@@ -514,11 +498,9 @@ body.dark .q-table tr { background: var(--surface2); }
 
 <script>
 // ---- STATE ----
-let ALL_SESSIONS = [];
 let ALL_PROFILES = {};
 let SELECTED_PROFILE = null;
 let AUTH = { username: '', password: '' };
-let SORT_DESC = true;
 let ACTIVITY_LOG = [];
 let ALL_LOGIN_EVENTS = [];
 let IS_DIRTY = false;
@@ -646,52 +628,6 @@ function toggleDark() {
   document.getElementById('darkToggle').textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
 }
 
-// ---- CSV EXPORT ----
-function csvEsc(s) { return '"' + (s||'').replace(/"/g,'""') + '"'; }
-
-function exportCSV() {
-  const filter = document.getElementById('profileFilter').value;
-  const search = document.getElementById('sessionSearch').value.toLowerCase().trim();
-  let sessions = [...ALL_SESSIONS];
-  if (filter) sessions = sessions.filter(s => s.profile_id === filter);
-  if (search) sessions = sessions.filter(s => s.session_id.toLowerCase().includes(search) || s.profile_id.toLowerCase().includes(search));
-  if (!sessions.length) { showToast('Nenhuma sessão para exportar.', 'error'); return; }
-
-  let csv = '\uFEFF'; // BOM for Excel
-  csv += 'Sessão,Perfil,Data,Acertos,Total,%,Resposta Final\n';
-  sessions.forEach(s => {
-    const pct = s.total > 0 ? Math.round((s.score / s.total) * 100) : 0;
-    const fa = s.final_answer === 'yes' ? 'Sim' : s.final_answer === 'no' ? 'Não' : '—';
-    csv += `${s.session_id},${s.profile_id},${s.started_at || ''},${s.score},${s.total},${pct}%,${fa}\n`;
-  });
-  csv += '\n\nSessão,Perfil,Pergunta,Acertou?,Escolheu,Correta,Fun Fact\n';
-  sessions.forEach(s => {
-    (s.answers || []).forEach(a => {
-      csv += `${s.session_id},${s.profile_id},${csvEsc(a.question||'')},${a.was_correct ? 'Sim' : 'Não'},${csvEsc(a.selected||'')},${csvEsc(a.correct_answer||'')},${csvEsc(a.fun_fact||'')}\n`;
-    });
-  });
-
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = `quiz-sessoes-${new Date().toISOString().slice(0,10)}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
-  showToast(`CSV exportado: ${sessions.length} sessões ✅`, 'success');
-}
-
-// ---- TEST QUIZ ----
-function testQuiz() {
-  const key = SELECTED_PROFILE;
-  if (!key) return;
-  const url = `/start/${key}`;
-  // Fetch to create session, then open
-  fetch(url).then(r => {
-    if (r.redirected) window.open(r.url, '_blank');
-    else window.open(url, '_blank');
-  }).catch(() => window.open(url, '_blank'));
-}
-
 // ---- LOGIN ----
 async function adminLogin() {
   const u = document.getElementById('adminUser').value.trim();
@@ -725,24 +661,10 @@ function adminLogout() {
 // ---- LOAD ALL DATA ----
 async function loadAll() {
   try {
-    const [sessRes, profRes] = await Promise.all([
-      fetch('/api/admin/results', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(AUTH) }),
-      fetch('/api/admin/profiles', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(AUTH) })
-    ]);
-    const sessData = await sessRes.json();
+    const profRes = await fetch('/api/admin/profiles', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(AUTH) });
     const profData = await profRes.json();
-    ALL_SESSIONS = sessData.sessions || [];
     ALL_PROFILES = profData.profiles || {};
-    window.NEW_PROFILE_TEMPLATE = profData.template || null;
 
-    // Populate profile filter
-    const sel = document.getElementById('profileFilter');
-    sel.innerHTML = '<option value="">Todos os perfis</option>';
-    Object.keys(ALL_PROFILES).forEach(k => {
-      sel.innerHTML += `<option value="${esc(k)}">${esc(k)}</option>`;
-    });
-
-    renderSessions();
     renderProfileList();
     selectProfile(Object.keys(ALL_PROFILES)[0] || null);
     loadLoginEvents();
@@ -757,104 +679,13 @@ async function loadAll() {
   }
 }
 
-// ---- SESSIONS TAB ----
-var debouncedRenderSessions = debounce(renderSessions, 250);
-function renderSessions() {
-  const filter = document.getElementById('profileFilter').value;
-  const search = document.getElementById('sessionSearch').value.toLowerCase().trim();
-
-  let sessions = [...ALL_SESSIONS];
-  if (filter) sessions = sessions.filter(s => s.profile_id === filter);
-  if (search) sessions = sessions.filter(s =>
-    s.session_id.toLowerCase().includes(search) ||
-    s.profile_id.toLowerCase().includes(search)
-  );
-  if (!SORT_DESC) sessions.reverse();
-
-  // Stats
-  const totalSessions = sessions.length;
-  const totalCorrect = sessions.reduce((acc, s) => acc + s.score, 0);
-  const totalQuestions = sessions.reduce((acc, s) => acc + (s.answers || []).length, 0);
-  const overallPct = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
-
-  document.getElementById('statsRow').innerHTML = `
-    <div class=stat-card><div class=num>${totalSessions}</div><div class=label>Sessões</div></div>
-    <div class=stat-card><div class=num>${overallPct}%</div><div class=label>Acerto geral</div></div>
-    <div class=stat-card><div class=num>${totalCorrect}/${totalQuestions}</div><div class=label>Corretas</div></div>
-  `;
-
-  // Per-profile stats
-  const profileMap = {};
-  ALL_SESSIONS.forEach(s => {
-    if (!profileMap[s.profile_id]) profileMap[s.profile_id] = { count:0, correct:0, total:0 };
-    profileMap[s.profile_id].count++;
-    profileMap[s.profile_id].correct += s.score;
-    profileMap[s.profile_id].total += s.total;
-  });
-  const pStatsHtml = Object.keys(profileMap).sort().map(k => {
-    const d = profileMap[k];
-    const pct = d.total > 0 ? Math.round((d.correct / d.total) * 100) : 0;
-    const isActive = filter === k;
-    return `<div class="profile-stat-card" onclick="document.getElementById('profileFilter').value='${esc(k)}';renderSessions();" style="cursor:pointer;${isActive?'border-color:var(--pink);':''}">
-      <div class=ps-header><span class=ps-tag>${esc(k)}</span> <span>${d.count} sessões</span></div>
-      <div class=ps-bar><div class=ps-bar-fill style="width:${pct}%"></div></div>
-      <div class=ps-footer><span>${pct}% acerto</span><span>${d.correct}/${d.total}</span></div>
-    </div>`;
-  }).join('');
-  document.getElementById('profileStatsRow').innerHTML = pStatsHtml;
-
-  if (sessions.length === 0) {
-    document.getElementById('sessionList').innerHTML = '<div style="text-align:center;color:var(--text-light);padding:40px 0;">Nenhuma sessão encontrada.</div>';
-    return;
-  }
-
-  let html = '';
-  sessions.forEach(s => {
-    const pct = s.total > 0 ? Math.round((s.score / s.total) * 100) : 0;
-    const cls = pct >= 70 ? 'high' : pct >= 40 ? 'mid' : 'low';
-    const faIcon = s.final_answer === 'yes' ? '✅' : s.final_answer === 'no' ? '❌' : '—';
-    html += `<div class=session-card id="sc-${esc(s.session_id)}">
-      <div class=session-hd onclick="toggleSession('${esc(s.session_id)}')">
-        <span class=profile-tag>${esc(s.profile_id)}</span>
-        <span class=date>${esc(s.started_at || '—')} · ${esc(s.session_id)}</span>
-        <span class="score-badge-admin ${cls}">${s.score}/${s.total} (${pct}%)</span>
-        <span style="font-size:0.75rem;color:var(--text-light);">${faIcon}</span>
-        <span class=arrow>▾</span>
-      </div>
-      <div class=session-bd>
-        ${s.final_answer ? `<div style="margin-bottom:8px;padding:6px 10px;background:rgba(255,181,194,0.08);border-radius:6px;font-size:0.82rem;"><strong>Resposta final:</strong> ${s.final_answer === 'yes' ? '✅ Sim' : '❌ Não'}</div>` : ''}
-        ${s.completed_at ? `<div style="margin-bottom:8px;font-size:0.75rem;color:var(--text-light);">Concluído em: ${esc(s.completed_at)}</div>` : ''}
-        <table style="width:100%;border-collapse:collapse;">`;
-    (s.answers || []).forEach(a => {
-      const rowCls = a.was_correct ? 'q-correct' : 'q-wrong';
-      html += `<tr class="${rowCls}"><td style="width:38%;padding:6px;border-bottom:1px solid rgba(255,181,194,0.08);">${esc(a.question)}</td><td style="width:27%;padding:6px;border-bottom:1px solid rgba(255,181,194,0.08);font-size:0.75rem;">${a.was_correct ? '✅' : '❌ Escolheu: ' + esc(a.selected)}</td><td style="width:20%;padding:6px;border-bottom:1px solid rgba(255,181,194,0.08);font-size:0.75rem;color:#6b9e7a;">${a.was_correct ? '' : 'Correta: ' + esc(a.correct_answer)}</td><td style="width:15%;padding:6px;border-bottom:1px solid rgba(255,181,194,0.08);font-size:0.72rem;color:var(--text-light);">${esc(a.fun_fact)}</td></tr>`;
-    });
-    html += `</table></div></div>`;
-  });
-  document.getElementById('sessionList').innerHTML = html;
-}
-
-function toggleSession(id) {
-  const card = document.getElementById('sc-' + id);
-  if (card) card.classList.toggle('open');
-}
-
-function toggleSort() {
-  SORT_DESC = !SORT_DESC;
-  document.getElementById('sortBtn').textContent = SORT_DESC ? '📅 mais recentes' : '📅 mais antigos';
-  renderSessions();
-}
-
 // ---- PROFILES TAB ----
 function renderProfileList() {
   const keys = Object.keys(ALL_PROFILES);
   let html = '';
   keys.forEach(k => {
     const active = SELECTED_PROFILE === k ? 'active' : '';
-    const s = ALL_SESSIONS.filter(x => x.profile_id === k);
-    const completed = s.filter(x => x.final_answer);
-    const dot = completed.length ? '<span style="color:#6b9e7a;margin-right:4px;">●</span>' : s.length ? '<span style="color:#d4a040;margin-right:4px;">●</span>' : '<span style="color:var(--text-light);margin-right:4px;opacity:0.3;">○</span>';
-    html += `<div class="profile-list-item ${active}" onclick="selectProfile('${esc(k)}')">${dot}${esc(k)}</div>`;
+    html += `<div class="profile-list-item ${active}" onclick="selectProfile('${esc(k)}')">${esc(k)}</div>`;
   });
   html += `<div class="profile-list-item" onclick="newProfile()"><span class=add-icon>+</span> Novo Perfil</div>`;
   document.getElementById('profileList').innerHTML = html;
@@ -946,25 +777,9 @@ function renderProfileEditor(key) {
   });
   html += `</div><button class=btn-add onclick="addCarinho()">+ Adicionar Mensagem de Carinho</button></div>`;
 
-  // Session status
-  const sessForProfile = ALL_SESSIONS.filter(s => s.profile_id === key);
-  const completedCount = sessForProfile.filter(s => s.final_answer).length;
-  const inProgressCount = sessForProfile.filter(s => !s.final_answer).length;
-  html += `<div class=form-section><h4>Sessões</h4>
-    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
-      ${sessForProfile.length ? `
-        <span style="font-size:0.85rem;color:var(--text);">📊 <strong>${sessForProfile.length}</strong> sessão${sessForProfile.length !== 1 ? 'ens' : ''}</span>
-        <span style="font-size:0.85rem;color:#6b9e7a;">✅ <strong>${completedCount}</strong> concluída${completedCount !== 1 ? 's' : ''}</span>
-        ${inProgressCount ? `<span style="font-size:0.85rem;color:#d4a040;">⏳ <strong>${inProgressCount}</strong> em andamento</span>` : ''}
-        <button class="btn-sm danger" onclick="confirmResetSessions('${esc(key)}')">🔄 Resetar respostas</button>
-      ` : `<span style="font-size:0.85rem;color:var(--text-light);">Nenhuma sessão para este perfil.</span>`}
-    </div>
-  </div>`;
-
   // Save bar
   html += `<div class=save-bar>
     <button class="btn btn-secondary" onclick="selectProfile(SELECTED_PROFILE)">Cancelar</button>
-    <button class="btn-sm secondary" onclick="testQuiz()">🚀 Testar</button>
     <button class="btn-sm secondary" onclick="duplicateProfile()">📋 Duplicar</button>
     <button class="btn-sm danger" onclick="confirmDeleteProfile()">🗑 Excluir Perfil</button>
     <button class="btn btn-primary" onclick="saveProfile()">💾 Salvar</button>
@@ -1145,7 +960,7 @@ function deleteCarinho(idx) {
 }
 
 function newProfile() {
-  const tpl = window.NEW_PROFILE_TEMPLATE || {
+  const tpl = {
     password: '', title: '', subtitle: '', emoji: '💕', instagram: '@',
     welcomeMessage: '', yesMessage: '', yesFooter: '', noMessage: '', noFooter: '',
     resultMessages: {
@@ -1174,32 +989,8 @@ function newProfile() {
 function confirmDeleteProfile() {
   const key = SELECTED_PROFILE;
   if (!key || !ALL_PROFILES[key]) return;
-  if (!confirm(`Tem certeza que deseja excluir o perfil "${key}"?\n\nTodas as sessões deste perfil serão perdidas.`)) return;
+  if (!confirm(`Tem certeza que deseja excluir o perfil "${key}"?`)) return;
   deleteProfile(key);
-}
-
-function confirmResetSessions(key) {
-  const sessForProfile = ALL_SESSIONS.filter(s => s.profile_id === key);
-  const total = sessForProfile.length;
-  if (!total) { showToast('Nenhuma sessão para resetar.', 'error'); return; }
-  if (!confirm(`Tem certeza? Isso vai deletar todas as ${total} sessão${total !== 1 ? 'ens' : ''} do perfil "${key}".\n\nO usuário poderá responder o quiz novamente do zero.`)) return;
-  resetProfileSessions(key);
-}
-
-async function resetProfileSessions(key) {
-  try {
-    const r = await fetch('/api/admin/profiles/reset-sessions', {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ username: AUTH.username, password: AUTH.password, profile_id: key })
-    });
-    if (!r.ok) { const d = await r.json(); throw new Error(d.detail || 'Erro ao resetar'); }
-    const data = await r.json();
-    showToast(`${data.deleted} sessão${data.deleted !== 1 ? 'ens' : ''} deletada${data.deleted !== 1 ? 's' : ''} para "${key}" ✅`, 'success');
-    await loadAll();
-    selectProfile(key);
-  } catch(e) {
-    showToast('Erro: ' + e.message, 'error');
-  }
 }
 
 async function deleteProfile(key) {

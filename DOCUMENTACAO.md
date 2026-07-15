@@ -1,6 +1,6 @@
 # Still Learning — Documentação Completa do Produto
 
-> **Versão:** 2.0  
+> **Versão:** 2.1  
 > **Público-alvo:** Casais em relacionamentos sérios (namoro, noivado, casamento)  
 > **Stack:** Python 3.11+ / FastAPI / SQLAlchemy / SQLite (dev) / PostgreSQL (prod) / bcrypt + JWT  
 > **URL de produção:** `https://still-learning.onrender.com`
@@ -45,17 +45,16 @@
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                         CLIENTE (Browser)                           │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌───────────────────┐  │
-│  │index.html│  │quiz.html │  │couple.html│  │ admin.html        │  │
-│  │(login)   │  │(quiz)    │  │(app casal)│  │ (painel admin)    │  │
-│  └──────────┘  └──────────┘  └──────────┘  └───────────────────┘  │
-│         │             │              │               │             │
-│         └─────────────┴──────────────┴───────────────┘             │
+│  ┌──────────┐  ┌──────────────┐  ┌───────────────────┐            │
+│  │index.html│  │couple.html   │  │ admin.html        │            │
+│  │(login)   │  │(app casal)   │  │ (painel admin)    │            │
+│  └──────────┘  └──────────────┘  └───────────────────┘            │
+│         │              │               │                           │
+│         └──────────────┴───────────────┘                           │
 │                            │ HTTP/HTTPS                            │
-│                    fetch() / Axios (via api())                     │
+│                    fetch() / api() wrapper                     │
 │                            │                                       │
 │                    JWT Bearer Token                                │
-│              + fallback X-Couple-Id / X-User-Name                  │
 └──────────────────────────────────────────────────────┬──────────────┘
                                                        │
 ┌──────────────────────────────────────────────────────▼──────────────┐
@@ -63,23 +62,23 @@
 │                                                                     │
 │  ┌──────────────┐  ┌────────────────┐  ┌─────────────────────────┐ │
 │  │  Middleware   │  │  require_auth  │  │  check_admin            │ │
-│  │  (CORS, etc) │  │  (JWT/Header)  │  │  (admin credentials)    │ │
+│  │  (CORS, etc) │  │  (JWT Bearer)  │  │  (admin credentials)    │ │
 │  └──────────────┘  └────────────────┘  └─────────────────────────┘ │
 │                                                                     │
 │  ┌──────────────────────────────────────────────────────────────┐  │
-│  │                    ROTAS DA API (60 endpoints)               │  │
-│  │  ┌─────────┐ ┌──────────────┐ ┌─────────┐ ┌──────────────┐ │  │
-│  │  │Auth API │ │Couple API    │ │Quiz API │ │Admin API     │ │  │
-│  │  │  1 rota │ │ 26 rotas     │ │ 5 rotas │ │ 21 rotas     │ │  │
-│  │  └─────────┘ └──────────────┘ └─────────┘ └──────────────┘ │  │
+│  │                    ROTAS DA API (53 endpoints)               │  │
+│  │  ┌─────────┐ ┌──────────────┐ ┌──────────────────────────┐  │  │
+│  │  │Auth API │ │Couple API    │ │Admin API                 │  │  │
+│  │  │  1 rota │ │ 28 rotas     │ │ 22 rotas                 │  │  │
+│  │  └─────────┘ └──────────────┘ └──────────────────────────┘  │  │
 │  └──────────────────────────────────────────────────────────────┘  │
 │                                                                     │
 │  ┌──────────────────────────────────────────────────────────────┐  │
 │  │              CAMADA DE DADOS                                 │  │
 │  │  ┌─────────────────┐  ┌──────────────────────────────────┐   │  │
-│  │  │   SQLAlchemy    │  │  models.py (16 tabelas)          │   │  │
+│  │  │   SQLAlchemy    │  │  models.py (13 tabelas)          │   │  │
 │  │  │   ORM + Alembic │  │  Profile, LoginCredential,       │   │  │
-│  │  └─────────────────┘  │  QuizSession, Couple, DiaryEntry,│   │  │
+│  │  └─────────────────┘  │  Couple, DiaryEntry,             │   │  │
 │  │                       │  DailyQuestion, Challenge,        │   │  │
 │  │  ┌─────────────────┐  │  AgendaEvent, TodoItem,          │   │  │
 │  │  │  database.py    │  │  WeeklyReview, QuizAnswer,       │   │  │
@@ -136,10 +135,7 @@ O sistema usa um motor de template extremamente leve (`_render()`) que:
 
 ```
 templates/
-├── index.html       → Login (ponto de entrada)       ─┐
-├── quiz.html        → Quiz interativo                  │
-├── result.html      → Resultado do quiz               ├── Fluxo Quiz
-├── retry.html       → Retry do quiz                   ─┘
+├── index.html       → Login (ponto de entrada)       ──→ Fluxo Login
 ├── couple.html      → App principal (SPA-like)       ──→ Fluxo Casal
 └── admin.html       → Painel administrativo           ──→ Admin
 ```
@@ -152,10 +148,9 @@ project quiz code/
 ├── .gitignore
 ├── requirements.txt       → Dependências Python
 ├── database.py            → Engine SQLAlchemy + SessionLocal
-├── models.py              → 16 modelos ORM
-├── main.py                → 60 endpoints + toda a lógica (1868 linhas)
-├── questions.py           → Banco de perguntas do quiz
-├── translations.py        → Internacionalização (PT/EN)
+├── models.py              → 13 modelos ORM
+├── main.py                → 53 endpoints + toda a lógica
+├── translations.py        → Internacionalização (PT/EN) 431 linhas
 ├── profiles.json          → Dados de login (migrados p/ DB na 1ª execução)
 ├── quiz.db                → SQLite local (dev)
 ├── static/
@@ -167,9 +162,6 @@ project quiz code/
 │       └── icon-512.svg
 └── templates/
     ├── index.html
-    ├── quiz.html
-    ├── result.html
-    ├── retry.html
     ├── couple.html        → ~2250 linhas (JS + CSS + HTML)
     └── admin.html         → ~1800 linhas (JS + CSS + HTML)
 ```
@@ -188,21 +180,16 @@ project quiz code/
                     └──────┬──────┘
                            │
                     ┌──────▼──────┐
-                    │ Qual tipo?  │
-                    └──┬──────┬───┘
-                       │      │
-              ┌────────▼┐  ┌──▼───────────┐
-              │ Quiz    │  │ Couple       │
-              │ (quiz)  │  │ (still-      │
-              │         │  │ learning)    │
-              └──┬──────┘  └──────┬───────┘
-                 │                │
-          ┌──────▼──────┐  ┌──────▼──────────────┐
-          │ /start/{id} │  │ 3-Item Bottom Nav   │
-          │ /quiz/{id}  │  │ ┌────┬────┬─────┐   │
-          │ /resultado  │  │ │Hoje│ Nós│ ⚙️  │   │
-          │ /retry/{id} │  │ └────┴────┴─────┘   │
-          └─────────────┘  └─────────────────────┘
+                    │  /still-    │
+                    │  learning   │
+                    └──────┬──────┘
+                           │
+                    ┌──────▼──────────────┐
+                    │ 3-Item Bottom Nav   │
+                    │ ┌────┬────┬─────┐   │
+                    │ │Hoje│ Nós│ ⚙️  │   │
+                    │ └────┴────┴─────┘   │
+                    └─────────────────────┘
 ```
 
 ### 2.2 Navegação Interna (couple.html — SPA)
@@ -254,14 +241,9 @@ Respostas → POST /api/couple/... (com JWT no header)
 1. Usuário acessa still-learning.onrender.com
 2. Digita nome de login + senha
 3. Sistema verifica bcrypt (com fallback SHA-256 legado)
-4. Se for perfil do tipo "couple":
-   a. Gera JWT (48h de validade)
-   b. Redireciona para /still-learning
-   c. Nav Hoje é exibido com dashboard vazio
-5. Se for perfil do tipo "quiz":
-   a. Verifica se há sessão incompleta
-   b. Se sim, pergunta se quer continuar
-   c. Se não, inicia nova sessão com 10 perguntas
+4. Gera JWT (48h de validade)
+5. Redireciona para /still-learning
+6. Dashboard é exibido com cards do dia
 ```
 
 ### 3.2 Jornada Diária
@@ -588,24 +570,27 @@ Cada página segue o mesmo esqueleto:
 | `api(path, opts)` | couple.html:665 | Wrapper fetch com JWT + headers + JSON automático |
 | `showSection(name)` | couple.html:718 | Navegação SPA (troca conteúdo + nav ativa) |
 | `backLink()` | couple.html:718 | Botão "← Voltar" padronizado |
-| `t(key)` / `esc(s)` | couple.html:684 | Internacionalização + sanitização |
+| `esc(s)` / `attrEsc(s)` | couple.html:684 | Sanitização HTML + atributos (escapa aspas/single quotes) |
 | `toggleLang()` | couple.html:679 | Troca PT/EN com cookie + recarrega |
 | `logout(e)` | couple.html:686 | Clean + redirect |
 | `toggleSettings()` | couple.html:712 | Abre/fecha modal de configurações |
 | `toast(msg)` | couple.html:2207 | Toast flutuante não-intrusivo (3s) |
+| `markDirty()` | admin.html | Marca formulário como não salvo |
 
 ### 6.2 Backend (Python)
 
 | Componente | Arquivo | Descrição |
 |-----------|---------|-----------|
-| `_render(name, **kwargs)` | main.py:315 | Template engine caseira |
-| `require_auth()` | main.py:93 | Dependency Injection de autenticação |
-| `check_admin()` | main.py:118 | Validação de admin |
-| `get_partner_name()` | main.py:236 | Resolve nome do parceiro |
+| `_render(name, **kwargs)` | main.py:186 | Template engine caseira |
+| `require_auth()` | main.py:110 | Dependency Injection de autenticação (JWT Bearer apenas) |
+| `check_admin()` | main.py:128 | Validação de admin (credenciais via env var) |
+| `get_couple_info()` | main.py:205 | Retorna `(is_primary, partner_name)` buscando a tabela Couple |
+| `_profile_name()` | main.py:219 | Resolve nome de exibição do perfil |
 | `hash_pw()` / `verify_pw()` | main.py:68 | Hash/verificação bcrypt + SHA-256 fallback |
 | `create_jwt()` / `decode_jwt()` | main.py:82 | Geração/validação JWT |
 | `get_db()` | database.py:26 | Gerenciador de sessão SQLAlchemy |
-| Rotação de desafios | main.py:1093 | `types = ["photo","riddle","partner_question","partner_challenge","quote"]` |
+| `get_quote()` | main.py:708 | Retorna citação do dia com controle de offset |
+| `lifespan()` | main.py:176 | Startup/shutdown events (lifespan) |
 
 ### 6.3 CSS Reutilizável (style.css)
 
@@ -877,20 +862,7 @@ Mobile pequeno (<375px):
                       │    │ id (PK)                  │
                       │    │ profile_id (FK)          │
                       │    │ timestamp                │
-                      │    └──────────────────────────┘
-┌──────────────────┐
-│   QuizSession    │
-├──────────────────┤
-│ id (PK)          │
-│ profile_id (FK)  │
-│ started_at       │
-│ completed_at     │
-│ current_question │
-│ answers (JSON)   │
-│ score            │
-│ finished         │
-│ question_order   │
-└──────────────────┘
+                       │    └──────────────────────────┘
 ```
 
 ### 9.2 Resumo das Tabelas
@@ -899,7 +871,6 @@ Mobile pequeno (<375px):
 |--------|-----------|----------------|-------------------|
 | profiles | 5 | id (string) | — |
 | login_credentials | 3 | id (int) | profile_id |
-| quiz_sessions | 9 | id (string) | profile_id |
 | login_events | 3 | id (int) | profile_id |
 | couples | 4 | id (string) | — |
 | diary_entries | 7 | id (int) | couple_id |
@@ -922,48 +893,40 @@ Mobile pequeno (<375px):
 |--------|------|---------|----------|
 | POST | `/api/login` | `{name, password}` | `{type, name, couple_id, partner_name, token}` |
 
-### 10.2 Quiz (Original)
+### 10.2 Couple App (28 endpoints)
 
 | Método | Rota | Descrição |
 |--------|------|-----------|
-| POST | `/api/start` | Iniciar sessão de quiz |
-| GET | `/api/question/{session_id}` | Pergunta atual |
-| POST | `/api/answer/{session_id}` | Submeter resposta |
-| GET | `/api/result/{session_id}` | Resultado completo |
-| POST | `/api/result/final/{session_id}` | Resposta final (romântica) |
+| GET | `/api/couple/dashboard` | Dashboard completo |
+| GET | `/api/couple/question` | Pergunta do dia |
+| POST | `/api/couple/question/answer` | Responder pergunta |
+| POST | `/api/couple/translations` | Traduções PT/EN |
+| GET | `/api/couple/diary` | Entradas do diário |
+| POST | `/api/couple/diary/save` | Salvar entrada |
+| GET | `/api/couple/challenge` | Desafio do dia |
+| POST | `/api/couple/challenge/guess` | Palpite (enigma) |
+| POST | `/api/couple/challenge/photo` | Upload de foto |
+| POST | `/api/couple/challenge/create-question` | Criar pergunta íntima |
+| POST | `/api/couple/challenge/answer-question` | Responder pergunta |
+| POST | `/api/couple/challenge/partner/create` | Criar desafio personalizado |
+| POST | `/api/couple/challenge/partner/complete` | Completar desafio |
+| GET | `/api/couple/challenge/partner` | Desafios personalizados |
+| GET | `/api/couple/challenge/history` | Histórico de desafios |
+| GET | `/api/couple/quote` | Citação do dia |
+| GET | `/api/couple/quiz` | Quiz do casal |
+| POST | `/api/couple/quiz/save` | Salvar resposta do quiz |
+| GET | `/api/couple/memories` | Memórias agregadas |
+| GET | `/api/couple/agenda` | Agenda |
+| POST | `/api/couple/agenda/add` | Adicionar evento |
+| POST | `/api/couple/agenda/delete` | Deletar evento |
+| GET | `/api/couple/todos` | To-Dos |
+| POST | `/api/couple/todos/add` | Adicionar tarefa |
+| POST | `/api/couple/todos/toggle` | Alternar conclusão |
+| POST | `/api/couple/todos/delete` | Deletar tarefa |
+| GET | `/api/couple/review` | Review semanal |
+| POST | `/api/couple/review/save` | Salvar review |
 
-### 10.3 Couple App (26 endpoints)
-
-| Método | Rota | Descrição | Auth |
-|--------|------|-----------|------|
-| GET | `/api/couple/dashboard` | Dashboard completo | JWT |
-| GET | `/api/couple/question` | Pergunta do dia | Headers |
-| POST | `/api/couple/question/answer` | Responder pergunta | None |
-| POST | `/api/couple/translations` | Traduções PT/EN | None |
-| GET | `/api/couple/diary` | Entradas do diário | Headers |
-| POST | `/api/couple/diary/save` | Salvar entrada | None |
-| GET | `/api/couple/challenge` | Desafio do dia | Headers |
-| POST | `/api/couple/challenge/guess` | Palpite (enigma) | None |
-| POST | `/api/couple/challenge/photo` | Upload de foto | None |
-| POST | `/api/couple/challenge/create-question` | Criar pergunta íntima | None |
-| POST | `/api/couple/challenge/answer-question` | Responder pergunta | None |
-| POST | `/api/couple/challenge/partner/create` | Criar desafio personalizado | None |
-| POST | `/api/couple/challenge/partner/complete` | Completar desafio | None |
-| GET | `/api/couple/challenge/partner` | Desafios personalizados | Headers |
-| GET | `/api/couple/challenge/history` | Histórico de desafios | Headers |
-| GET | `/api/couple/quote` | Citação do dia | Headers |
-| GET | `/api/couple/quiz` | Quiz do casal | Headers |
-| POST | `/api/couple/quiz/save` | Salvar resposta do quiz | None |
-| GET | `/api/couple/memories` | Memórias agregadas | Headers |
-| GET | `/api/couple/agenda` | Agenda | Headers |
-| POST | `/api/couple/agenda/add` | Adicionar evento | None |
-| GET | `/api/couple/todos` | To-Dos | Headers |
-| POST | `/api/couple/todos/add` | Adicionar to-do | None |
-| POST | `/api/couple/todos/toggle` | Marcar/desmarcar to-do | None |
-| GET | `/api/couple/review` | Revisão semanal | Headers |
-| POST | `/api/couple/review/save` | Salvar reflexão semanal | None |
-
-### 10.4 Admin API (21 endpoints)
+### 10.3 Admin API (22 endpoints)
 
 | Método | Rota | Descrição |
 |--------|------|-----------|
@@ -982,12 +945,18 @@ Mobile pequeno (<375px):
 | POST | `/api/admin/challenge/delete` | Deletar desafio |
 | POST | `/api/admin/photo/delete` | Deletar foto |
 | POST | `/api/admin/photo/data` | Dados completos da foto |
-| POST | `/api/admin/results` | Resultados de quiz |
+| POST | `/api/admin/agenda/delete` | Deletar evento da agenda |
+| POST | `/api/admin/todos/delete` | Deletar item de to-do |
 | POST | `/api/admin/login-history` | Histórico de login |
 | POST | `/api/admin/profiles` | Listar perfis |
 | POST | `/api/admin/profiles/save` | Salvar/editar perfil |
-| POST | `/api/admin/profiles/reset-sessions` | Resetar sessões de quiz |
 | POST | `/api/admin/profiles/delete` | Deletar perfil |
+| GET | `/admin` | Painel administrativo (HTML) |
+
+> **Nota sobre o sistema de quiz removido:** O quiz standalone original (Questionário de Perfil)
+> foi removido em uma limpeza. Todos os usuários agora utilizam o sistema de casal.
+> O modelo `QuizAnswer` continua ativo — ele é usado pelo questionário de compatibilidade
+> dentro do dashboard do casal (`/api/couple/quiz`).
 
 ---
 
@@ -1000,7 +969,7 @@ O sistema **não utiliza IA generativa ou modelos de machine learning** atualmen
 - **Conteúdo pré-definido:** 40 perguntas diárias, 41 temas, 18 sugestões de desafio, 30 citações
 - **Rotação determinística:** `daily_offset = (today - COUPLE_START).days % len(translations)` (pergunta do dia)
 - **Rotação de tipos de desafio:** `challenge_types[(today - COUPLE_START).days % 5]`
-- **Randomização controlada:** `random.shuffle()` no quiz, `random.choice()` nos temas/sugestões
+- **Randomização controlada:** `random.choice()` nos temas/sugestões
 
 ### 11.2 Oportunidades de IA
 
@@ -1042,7 +1011,7 @@ Frontend → API → main.py → (novo) services/ai_service.py
 - [x] Agenda de eventos
 - [x] To-Do list compartilhada
 - [x] Revisão Semanal
-- [x] Quiz do Quiz (privado + sobre parceiro)
+- [x] Quiz do Casal (privado + sobre parceiro)
 - [x] Citação do Dia com navegação
 - [x] Memórias agregadas
 - [x] Painel Admin (stats, CRUD de casais)
@@ -1204,10 +1173,10 @@ Casal A usa → Tira print de uma pergunta/dashboard
 
 ### 17.1 Pendências Técnicas (P0 — Crítico)
 
-- [ ] **Migrar de `on_event("startup")` para lifespan events** (deprecation warning)
+- [x] **Migrar de `on_event("startup")` para lifespan events** ✅
 - [ ] **Adicionar testes automatizados** (pytest para API, Playwright para frontend)
 - [ ] **Adicionar rate limiting** (proteção contra brute-force)
-- [ ] **Adicionar validação de tamanho de upload de foto** (atual: só verifica no frontend)
+- [ ] **Adicionar validação de upload de foto** (atual: só verifica no frontend)
 - [ ] **Adicionar paginação** em todas as listas (memórias, admin, etc.)
 
 ### 17.2 Melhorias de Experiência (P1 — Alta)
@@ -1216,6 +1185,10 @@ Casal A usa → Tira print de uma pergunta/dashboard
 - [ ] **Feedback tátil (haptics)** em interações mobile
 - [ ] **Swipe gestures** (deslizar para navegar entre seções)
 - [ ] **Upload de avatar/foto do perfil** do casal
+- [x] **Admin XSS corrigido** (11 locais com `esc()` faltando) ✅
+- [x] **`esc()` aprimorado** (agora escapa single quote) ✅
+- [x] **Dirty tracking em admin** (prevenção de perda de dados) ✅
+- [x] **Batch delete paralelo** com feedback de progresso ✅
 - [ ] **Data de início do relacionamento** configurável
 - [ ] **Contador de dias** juntos no dashboard
 - [ ] **Streak tracking** (dias consecutivos)
@@ -1247,9 +1220,11 @@ Casal A usa → Tira print de uma pergunta/dashboard
 | Item | Esforço | Impacto | Prioridade |
 |------|---------|---------|------------|
 | Testes automatizados (pytest) | 2 dias | ★★★★★ | P0 |
-| Migrar lifespan events | 1 hora | ★★☆☆☆ | P0 |
-| Validação de upload | 2 horas | ★★★★☆ | P1 |
 | Rate limiting | 4 horas | ★★★★★ | P0 |
+| Validação de upload | 2 horas | ★★★★☆ | P1 |
+| Admin UX (dirty tracking, batch delete) | ✅ | — | Concluído |
+| Migrar lifespan events | ✅ | — | Concluído |
+| Segurança XSS (esc/attrEsc, admin fixes) | ✅ | — | Concluído |
 
 ### Sprint 2 — Retenção
 
@@ -1478,21 +1453,27 @@ Foco em **crescimento e monetização**:
 | **Senhas com bcrypt** | ✅ | Hash com salt + custo 12 rounds |
 | **JWT com expiração** | ✅ | 48h de validade, assinado com HS256 |
 | **Fallback SHA-256** | ✅ | Upgrade automático para bcrypt no login |
-| **Admin com credenciais fixas** | ✅ | Carregadas de env var ou hardcoded |
+| **Admin com credenciais fixas** | ✅ | `ADMIN_USERS` via env var (sem fallback hardcoded) |
 | **HTTPS** | ✅ | Render fornece TLS automático |
-| **Sanitização de saída** | ✅ | `esc()` usa `textContent` no frontend |
+| **Sanitização de saída** | ✅ | `esc()` + `attrEsc()` previnem XSS (texto e atributos) |
+| **CORS** | ✅ | Middleware configurado |
+| **Pool de conexão** | ✅ | `pool_size=10, max_overflow=20, pool_pre_ping=True` |
+| **Service Worker** | ✅ | Cache apenas requisições GET |
+| **Admin XSS** | ✅ | 11 locais corrigidos com `esc()` |
+| **Single quote escaping** | ✅ | `esc()` agora escapa `&#39;` |
+| **Dirty tracking** | ✅ | `beforeunload` + `markDirty()` em admin |
+| **Batch delete** | ✅ | Paralelo com feedback de progresso |
+| **SQL Injection** | ✅ | ORM previne (SQLAlchemy) |
+| **XSS** | ✅ | Template engine com inserção controlada |
 
 ### 24.2 Medidas Pendentes
 
 | Medida | Prioridade | Ação |
 |--------|-----------|------|
 | **Rate limiting** | P0 | Adicionar `slowapi` ou middleware custom |
-| **CSRF Protection** | P1 | Tokens CSRF em mutações (POST/PUT/DELETE) |
 | **Content Security Policy** | P1 | Header CSP strict |
-| **Validação de upload** | P1 | Limitar tamanho (300KB), tipo MIME, sanitizar base64 |
+| **Validação de upload** | P1 | Limitar tamanho (5MB), tipo MIME, sanitizar base64 |
 | **Helmet.js-like headers** | P1 | Adicionar X-Frame-Options, X-Content-Type-Options, etc. |
-| **SQL Injection** | ✅ | ORM previne (SQLAlchemy) |
-| **XSS** | ✅ | Template engine caseira usa inserção controlada |
 | **Auditoria de dependências** | P2 | `pip-audit` regular, Dependabot |
 | **Logs de segurança** | P2 | Logar tentativas de login falhas, ações admin |
 | **Criptografia em repouso** | P2 | Foto base64 no DB é texto plano — considerar criptografia |

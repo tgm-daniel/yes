@@ -1,6 +1,5 @@
 import json
 import os
-import random
 import hashlib
 from datetime import datetime, date, timedelta
 from typing import Optional
@@ -20,7 +19,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
 from database import engine, Base, get_db
-from models import QuizSession, LoginEvent, Couple, DiaryEntry, DailyQuestion, Challenge, AgendaEvent, TodoItem, WeeklyReview, Photo, QuizAnswer, QuoteRefresh, Profile, LoginCredential
+from models import LoginEvent, Couple, DiaryEntry, DailyQuestion, Challenge, AgendaEvent, TodoItem, WeeklyReview, Photo, QuizAnswer, QuoteRefresh, Profile, LoginCredential
 from translations import get_lang, t
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -180,51 +179,6 @@ def reload_profiles(db: Session):
     migrate_profiles(db)
     PROFILES, LOGIN_MAP = load_profiles_from_db(db)
 
-GENERIC_QUESTIONS = [
-    {"id": 1, "question": "Qual seria seu destino dos sonhos pra viajar?", "options": ["Paris — romance e charme", "Tóquio — tecnologia e cultura", "Nova York — cidade que nunca dorme", "Uma praia paradisíaca — sol e mar"], "correct": 3, "fun_fact": "Praia paradisíaca! Bora sonhar juntos 🏖️"},
-    {"id": 2, "question": "O que mais te atrai em alguém?", "options": ["Humor que faz qualquer dia ficar leve", "Inteligência que prende a atenção", "Gentileza com todo mundo", "Confiança sem arrogância"], "correct": 0, "fun_fact": "Humor é o caminho mais curto pro coração 😄"},
-    {"id": 3, "question": "Qual seu estilo musical favorito?", "options": ["Pop — pra cantar no chuveiro", "MPB — pra alma e dias cinzas", "Eletrônica — dançar até o chão", "Sertanejo — modão e coração na mão"], "correct": 1, "fun_fact": "MPB! Já temos playlist pra fazer juntos 🎵"},
-    {"id": 4, "question": "O que você mais valoriza numa amizade?", "options": ["Lealdade — tamo junto até o fim", "Bom humor — rir até chorar", "Sinceridade — mesmo que doa", "Aventura — vamos fazer loucura juntos"], "correct": 2, "fun_fact": "Sinceridade é a base de tudo 💕"},
-    {"id": 5, "question": "Fim de semana ideal pra você?", "options": ["Explorar um lugar novo", "Maratona de série com delivery", "Rolê com os amigos até altas horas", "Sofá, cobertor e um livro"], "correct": 0, "fun_fact": "Aventura e descoberta! A vida é curta 🌟"},
-    {"id": 6, "question": "O que te faz sentir especial de verdade?", "options": ["Um elogio sincero do nada", "Uma surpresa inesperada", "Uma conversa profunda de madrugada", "Um gesto simples cheio de significado"], "correct": 3, "fun_fact": "São as pequenas coisas que constroem grandes sentimentos ✨"},
-    {"id": 7, "question": "Qual seria seu date ideal?", "options": ["Jantar romântico à luz de velas", "Café gostoso com conversa boa", "Um piquenique no parque", "Algo espontâneo e sem roteiro"], "correct": 1, "fun_fact": "Café e conversa — melhor forma de começo ☕"},
-    {"id": 8, "question": "O que te conquista de verdade?", "options": ["Presentes (sem julgamentos)", "Atenção genuína — lembrar dos detalhes", "Uma aventura radical", "Simplicidade — pequenas coisas"], "correct": 1, "fun_fact": "Atenção genuína — nada mais bonito 💝"},
-    {"id": 9, "question": "Qual seu jeito de recarregar as energias?", "options": ["Uma soneca estratégica", "Um tempo sozinha com seus pensamentos", "Sair rodeada de gente", "Exercício — endorfina é tudo"], "correct": 0, "fun_fact": "Dormir é sempre uma boa ideia 😂"},
-    {"id": 10, "question": "Se você fosse um emoji, qual seria?", "options": ["😎 — descolada e confiante", "🤗 — abraço e afeto", "🔥 — intensa e apaixonada", "🌙 — calma, misteriosa e sonhadora"], "correct": 0, "fun_fact": "😎 Descolada! Já tô imaginando nosso rolê 🚀"}
-]
-
-NEW_PROFILE_TEMPLATE = {
-    "password": "senha123",
-    "title": "",
-    "subtitle": "vamos nos conhecer melhor :)",
-    "emoji": "💕",
-    "instagram": "@",
-    "welcomeMessage": "Oiiii! Que bom que você está aqui! Vamos nos conhecer melhor? 💕",
-    "yesMessage": "mal posso esperar pra te conhecer melhor. vai ser incrível!",
-    "yesFooter": "💕 ansioso pelo nosso encontro",
-    "noMessage": "tudo bem! a vida é sobre encontros e desencontros.",
-    "noFooter": "se um dia mudar de ideia, é só chamar. 😊",
-    "resultMessages": {
-        "high": {"message": "Nossa compatibilidade é incrível! ✨ Parece que já nos entendemos. Que tal a gente descobrir se é verdade?", "final_question": "Você aceita sair comigo? 💕", "emoji": "🥰", "title": "Compatibilidade máxima! ✨"},
-        "mid": {"message": "Já temos uma boa conexão! 😊 Ainda temos o que descobrir, e essa é a melhor parte.", "final_question": "Que tal a gente se conhecer melhor? 🌟", "emoji": "😊", "title": "Quase lá! 🌟"},
-        "low": {"message": "Ainda temos o que descobrir um sobre o outro! 😂 E essa é a parte mais divertida.", "final_question": "Me dá uma chance de te conhecer? 😅", "emoji": "😂", "title": "Ainda temos o que descobrir 😂"}
-    },
-    "questions": GENERIC_QUESTIONS,
-    "pistas": [
-        ["primeiro encontro marcado", "um café bem quentinho", "e aquele frio na barriga ☕💕"],
-        ["conversa boa e sincera", "risada solta e gostosa", "o melhor jeito de começar algo ✨"],
-        ["um passeio no parque", "o vento no rosto", "e a descoberta de um novo sorriso 🌳💕"],
-        ["noite estrelada", "planos pro futuro", "e a certeza de que tô no lugar certo 🌟💕"]
-    ],
-    "carinhoMessages": [
-        "tudo bem, a gente mal se conhece! ainda dá tempo de descobrir 💕",
-        "palpite errado, mas a intenção foi boa 😊",
-        "imagina se a gente já soubesse tudo um do outro? não teria graça! ✨",
-        "relaxa, o importante é a gente se conhecer de verdade 💗",
-        "errar faz parte — e a melhor parte é aprender juntos 🍀"
-    ]
-}
-
 
 TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
 
@@ -248,32 +202,20 @@ def get_profile(profile_id: str) -> dict:
     return profile
 
 
-def get_profile_questions(profile_id: str) -> list:
-    return get_profile(profile_id)["questions"]
-
-
-def get_result_tier(percentage: float) -> str:
-    if percentage >= 80:
-        return "high"
-    elif percentage >= 50:
-        return "mid"
-    return "low"
-
-
-def get_partner_id(couple_id: str, my_id: str) -> str:
-    partner = next((k for k, v in PROFILES.items() if v.get("type") == "couple" and v.get("couple_id") == couple_id and _profile_name(v).lower() != my_id.lower()), None)
-    return partner
+def get_couple_info(couple_id: str, profile_id: str, db: Session):
+    """Returns (is_primary, partner_name) by looking up the Couple table."""
+    couple = db.query(Couple).filter(Couple.id == couple_id).first()
+    if not couple:
+        return (False, "")
+    is_a = couple.user1_id == profile_id
+    partner_id = couple.user2_id if is_a else couple.user1_id
+    partner = PROFILES.get(partner_id)
+    partner_name = _profile_name(partner) if partner else ""
+    return (is_a, partner_name)
 
 
 def _profile_name(p: dict) -> str:
     return p.get("name", p.get("display_name", ""))
-
-
-def get_partner_name(couple_id: str, my_name: str) -> str:
-    for _, p in PROFILES.items():
-        if p.get("type") == "couple" and p.get("couple_id") == couple_id and _profile_name(p).lower() == my_name.lower():
-            return p.get("partner_name", "")
-    return ""
 
 
 def get_couple_db(couple_id: str, db: Session):
@@ -286,67 +228,6 @@ def get_couple_db(couple_id: str, db: Session):
 async def login_page(request: Request):
     lang = get_lang(request)
     return HTMLResponse(_render("index.html", lang=lang))
-
-
-@app.get("/start/{profile_id}")
-async def start_redirect(profile_id: str):
-    if profile_id not in PROFILES:
-        raise HTTPException(status_code=404, detail="Perfil não encontrado")
-    db = next(get_db())
-    try:
-        questions = get_profile_questions(profile_id)
-        random.shuffle(questions)
-        questions = questions[:10]
-        session = QuizSession(profile_id=profile_id)
-        session.question_order = [q["id"] for q in questions]
-        db.add(session)
-        db.commit()
-        db.refresh(session)
-        return RedirectResponse(url=f"/quiz/{session.id}", status_code=302)
-    finally:
-        db.close()
-
-
-@app.get("/quiz/{session_id}", response_class=HTMLResponse)
-async def quiz_page(session_id: str):
-    db = next(get_db())
-    try:
-        session = db.query(QuizSession).filter(QuizSession.id == session_id).first()
-        if not session:
-            raise HTTPException(status_code=404, detail="Sessão não encontrada")
-        profile = get_profile(session.profile_id)
-        welcome = profile.get("welcomeMessage", "")
-        return HTMLResponse(_render("quiz.html",
-            pistas_json=json.dumps(profile["pistas"]),
-            carinho_json=json.dumps(profile["carinhoMessages"]),
-            emoji=profile["emoji"],
-            profile_id=session.profile_id,
-            welcome_message=json.dumps(welcome),
-        ))
-    finally:
-        db.close()
-
-
-@app.get("/resultado/{session_id}", response_class=HTMLResponse)
-async def result_page(session_id: str):
-    return HTMLResponse(_render("result.html"))
-
-@app.get("/retry/{session_id}", response_class=HTMLResponse)
-async def retry_page(session_id: str):
-    db = next(get_db())
-    try:
-        session = db.query(QuizSession).filter(QuizSession.id == session_id).first()
-        if not session:
-            raise HTTPException(status_code=404, detail="Sessão não encontrada")
-        profile = get_profile(session.profile_id)
-        name = session.profile_id.capitalize()
-        return HTMLResponse(_render("retry.html",
-            profile_name=json.dumps(name),
-            session_id=session.id,
-            emoji=profile["emoji"],
-        ))
-    finally:
-        db.close()
 
 
 @app.get("/still-learning", response_class=HTMLResponse)
@@ -385,38 +266,11 @@ def api_login(body: dict, request: Request, db: Session = Depends(get_db)):
 
     profile_type = profile.get("type", "quiz")
 
-    if profile_type == "quiz":
-        incomplete = db.query(QuizSession).filter(
-            QuizSession.profile_id == profile_id,
-            QuizSession.finished == False,
-            QuizSession.current_question > 0
-        ).order_by(QuizSession.started_at.desc()).first()
-
-        if incomplete:
-            return {"type": "quiz", "incomplete": True, "session_id": incomplete.id}
-
-        completed = db.query(QuizSession).filter(
-            QuizSession.profile_id == profile_id,
-            QuizSession.finished == True
-        ).order_by(QuizSession.started_at.desc()).first()
-
-        if completed:
-            return {"type": "quiz", "already_completed": True, "session_id": completed.id, "profile_name": profile.get("display_name", name_raw.capitalize())}
-
-        return {
-            "type": "quiz",
-            "profile_id": profile_id,
-            "title": profile.get("title", ""),
-            "subtitle": profile.get("subtitle", ""),
-            "emoji": profile.get("emoji", "💕"),
-        }
-    else:
-        display = profile.get("display_name", name_raw)
-        couple_id = profile.get("couple_id", "") or profile.get("partner", "")
-        partner_name = profile.get("partner_name", "") or profile.get("partner", "")
-        # Determine partner's login name for couple pairing
-        token = create_jwt({"login_name": name_raw, "profile_id": profile_id, "couple_id": couple_id, "role": "user"})
-        return {"type": "couple", "name": display, "couple_id": couple_id, "partner_name": partner_name, "token": token}
+    display = profile.get("display_name", name_raw)
+    couple_id = profile.get("couple_id", "") or profile.get("partner", "")
+    partner_name = profile.get("partner_name", "") or profile.get("partner", "")
+    token = create_jwt({"login_name": name_raw, "profile_id": profile_id, "couple_id": couple_id, "role": "user"})
+    return {"type": "couple", "name": display, "couple_id": couple_id, "partner_name": partner_name, "token": token}
 
 
 # ---- COUPLE API ----
@@ -428,8 +282,9 @@ def api_couple_dashboard(
 ):
     couple_id = auth["couple_id"]
     my_name = auth["login_name"]
+    profile_id = auth["profile_id"]
     today = date.today()
-    partner_name = get_partner_name(couple_id, my_name)
+    is_a, partner_name = get_couple_info(couple_id, profile_id, db)
     week_start = today - timedelta(days=today.weekday())
 
     question = db.query(DailyQuestion).filter(
@@ -465,7 +320,7 @@ def api_couple_dashboard(
     has_new_partner_answers = False
     notifications = []
     if question:
-        if my_name == couple_id.split("_")[0]:
+        if is_a:
             has_new_partner_answers = question.answer_b is not None and not question.seen_by_a
             if has_new_partner_answers:
                 notifications.append({"type": "daily_answer", "msg_pt": f"{partner_name} respondeu a pergunta do dia!", "msg_en": f"{partner_name} answered the daily question!"})
@@ -481,7 +336,7 @@ def api_couple_dashboard(
     for c in partner_chals:
         if c.created_by and c.created_by != my_name:
             other_name = c.created_by
-            if c.answered_b if my_name == couple_id.split("_")[0] else c.answered_a:
+            if c.answered_b if is_a else c.answered_a:
                 notifications.append({"type": "partner_challenge_resp", "id": c.id, "msg_pt": f"{other_name} completou o desafio!", "msg_en": f"{other_name} completed the challenge!"})
                 break
 
@@ -491,7 +346,6 @@ def api_couple_dashboard(
     ).first()
     partner_answered = False
     if chal:
-        is_a = my_name == couple_id.split("_")[0]
         partner_answered = chal.answered_b if is_a else chal.answered_a
         partner_seen = chal.seen_b if is_a else chal.seen_a
         if partner_answered and not partner_seen:
@@ -504,12 +358,13 @@ def api_couple_dashboard(
         "question": {
             "exists": question is not None,
             "id": question.id if question else None,
-            "my_answer": question.answer_a if question and (my_name == couple_id.split("_")[0] if True else question.answer_b) else (question.answer_b if question and my_name != (couple_id.split("_")[0] if True else "") else None),
+            "my_answer": question.answer_a if (question and is_a) else (question.answer_b if question else None),
         } if question else {"exists": False},
         "diary_count": diary_count,
         "diary_my_today": diary_my_today,
         "diary_partner_today": diary_partner_today,
-        "challenge": {"exists": challenge is not None, "type": challenge.type if challenge else None, "done": (challenge.done_a if challenge and my_name == (couple_id.split("_")[0] if True else "") else (challenge.done_b if challenge else False)) if challenge else False,
+        "challenge": {"exists": challenge is not None, "type": challenge.type if challenge else None,
+                      "done": (challenge.done_a if challenge and is_a else (challenge.done_b if challenge else False)) if challenge else False,
                       "partner_answered": partner_answered} if challenge else {"exists": False, "partner_answered": False},
         "events": [{"id": e.id, "title": e.title, "date": str(e.date)[:16]} for e in events],
         "todos": [{"id": t.id, "title": t.title, "done": t.done} for t in todos],
@@ -531,6 +386,7 @@ def api_translations(request: Request):
 def api_question_answer(body: dict, db: Session = Depends(get_db), auth: dict = Depends(require_auth)):
     couple_id = auth["couple_id"]
     my_name = auth["login_name"]
+    profile_id = auth["profile_id"]
     answer = body.get("answer", "")
     if not answer:
         raise HTTPException(status_code=400, detail="Missing answer")
@@ -540,7 +396,7 @@ def api_question_answer(body: dict, db: Session = Depends(get_db), auth: dict = 
     ).first()
     if not question:
         raise HTTPException(status_code=404, detail="No question for today")
-    is_a = my_name == couple_id.split("_")[0]
+    is_a, _ = get_couple_info(couple_id, profile_id, db)
     if is_a:
         question.answer_a = answer
     else:
@@ -553,6 +409,7 @@ def api_question_answer(body: dict, db: Session = Depends(get_db), auth: dict = 
 def api_get_question(request: Request, db: Session = Depends(get_db), auth: dict = Depends(require_auth)):
     couple_id = auth["couple_id"]
     my_name = auth["login_name"]
+    profile_id = auth["profile_id"]
     today = date.today()
     lang = get_lang(request)
     question = db.query(DailyQuestion).filter(
@@ -579,9 +436,7 @@ def api_get_question(request: Request, db: Session = Depends(get_db), auth: dict
         db.commit()
         db.refresh(question)
 
-    partner_name = get_partner_name(couple_id, my_name)
-
-    is_a = my_name == couple_id.split("_")[0]
+    is_a, partner_name = get_couple_info(couple_id, profile_id, db)
     my_answer = question.answer_a if is_a else question.answer_b
     partner_answer = question.answer_b if is_a else question.answer_a
     seen = question.seen_by_a if is_a else question.seen_by_b
@@ -636,12 +491,12 @@ def api_diary_save(body: dict, db: Session = Depends(get_db), auth: dict = Depen
 def api_get_diary(db: Session = Depends(get_db), auth: dict = Depends(require_auth)):
     couple_id = auth["couple_id"]
     my_name = auth["login_name"]
+    profile_id = auth["profile_id"]
     today = date.today()
+    _, partner_name = get_couple_info(couple_id, profile_id, db)
     entries = db.query(DiaryEntry).filter(
         DiaryEntry.couple_id == couple_id
     ).order_by(DiaryEntry.date.desc()).all()
-
-    partner_name = get_partner_name(couple_id, my_name)
 
     my_today = None
     partner_today = None
@@ -777,6 +632,7 @@ def api_get_todos(db: Session = Depends(get_db), auth: dict = Depends(require_au
 @app.post("/api/couple/review/save")
 def api_review_save(body: dict, db: Session = Depends(get_db), auth: dict = Depends(require_auth)):
     couple_id = auth["couple_id"]
+    profile_id = auth["profile_id"]
     name = auth["login_name"]
     reflection = body.get("reflection", "")
     if not reflection:
@@ -790,7 +646,7 @@ def api_review_save(body: dict, db: Session = Depends(get_db), auth: dict = Depe
     if not review:
         review = WeeklyReview(couple_id=couple_id, week_start=week_start)
         db.add(review)
-    is_a = name == couple_id.split("_")[0]
+    is_a, _ = get_couple_info(couple_id, profile_id, db)
     if is_a:
         review.reflection_a = reflection
     else:
@@ -804,18 +660,12 @@ def api_review_save(body: dict, db: Session = Depends(get_db), auth: dict = Depe
 @app.get("/api/couple/review")
 def api_get_review(db: Session = Depends(get_db), auth: dict = Depends(require_auth)):
     couple_id = auth["couple_id"]
+    profile_id = auth["profile_id"]
     my_name = auth["login_name"]
     today = date.today()
     week_start = today - timedelta(days=today.weekday())
 
-    partner_name = get_partner_name(couple_id, my_name)
-
-    review = db.query(WeeklyReview).filter(
-        WeeklyReview.couple_id == couple_id,
-        WeeklyReview.week_start == week_start
-    ).first()
-
-    is_a = my_name == couple_id.split("_")[0]
+    is_a, partner_name = get_couple_info(couple_id, profile_id, db)
 
     past = db.query(WeeklyReview).filter(
         WeeklyReview.couple_id == couple_id,
@@ -850,13 +700,13 @@ def get_riddle(today):
 
 def get_quote(today, offset=0):
     quotes = t("daily_quotes", "pt")
-    if isinstance(quotes, list) and len(quotes):
+    if isinstance(quotes, list) and quotes:
         idx = (today.toordinal() + offset) % len(quotes)
         q = quotes[idx]
         q_en = t("daily_quotes", "en")
-        qe = q_en[idx] if isinstance(q_en, list) and len(q_en) > idx else q
-        return {"quote_pt": q["text"], "quote_en": qe.get("text", q.get("text", "")),
-                "author": q["author"], "source": q["source"], "original": q.get("original", ""),
+        qe = q_en[idx] if isinstance(q_en, list) and idx < len(q_en) else q
+        return {"quote_pt": q.get("text", ""), "quote_en": qe.get("text", q.get("text", "")),
+                "author": q.get("author", ""), "source": q.get("source", ""), "original": q.get("original", ""),
                 "curiosity_pt": q.get("curiosity", ""), "curiosity_en": qe.get("curiosity_en", qe.get("curiosity", ""))}
     return {"quote_pt": "O amor é paciente, o amor é bondoso.", "quote_en": "Love is patient, love is kind.",
             "author": "Bíblia", "source": "1 Coríntios 13", "original": "Love is patient, love is kind.",
@@ -868,10 +718,10 @@ def get_quote(today, offset=0):
 def api_get_challenge(request: Request, db: Session = Depends(get_db), auth: dict = Depends(require_auth)):
     couple_id = auth["couple_id"]
     my_name = auth["login_name"]
+    profile_id = auth["profile_id"]
     today = date.today()
     lang = request.cookies.get("lang", "pt")
-    partner_name = get_partner_name(couple_id, my_name)
-    is_a = my_name == couple_id.split("_")[0]
+    is_a, partner_name = get_couple_info(couple_id, profile_id, db)
     is_creator = ((today.day % 2 == 0 and is_a) or (today.day % 2 == 1 and not is_a))
 
     ctype = CHALLENGE_TYPES[today.toordinal() % len(CHALLENGE_TYPES)]
@@ -953,6 +803,7 @@ def api_get_challenge(request: Request, db: Session = Depends(get_db), auth: dic
 @app.post("/api/couple/challenge/guess")
 def api_challenge_guess(body: dict, db: Session = Depends(get_db), auth: dict = Depends(require_auth)):
     couple_id = auth["couple_id"]
+    profile_id = auth["profile_id"]
     name = auth["login_name"]
     guess = body.get("guess", "")
     if not guess:
@@ -963,7 +814,7 @@ def api_challenge_guess(body: dict, db: Session = Depends(get_db), auth: dict = 
     ).first()
     if not challenge:
         raise HTTPException(status_code=404, detail="No riddle today")
-    is_a = name == couple_id.split("_")[0]
+    is_a, _ = get_couple_info(couple_id, profile_id, db)
     if is_a:
         challenge.guess_a = guess
     else:
@@ -982,6 +833,7 @@ def api_challenge_guess(body: dict, db: Session = Depends(get_db), auth: dict = 
 @app.post("/api/couple/challenge/create-question")
 def api_create_question(body: dict, db: Session = Depends(get_db), auth: dict = Depends(require_auth)):
     couple_id = auth["couple_id"]
+    profile_id = auth["profile_id"]
     name = auth["login_name"]
     question = body.get("question", "")
     theme_idx = body.get("theme_idx", None)
@@ -995,7 +847,7 @@ def api_create_question(body: dict, db: Session = Depends(get_db), auth: dict = 
     if not challenge:
         raise HTTPException(status_code=404, detail="No partner question challenge today")
     challenge.created_by = name
-    is_a = name == couple_id.split("_")[0]
+    is_a, _ = get_couple_info(couple_id, profile_id, db)
     if is_a:
         challenge.answered_a = True
         challenge.done_a = True
@@ -1018,6 +870,7 @@ def api_create_question(body: dict, db: Session = Depends(get_db), auth: dict = 
 @app.post("/api/couple/challenge/answer-question")
 def api_answer_question(body: dict, db: Session = Depends(get_db), auth: dict = Depends(require_auth)):
     couple_id = auth["couple_id"]
+    profile_id = auth["profile_id"]
     name = auth["login_name"]
     answer = body.get("answer", "")
     if not answer:
@@ -1028,7 +881,7 @@ def api_answer_question(body: dict, db: Session = Depends(get_db), auth: dict = 
     ).first()
     if not challenge:
         raise HTTPException(status_code=404, detail="No partner question today")
-    is_a = name == couple_id.split("_")[0]
+    is_a, _ = get_couple_info(couple_id, profile_id, db)
     if is_a:
         challenge.answered_a = True
         challenge.done_a = True
@@ -1073,6 +926,7 @@ def api_create_partner_challenge(body: dict, db: Session = Depends(get_db), auth
 @app.post("/api/couple/challenge/partner/complete")
 def api_complete_partner_challenge(body: dict, db: Session = Depends(get_db), auth: dict = Depends(require_auth)):
     challenge_id = body.get("id")
+    profile_id = auth["profile_id"]
     name = auth["login_name"]
     photo_data = body.get("photo", "")
     if not challenge_id:
@@ -1081,7 +935,7 @@ def api_complete_partner_challenge(body: dict, db: Session = Depends(get_db), au
     if not chal:
         raise HTTPException(status_code=404, detail="Challenge not found")
     couple_id = chal.couple_id
-    is_a = name == couple_id.split("_")[0]
+    is_a, _ = get_couple_info(couple_id, profile_id, db)
     if chal.data.get("type") == "photo" and photo_data:
         d = chal.data
         d["photo_" + ("a" if is_a else "b")] = photo_data
@@ -1102,12 +956,13 @@ def api_complete_partner_challenge(body: dict, db: Session = Depends(get_db), au
 @app.get("/api/couple/challenge/partner")
 def api_get_partner_challenges(db: Session = Depends(get_db), auth: dict = Depends(require_auth)):
     couple_id = auth["couple_id"]
+    profile_id = auth["profile_id"]
     my_name = auth["login_name"]
     today = date.today()
     challenges = db.query(Challenge).filter(
         Challenge.couple_id == couple_id, Challenge.date == today, Challenge.type == "partner_challenge"
     ).all()
-    is_a = my_name == couple_id.split("_")[0]
+    is_a, _ = get_couple_info(couple_id, profile_id, db)
     return [{
         "id": c.id, "created_by": c.created_by, "challenge": c.data.get("challenge", ""),
         "type": c.data.get("type", "text"),
@@ -1187,7 +1042,8 @@ def api_get_quote(request: Request, offset: int = None, unlock: int = 0, like: i
 def api_get_quiz(db: Session = Depends(get_db), auth: dict = Depends(require_auth)):
     couple_id = auth["couple_id"]
     my_name = auth["login_name"]
-    partner_name = get_partner_name(couple_id, my_name)
+    profile_id = auth["profile_id"]
+    _, partner_name = get_couple_info(couple_id, profile_id, db)
     answers = db.query(QuizAnswer).filter(QuizAnswer.couple_id == couple_id).all()
     my_answers = {a.question_idx: a for a in answers if a.author_id == my_name}
     partner_answers = {a.question_idx: a for a in answers if a.author_id != my_name}
@@ -1242,11 +1098,12 @@ def api_save_quiz(body: dict, db: Session = Depends(get_db), auth: dict = Depend
     return {"ok": True}
 
 
-MAX_PHOTO_SIZE = 300 * 1024  # 300KB max for base64
+MAX_PHOTO_SIZE = 5 * 1024 * 1024  # 5MB max for base64
 
 @app.post("/api/couple/challenge/photo")
 def api_upload_photo(body: dict, db: Session = Depends(get_db), auth: dict = Depends(require_auth)):
     couple_id = auth["couple_id"]
+    profile_id = auth["profile_id"]
     name = auth["login_name"]
     photo_data = body.get("photo", "")
     caption = body.get("caption", "")
@@ -1259,7 +1116,7 @@ def api_upload_photo(body: dict, db: Session = Depends(get_db), auth: dict = Dep
         Challenge.couple_id == couple_id, Challenge.date == today, Challenge.type == "photo"
     ).first()
     if challenge:
-        is_a = name == couple_id.split("_")[0]
+        is_a, _ = get_couple_info(couple_id, profile_id, db)
         data = challenge.data
         key = "photo_url_a" if is_a else "photo_url_b"
         data[key] = photo_data
@@ -1281,8 +1138,9 @@ def api_upload_photo(body: dict, db: Session = Depends(get_db), auth: dict = Dep
 @app.get("/api/couple/memories")
 def api_get_memories(db: Session = Depends(get_db), auth: dict = Depends(require_auth)):
     couple_id = auth["couple_id"]
+    profile_id = auth["profile_id"]
     my_name = auth["login_name"]
-    is_a = my_name == couple_id.split("_")[0]
+    is_a, partner_name = get_couple_info(couple_id, profile_id, db)
 
     # Daily questions answered
     questions = db.query(DailyQuestion).filter(
@@ -1312,7 +1170,6 @@ def api_get_memories(db: Session = Depends(get_db), auth: dict = Depends(require
         DiaryEntry.couple_id == couple_id
     ).order_by(DiaryEntry.date.desc()).limit(30).all()
 
-    partner_name = get_partner_name(couple_id, my_name)
     return {
         "questions": [{
             "date": str(q.date), "question_pt": q.question_pt, "question_en": q.question_en,
@@ -1346,13 +1203,13 @@ def api_get_memories(db: Session = Depends(get_db), auth: dict = Depends(require
 @app.get("/api/couple/challenge/history")
 def api_challenge_history(db: Session = Depends(get_db), auth: dict = Depends(require_auth)):
     couple_id = auth["couple_id"]
+    profile_id = auth["profile_id"]
     my_name = auth["login_name"]
-    is_a = my_name == couple_id.split("_")[0]
+    is_a, partner_name = get_couple_info(couple_id, profile_id, db)
     challenges = db.query(Challenge).filter(
         Challenge.couple_id == couple_id,
         Challenge.answered_a == True, Challenge.answered_b == True
     ).order_by(Challenge.date.desc()).limit(50).all()
-    partner_name = get_partner_name(couple_id, my_name)
     return [{
         "date": str(c.date), "type": c.type,
         "data": c.data,
@@ -1368,114 +1225,6 @@ def api_challenge_history(db: Session = Depends(get_db), auth: dict = Depends(re
     } for c in challenges]
 
 
-# ---- EXISTING QUIZ API (unchanged) ----
-
-@app.post("/api/start")
-def api_start(body: dict = {}, db: Session = Depends(get_db)):
-    profile_id = body.get("profile_id", "")
-    if not profile_id or profile_id not in PROFILES:
-        raise HTTPException(status_code=400, detail="profile_id é obrigatório")
-    questions = get_profile_questions(profile_id)
-    random.shuffle(questions)
-    questions = questions[:10]
-    session = QuizSession(profile_id=profile_id)
-    session.question_order = [q["id"] for q in questions]
-    db.add(session)
-    db.commit()
-    db.refresh(session)
-    return {"session_id": session.id, "total_questions": len(questions)}
-
-
-@app.get("/api/question/{session_id}")
-def api_question(session_id: str, db: Session = Depends(get_db)):
-    session = db.query(QuizSession).filter(QuizSession.id == session_id).first()
-    if not session:
-        raise HTTPException(status_code=404, detail="Sessão não encontrada")
-    questions = get_profile_questions(session.profile_id)
-    order = session.question_order or [q["id"] for q in questions[:10]]
-    total = len(order)
-    if session.finished:
-        return {"finished": True, "score": session.score, "total": total}
-    if session.current_question >= len(order):
-        session.finished = True
-        session.completed_at = datetime.utcnow()
-        db.commit()
-        return {"finished": True, "score": session.score, "total": total}
-    qid = order[session.current_question]
-    q = next(q for q in questions if q["id"] == qid)
-    return {"question_id": q["id"], "question": q["question"], "options": q["options"], "current": session.current_question + 1, "total": total, "finished": False}
-
-
-@app.post("/api/answer/{session_id}")
-def api_answer(session_id: str, body: dict, db: Session = Depends(get_db)):
-    session = db.query(QuizSession).filter(QuizSession.id == session_id).first()
-    if not session:
-        raise HTTPException(status_code=404, detail="Sessão não encontrada")
-    questions = get_profile_questions(session.profile_id)
-    order = session.question_order or [q["id"] for q in questions[:10]]
-    total = len(order)
-    if session.finished:
-        return {"finished": True, "score": session.score, "total": total}
-    selected = body.get("answer")
-    qid = order[session.current_question]
-    q = next(q for q in questions if q["id"] == qid)
-    correct = selected == q["correct"]
-    if correct:
-        session.score += 1
-    answers = list(session.answers or [])
-    answers.append({"question_id": q["id"], "selected": selected, "correct": correct})
-    session.answers = answers
-    session.current_question += 1
-    if session.current_question >= len(order):
-        session.finished = True
-        session.completed_at = datetime.utcnow()
-    db.commit()
-    return {"correct": correct, "correct_answer": q["correct"], "fun_fact": q["fun_fact"], "score": session.score, "current": session.current_question, "total": total, "finished": session.finished, "is_last": session.finished}
-
-
-@app.post("/api/result/final/{session_id}")
-def api_result_final(session_id: str, body: dict, db: Session = Depends(get_db)):
-    session = db.query(QuizSession).filter(QuizSession.id == session_id).first()
-    if not session:
-        raise HTTPException(status_code=404, detail="Sessão não encontrada")
-    answer = body.get("answer")
-    if answer not in ("yes", "no"):
-        raise HTTPException(status_code=400, detail="Resposta inválida")
-    answers = list(session.answers or [])
-    answers = [a for a in answers if a.get("type") != "final_answer"]
-    answers.append({"type": "final_answer", "value": answer})
-    session.answers = answers
-    db.commit()
-    return {"ok": True}
-
-
-@app.get("/api/result/{session_id}")
-def api_result(session_id: str, db: Session = Depends(get_db)):
-    session = db.query(QuizSession).filter(QuizSession.id == session_id).first()
-    if not session:
-        raise HTTPException(status_code=404, detail="Sessão não encontrada")
-    profile = get_profile(session.profile_id)
-    questions = get_profile_questions(session.profile_id)
-    order = session.question_order or [q["id"] for q in questions[:10]]
-    total = len(order)
-    score = session.score
-    answers = session.answers or []
-    percentage = (score / total) * 100
-    details = []
-    final_answer = None
-    for ans in answers:
-        if ans.get("type") == "final_answer":
-            final_answer = ans.get("value")
-            continue
-        q = next((q for q in questions if q["id"] == ans["question_id"]), None)
-        if not q:
-            continue
-        details.append({"question": q["question"], "selected": q["options"][ans["selected"]], "correct": q["options"][q["correct"]], "was_correct": ans["correct"], "fun_fact": q["fun_fact"]})
-    tier = get_result_tier(percentage)
-    tier_data = profile["resultMessages"][tier]
-    return {"score": score, "total": total, "percentage": percentage, "message": tier_data["message"], "final_question": tier_data["final_question"], "emoji": tier_data["emoji"], "title": tier_data["title"], "details": details, "session_id": session_id, "instagram": profile["instagram"], "yesMessage": profile["yesMessage"], "yesFooter": profile["yesFooter"], "noMessage": profile["noMessage"], "noFooter": profile["noFooter"], "profile_emoji": profile["emoji"], "final_answer": final_answer, "already_completed": True}
-
-
 # ---- ADMIN ────────────────────────────────────────────────────
 
 @app.post("/api/admin/couple/stats")
@@ -1489,9 +1238,6 @@ def admin_couple_stats(body: dict, db: Session = Depends(get_db)):
         data_a = profile_a.data if profile_a else {}
         data_b = profile_b.data if profile_b else {}
         # Compute sessions count via LoginCredential
-        sess_count = 0
-        for pid in [c.user1_id, c.user2_id]:
-            sess_count += db.query(QuizSession).filter(QuizSession.profile_id == pid).count()
         diary_count = db.query(DiaryEntry).filter(DiaryEntry.couple_id == c.id).count()
         photo_count = db.query(Photo).filter(Photo.couple_id == c.id).count()
         question_count = db.query(DailyQuestion).filter(DailyQuestion.couple_id == c.id).count()
@@ -1506,7 +1252,6 @@ def admin_couple_stats(body: dict, db: Session = Depends(get_db)):
             "user2": c.user2_id,
             "user1_name": data_a.get("name", profile_a.display_name if profile_a else c.user1_id),
             "user2_name": data_b.get("name", profile_b.display_name if profile_b else c.user2_id),
-            "total_sessions": sess_count,
             "total_questions": question_count,
             "total_challenges": challenge_count,
             "total_photos": photo_count,
@@ -1641,32 +1386,6 @@ def admin_couple_todos(body: dict, db: Session = Depends(get_db)):
     } for t in todos]}
 
 
-@app.post("/api/admin/results")
-def admin_results(body: dict, db: Session = Depends(get_db)):
-    check_admin(body)
-    sessions = db.query(QuizSession).order_by(QuizSession.started_at.desc()).all()
-    result = []
-    for s in sessions:
-        profile = PROFILES.get(s.profile_id, {})
-        questions = profile.get("questions", [])
-        qmap = {q["id"]: q for q in questions}
-        answers = s.answers or []
-        ans_data = []
-        for a in answers:
-            if a.get("type") == "final_answer":
-                continue
-            q = qmap.get(a["question_id"], {})
-            opts = q.get("options", [])
-            ans_data.append({"question": q.get("question", "?"), "selected": opts[a["selected"]] if a["selected"] < len(opts) else "?", "correct_answer": opts[q["correct"]] if q.get("correct") is not None and q["correct"] < len(opts) else "?", "was_correct": a["correct"], "fun_fact": q.get("fun_fact", "")})
-        final_answer = None
-        for a in (s.answers or []):
-            if a.get("type") == "final_answer":
-                final_answer = a.get("value")
-                break
-        result.append({"session_id": s.id, "profile_id": s.profile_id, "score": s.score, "total": len(s.question_order or questions), "started_at": str(s.started_at)[:19] if s.started_at else "", "completed_at": str(s.completed_at)[:19] if s.completed_at else "", "answers": ans_data, "final_answer": final_answer})
-    return {"sessions": result}
-
-
 @app.post("/api/admin/login-history")
 def admin_login_history(body: dict, db: Session = Depends(get_db)):
     check_admin(body)
@@ -1680,7 +1399,7 @@ def admin_get_profiles(body: dict, db: Session = Depends(get_db)):
     result = {}
     for p in db.query(Profile).all():
         result[p.id] = {"type": p.type, "display_name": p.display_name, **p.data}
-    return {"profiles": result, "template": NEW_PROFILE_TEMPLATE}
+    return {"profiles": result}
 
 
 @app.post("/api/admin/profiles/save")
@@ -1720,17 +1439,6 @@ def admin_save_profiles(body: dict, db: Session = Depends(get_db)):
     return {"ok": True}
 
 
-@app.post("/api/admin/profiles/reset-sessions")
-def admin_reset_sessions(body: dict, db: Session = Depends(get_db)):
-    check_admin(body)
-    profile_id = body.get("profile_id", "")
-    if not profile_id:
-        raise HTTPException(status_code=400, detail="profile_id é obrigatório")
-    deleted = db.query(QuizSession).filter(QuizSession.profile_id == profile_id).delete()
-    db.commit()
-    return {"ok": True, "deleted": deleted}
-
-
 @app.post("/api/admin/profiles/delete")
 def admin_delete_profile(body: dict, db: Session = Depends(get_db)):
     check_admin(body)
@@ -1738,7 +1446,6 @@ def admin_delete_profile(body: dict, db: Session = Depends(get_db)):
     if not profile_id or profile_id not in PROFILES:
         raise HTTPException(status_code=404, detail="Perfil não encontrado")
     db.query(LoginCredential).filter(LoginCredential.profile_id == profile_id).delete()
-    db.query(QuizSession).filter(QuizSession.profile_id == profile_id).delete()
     db.query(Profile).filter(Profile.id == profile_id).delete()
     db.commit()
     reload_profiles(db)
@@ -1822,7 +1529,6 @@ def admin_couple_delete(body: dict, db: Session = Depends(get_db)):
     couple = db.query(Couple).filter(Couple.id == couple_id).first()
     if couple:
         for pid in [couple.user1_id, couple.user2_id]:
-            db.query(QuizSession).filter(QuizSession.profile_id == pid).delete()
             db.query(LoginCredential).filter(LoginCredential.profile_id == pid).delete()
             db.query(Profile).filter(Profile.id == pid).delete()
         db.delete(couple)
