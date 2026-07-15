@@ -359,7 +359,7 @@ body.dark .q-table tr { background: var(--surface2); }
       <select id="profileFilter" onchange="renderSessions()">
         <option value="">Todos os perfis</option>
       </select>
-      <input type="text" id="sessionSearch" placeholder="buscar por ID ou nome..." oninput="renderSessions()">
+      <input type="text" id="sessionSearch" placeholder="buscar por ID ou nome..." oninput="debouncedRenderSessions()">
       <button class="sort-btn" id="sortBtn" onclick="toggleSort()">📅 mais recentes</button>
       <button class="sort-btn" onclick="exportCSV()">📥 CSV</button>
     </div>
@@ -521,6 +521,39 @@ let AUTH = { username: '', password: '' };
 let SORT_DESC = true;
 let ACTIVITY_LOG = [];
 let ALL_LOGIN_EVENTS = [];
+let IS_DIRTY = false;
+let _loadingCount = 0;
+
+function showLoading(msg) {
+  _loadingCount++;
+  const existing = document.getElementById('globalLoading');
+  if (!existing) {
+    const d = document.createElement('div');
+    d.id = 'globalLoading';
+    d.style.cssText = 'position:fixed;top:12px;right:12px;z-index:999;padding:8px 16px;background:var(--pink);color:white;border-radius:var(--radius-sm);font-family:\'Press Start 2P\',monospace;font-size:7px;box-shadow:var(--shadow);animation:fadeInUp 0.2s ease;';
+    d.innerHTML = `<span class=spinner style="display:inline-block;width:12px;height:12px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.5s linear infinite;vertical-align:middle;margin-right:6px;"></span> ${msg}`;
+    document.body.appendChild(d);
+  }
+}
+function hideLoading() {
+  _loadingCount = Math.max(0, _loadingCount - 1);
+  if (_loadingCount === 0) {
+    const el = document.getElementById('globalLoading');
+    if (el) el.remove();
+  }
+}
+
+function debounce(fn, ms) {
+  let timer;
+  return function(...args) {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(this, args), ms);
+  };
+}
+
+function validateProfileKey(s) {
+  return /^[a-zA-Z0-9_\u00C0-\u024F-]+$/.test(s);
+}
 
 function loadLog() {
   try { ACTIVITY_LOG = JSON.parse(localStorage.getItem('admin_activity_log') || '[]'); } catch(e) { ACTIVITY_LOG = []; }
@@ -560,7 +593,7 @@ async function loadLoginEvents() {
     ALL_LOGIN_EVENTS = d.events || [];
     populateLoginFilter();
     renderLoginHistory();
-  } catch(e) { /* silent */ }
+  } catch(e) { showToast('Erro ao carregar login history', 'error'); }
 }
 
 function populateLoginFilter() {
@@ -725,6 +758,7 @@ async function loadAll() {
 }
 
 // ---- SESSIONS TAB ----
+var debouncedRenderSessions = debounce(renderSessions, 250);
 function renderSessions() {
   const filter = document.getElementById('profileFilter').value;
   const search = document.getElementById('sessionSearch').value.toLowerCase().trim();
@@ -827,6 +861,8 @@ function renderProfileList() {
 }
 
 function selectProfile(key) {
+  if (IS_DIRTY && !confirm('Você tem alterações não salvas. Descartar?')) return;
+  IS_DIRTY = false;
   if (!key || !ALL_PROFILES[key]) {
     document.getElementById('profileEditor').innerHTML = `<div class=no-profile><span>👤</span>Selecione um perfil para editar</div>`;
     SELECTED_PROFILE = null;
@@ -937,7 +973,7 @@ function renderProfileEditor(key) {
   document.getElementById('profileEditor').innerHTML = html;
 }
 
-function markDirty() {}
+function markDirty() { IS_DIRTY = true; }
 
 function collectProfileData() {
   const key = SELECTED_PROFILE;
@@ -1012,6 +1048,7 @@ async function saveProfile() {
   const data = collectProfileData();
   if (!data.profile.password) { showToast('A senha é obrigatória.', 'error'); return; }
   if (data.profile.questions.length === 0) { showToast('Adicione pelo menos uma pergunta.', 'error'); return; }
+  if (!validateProfileKey(data.newKey)) { showToast('ID do perfil: apenas letras, números, underscores, hífens e acentos.', 'error'); return; }
 
   const payload = { username: AUTH.username, password: AUTH.password, profiles: {} };
   payload.profiles[data.newKey] = data.profile;
@@ -1195,6 +1232,7 @@ function previewWelcome() {
 function closePreview() {
   document.getElementById('previewOverlay').classList.remove('show');
 }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closePreview(); });
 
 // ---- DUPLICATE PROFILE ----
 function duplicateProfile() {
@@ -1231,7 +1269,7 @@ async function loadCoupleStats() {
       ).join('');
     }
     renderCoupleStats();
-  } catch(e) { /* silent */ }
+  } catch(e) { showToast('Erro ao carregar stats do casal', 'error'); }
 }
 
 function switchCoupleStats() {
@@ -1367,16 +1405,16 @@ async function deleteAllAdminPhotos() {
   const photos = CHALLENGES_DATA.photos || [];
   if (!photos.length) { showToast('Nenhuma foto para excluir.', 'error'); return; }
   if (!confirm(`Excluir TODAS as ${photos.length} foto${photos.length > 1 ? 's' : ''}?`)) return;
-  for (const p of photos) {
-    if (!p.id) continue;
-    try {
-      await fetch('/api/admin/photo/delete', {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({ username: AUTH.username, password: AUTH.password, id: p.id })
-      });
-    } catch(_) {}
-  }
-  showToast(`${photos.length} foto${photos.length > 1 ? 's' : ''} deletada${photos.length > 1 ? 's' : ''}! 🗑`, 'success');
+  showLoading(`Deletando ${photos.length} fotos...`);
+  const results = await Promise.allSettled(photos.filter(p => p.id).map(p =>
+    fetch('/api/admin/photo/delete', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ username: AUTH.username, password: AUTH.password, id: p.id })
+    })
+  ));
+  hideLoading();
+  const ok = results.filter(r => r.status === 'fulfilled' && r.value.ok).length;
+  showToast(`${ok}/${photos.length} foto${photos.length > 1 ? 's' : ''} deletada${photos.length > 1 ? 's' : ''}! 🗑`, ok === photos.length ? 'success' : 'error');
   loadChallenges();
 }
 
@@ -1385,16 +1423,16 @@ async function clearAllChallenges() {
   if (!challenges.length) { showToast('Nenhum desafio para excluir.', 'error'); return; }
   if (!confirm(`⚠️ Excluir PERMANENTEMENTE todos os ${challenges.length} desafio${challenges.length > 1 ? 's' : ''}?`)) return;
   if (!confirm(`Tem CERTEZA? Essa ação não pode ser desfeita.`)) return;
-  for (const c of challenges) {
-    if (!c.id) continue;
-    try {
-      await fetch('/api/admin/challenge/delete', {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({ username: AUTH.username, password: AUTH.password, id: c.id })
-      });
-    } catch(_) {}
-  }
-  showToast(`${challenges.length} desafio${challenges.length > 1 ? 's' : ''} deletado${challenges.length > 1 ? 's' : ''}! 🗑`, 'success');
+  showLoading(`Deletando ${challenges.length} desafios...`);
+  const results = await Promise.allSettled(challenges.filter(c => c.id).map(c =>
+    fetch('/api/admin/challenge/delete', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ username: AUTH.username, password: AUTH.password, id: c.id })
+    })
+  ));
+  hideLoading();
+  const ok = results.filter(r => r.status === 'fulfilled' && r.value.ok).length;
+  showToast(`${ok}/${challenges.length} desafio${challenges.length > 1 ? 's' : ''} deletado${challenges.length > 1 ? 's' : ''}! 🗑`, ok === challenges.length ? 'success' : 'error');
   loadChallenges();
 }
 
@@ -1412,7 +1450,7 @@ async function loadDailyQuestions() {
     const d = await r.json();
     DAILY_QUESTIONS = d.questions || [];
     renderDailyQuestions();
-  } catch(e) { /* silent */ }
+  } catch(e) { showToast('Erro ao carregar perguntas diárias', 'error'); }
 }
 
 function renderDailyQuestions() {
@@ -1490,7 +1528,7 @@ async function loadChallenges() {
     const d2 = r2.ok ? await r2.json() : { photos: [] };
     CHALLENGES_DATA = { challenges: d1.challenges || [], photos: d2.photos || [] };
     renderChallenges();
-  } catch(e) { /* silent */ }
+  } catch(e) { showToast('Erro ao carregar desafios', 'error'); }
 }
 
 let challengeFilter = '';
@@ -1614,29 +1652,31 @@ async function batchDeleteChallenges() {
       else if (_challengeTypeFilter) matchesType = c.type === _challengeTypeFilter;
       return matchesText && matchesType;
     }).map(c => c.id).filter(Boolean);
-    for (const id of allIds) {
-      try {
-        await fetch('/api/admin/challenge/delete', {
-          method:'POST', headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({ username: AUTH.username, password: AUTH.password, id })
-        });
-      } catch(_) {}
-    }
-    showToast(`${allIds.length} desafios deletados! 🗑`, 'success');
+    showLoading(`Deletando ${allIds.length} desafios...`);
+    const results = await Promise.allSettled(allIds.map(id =>
+      fetch('/api/admin/challenge/delete', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ username: AUTH.username, password: AUTH.password, id })
+      })
+    ));
+    hideLoading();
+    const ok = results.filter(r => r.status === 'fulfilled' && r.value.ok).length;
+    showToast(`${ok}/${allIds.length} desafios deletados! 🗑`, ok === allIds.length ? 'success' : 'error');
     loadChallenges();
     return;
   }
   if (!checked.length) { showToast('Selecione ao menos um desafio.', 'error'); return; }
   if (!confirm(`Excluir ${checked.length} desafio${checked.length > 1 ? 's' : ''} selecionado${checked.length > 1 ? 's' : ''}?`)) return;
-  for (const id of checked) {
-    try {
-      await fetch('/api/admin/challenge/delete', {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({ username: AUTH.username, password: AUTH.password, id })
-      });
-    } catch(_) {}
-  }
-  showToast(`${checked.length} desafio${checked.length > 1 ? 's' : ''} deletado${checked.length > 1 ? 's' : ''}! 🗑`, 'success');
+  showLoading(`Deletando ${checked.length} desafios...`);
+  const results2 = await Promise.allSettled(checked.map(id =>
+    fetch('/api/admin/challenge/delete', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ username: AUTH.username, password: AUTH.password, id })
+    })
+  ));
+  hideLoading();
+  const ok2 = results2.filter(r => r.status === 'fulfilled' && r.value.ok).length;
+  showToast(`${ok2}/${checked.length} desafio${checked.length > 1 ? 's' : ''} deletado${checked.length > 1 ? 's' : ''}! 🗑`, ok2 === checked.length ? 'success' : 'error');
   loadChallenges();
 }
 
@@ -1670,7 +1710,7 @@ async function loadDiary() {
     const d = await r.json();
     DIARY_ENTRIES = d.entries || [];
     renderDiary();
-  } catch(e) { /* silent */ }
+  } catch(e) { showToast('Erro ao carregar diário', 'error'); }
 }
 
 function renderDiary() {
@@ -1725,7 +1765,7 @@ async function loadAgenda() {
     const d = await r.json();
     AGENDA_EVENTS = d.events || [];
     renderAgenda();
-  } catch(e) { /* silent */ }
+  } catch(e) { showToast('Erro ao carregar agenda', 'error'); }
 }
 
 function renderAgenda() {
@@ -1754,7 +1794,7 @@ async function loadTodos() {
     const d = await r.json();
     TODOS = d.todos || [];
     renderTodos();
-  } catch(e) { /* silent */ }
+  } catch(e) { showToast('Erro ao carregar tarefas', 'error'); }
 }
 
 function renderTodos() {
@@ -1785,13 +1825,21 @@ if (localStorage.getItem('admin_dark')) {
 // ---- TABS ----
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
+    if (IS_DIRTY && !confirm('Você tem alterações não salvas. Descartar?')) return;
+    IS_DIRTY = false;
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     btn.classList.add('active');
     const tabName = btn.dataset.tab;
     document.getElementById('tab' + tabName.charAt(0).toUpperCase() + tabName.slice(1)).classList.add('active');
+    const refreshMap = { diary:'loadDiary', agenda:'loadAgenda', todos:'loadTodos', log:'loadLoginEvents', questions:'loadDailyQuestions', challenges:'loadChallenges', couple:'loadCoupleStats' };
     if (tabName === 'log') { renderLog(); renderLoginHistory(); }
+    if (refreshMap[tabName]) window[refreshMap[tabName]]();
   });
+});
+
+window.addEventListener('beforeunload', e => {
+  if (IS_DIRTY) { e.preventDefault(); e.returnValue = ''; }
 });
 
 // ---- UTILS ----
