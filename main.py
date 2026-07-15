@@ -1,10 +1,11 @@
 import json
 import os
 import random
-import uuid
 import hashlib
 from datetime import datetime, date, timedelta
 from typing import Optional
+from contextlib import asynccontextmanager
+from uuid import uuid4
 
 import bcrypt
 import jwt as pyjwt
@@ -12,9 +13,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from fastapi import FastAPI, Depends, HTTPException, Request, Response, Header
+from fastapi import FastAPI, Depends, HTTPException, Request, Header
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
 from database import engine, Base, get_db
@@ -23,32 +25,45 @@ from translations import get_lang, t
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-app = FastAPI(title="Still Learning")
-Base.metadata.create_all(bind=engine)
-# Migration: recreate quote_refreshes with new schema (safe)
-try:
-    from sqlalchemy import inspect, text as sql_text
-    insp = inspect(engine)
-    if 'quote_refreshes' in insp.get_table_names():
-        cols = [c['name'] for c in insp.get_columns('quote_refreshes')]
-        if 'offset' in cols and 'current_offset' not in cols:
-            with engine.connect() as conn:
-                conn.execute(sql_text("DROP TABLE quote_refreshes"))
-                conn.commit()
-            Base.metadata.create_all(bind=engine)
-except Exception:
-    pass
 
-app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
-
-
-@app.on_event("startup")
-def startup_load_profiles():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    Base.metadata.create_all(bind=engine)
+    _safe_migrate_quote_refreshes()
     db = next(get_db())
     try:
         reload_profiles(db)
     finally:
         db.close()
+    yield
+
+
+app = FastAPI(title="Still Learning", lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
+
+
+def _safe_migrate_quote_refreshes():
+    from sqlalchemy import inspect, text as sql_text
+    try:
+        insp = inspect(engine)
+        if 'quote_refreshes' in insp.get_table_names():
+            cols = [c['name'] for c in insp.get_columns('quote_refreshes')]
+            if 'offset' in cols and 'current_offset' not in cols:
+                with engine.connect() as conn:
+                    conn.execute(sql_text("DROP TABLE quote_refreshes"))
+                    conn.commit()
+                Base.metadata.create_all(bind=engine)
+    except Exception as e:
+        print(f"Migration note: {e}")
 
 JWT_ALGO = "HS256"
 
@@ -89,7 +104,8 @@ def create_jwt(data: dict) -> str:
 def decode_jwt(token: str) -> Optional[dict]:
     try:
         return pyjwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGO])
-    except: return None
+    except pyjwt.InvalidTokenError:
+        return None
 
 
 def require_auth(authorization: Optional[str] = Header(None), request: Request = None):
@@ -669,6 +685,20 @@ def api_agenda_add(body: dict, db: Session = Depends(get_db), auth: dict = Depen
     return {"ok": True, "id": event.id}
 
 
+@app.post("/api/couple/agenda/delete")
+def api_agenda_delete(body: dict, db: Session = Depends(get_db), auth: dict = Depends(require_auth)):
+    couple_id = auth["couple_id"]
+    event_id = body.get("id")
+    if not event_id:
+        raise HTTPException(status_code=400, detail="Missing id")
+    event = db.query(AgendaEvent).filter(AgendaEvent.id == event_id, AgendaEvent.couple_id == couple_id).first()
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    db.delete(event)
+    db.commit()
+    return {"ok": True}
+
+
 @app.get("/api/couple/agenda")
 def api_get_agenda(db: Session = Depends(get_db), auth: dict = Depends(require_auth)):
     couple_id = auth["couple_id"]
@@ -719,6 +749,20 @@ def api_todo_toggle(body: dict, db: Session = Depends(get_db), auth: dict = Depe
         todo.done_by = my_name
     db.commit()
     return {"ok": True, "done": todo.done, "done_by": todo.done_by}
+
+
+@app.post("/api/couple/todos/delete")
+def api_todo_delete(body: dict, db: Session = Depends(get_db), auth: dict = Depends(require_auth)):
+    couple_id = auth["couple_id"]
+    todo_id = body.get("id")
+    if not todo_id:
+        raise HTTPException(status_code=400, detail="Missing id")
+    todo = db.query(TodoItem).filter(TodoItem.id == todo_id, TodoItem.couple_id == couple_id).first()
+    if not todo:
+        raise HTTPException(status_code=404, detail="Todo not found")
+    db.delete(todo)
+    db.commit()
+    return {"ok": True}
 
 
 @app.get("/api/couple/todos")
@@ -1702,7 +1746,7 @@ def admin_delete_profile(body: dict, db: Session = Depends(get_db)):
 
 
 @app.get("/admin", response_class=HTMLResponse)
-async def admin_page():
+async def admin_page(request: Request):
     return HTMLResponse(_render("admin.html"))
 
 
@@ -1819,6 +1863,28 @@ def admin_photo_data(body: dict, db: Session = Depends(get_db)):
     if not photo:
         raise HTTPException(status_code=404, detail="Foto não encontrada")
     return {"id": photo.id, "data": photo.data, "caption": photo.caption}
+
+
+@app.post("/api/admin/agenda/delete")
+def admin_agenda_delete(body: dict, db: Session = Depends(get_db)):
+    check_admin(body)
+    event_id = body.get("id")
+    if not event_id:
+        raise HTTPException(status_code=400, detail="id obrigatório")
+    db.query(AgendaEvent).filter(AgendaEvent.id == event_id).delete()
+    db.commit()
+    return {"ok": True}
+
+
+@app.post("/api/admin/todos/delete")
+def admin_todos_delete(body: dict, db: Session = Depends(get_db)):
+    check_admin(body)
+    todo_id = body.get("id")
+    if not todo_id:
+        raise HTTPException(status_code=400, detail="id obrigatório")
+    db.query(TodoItem).filter(TodoItem.id == todo_id).delete()
+    db.commit()
+    return {"ok": True}
 
 
 if __name__ == "__main__":

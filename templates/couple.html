@@ -85,6 +85,10 @@ body {
   0%, 100% { opacity: 0.15; transform: scale(1); }
   50% { opacity: 0.3; transform: scale(1.1); }
 }
+@media (prefers-reduced-motion: reduce) {
+  .floating-bg, .floating-bg::before, .floating-bg::after,
+  .floating-items, .floating-items span, .stars, .stars span { animation: none !important; display: none; }
+}
 
 #app { position: relative; z-index: 1; max-width: 520px; margin: 0 auto; }
 
@@ -683,6 +687,7 @@ function toggleLang() {
 }
 function getLang() { const m = document.cookie.match(/lang=([^;]+)/); return m ? m[1] : 'pt'; }
 function esc(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function attrEsc(s) { return String(s).replace(/'/g, '&#39;').replace(/"/g, '&quot;').replace(/&/g, '&amp;'); }
 
 function logout(e) {
   if (e) { e.stopPropagation(); e.preventDefault(); }
@@ -1503,6 +1508,7 @@ function loadAgenda() {
           <div class="agenda-info"><div class="title">${esc(e.title)}</div>
           ${e.description ? `<div class="desc">${esc(e.description)}</div>` : ''}
           <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--text-light);margin-top:4px;">💕 ${isEn ? 'by' : 'por'} ${esc(e.created_by)}</div></div>
+          <button class="agenda-del" onclick="deleteEvent('${e.id}')" title="${isEn ? 'Delete' : 'Excluir'}" style="background:none;border:none;color:var(--pink-dark);cursor:pointer;font-size:16px;padding:4px;">✕</button>
         </div>`;
       });
       html += `</div>`;
@@ -1543,6 +1549,26 @@ async function saveAgenda() {
   } catch(e) { showToast(e.message, true); }
 }
 
+async function deleteEvent(id) {
+  const isEn = getLang() === 'en';
+  if (!confirm(isEn ? 'Delete this event?' : 'Excluir este evento?')) return;
+  try {
+    await api('/api/couple/agenda/delete', { method: 'POST', body: { id } });
+    showToast(isEn ? 'Event deleted' : 'Evento excluído');
+    loadAgenda();
+  } catch(e) { showToast(e.message, true); }
+}
+
+async function deleteTodo(id) {
+  const isEn = getLang() === 'en';
+  if (!confirm(isEn ? 'Delete this item?' : 'Excluir este item?')) return;
+  try {
+    await api('/api/couple/todos/delete', { method: 'POST', body: { id } });
+    showToast(isEn ? 'Item deleted' : 'Item excluído');
+    loadTodos();
+  } catch(e) { showToast(e.message, true); }
+}
+
 function loadTodos() {
   const main = document.getElementById('mainContent');
   const isEn = getLang() === 'en';
@@ -1562,6 +1588,7 @@ function loadTodos() {
             <div class="title ${t.done ? 'done-text' : ''}">${esc(t.title)}</div>
             <div class="meta">💕 ${isEn ? 'by' : 'por'} ${esc(t.created_by)}${t.done_by ? ' · ✅ ' + esc(t.done_by) : ''}</div>
           </div>
+          <button onclick="deleteTodo(${t.id})" title="${isEn ? 'Delete' : 'Excluir'}" style="background:none;border:none;color:var(--pink-dark);cursor:pointer;font-size:14px;padding:4px;">✕</button>
         </div>`;
       });
       html += `</div>`;
@@ -1972,7 +1999,7 @@ function renderQuizSelf(category) {
   const label = isEn ? `About me (${quizState.idx + 1}/${qs.length})` : `Sobre mim (${quizState.idx + 1}/${qs.length})`;
   const qText = isEn ? q.en : q.pt;
   const qOpts = isEn ? q.opts_en : q.opts_pt;
-  const opts = qOpts.map((o, i) => `<button class="answer-option" onclick="answerSelf(${i}, '${category}')">${esc(o)}</button>`).join('');
+  const opts = qOpts.map((o, i) => `<button class="answer-option" onclick="answerSelf(${i}, '${attrEsc(category)}')">${esc(o)}</button>`).join('');
 
   main.innerHTML = `<div class="section"><div class="section-title">❓ ${isEn ? 'Quiz' : 'Quiz'}${backLink()}</div>
     <div class="card" style="text-align:center;">
@@ -1980,13 +2007,13 @@ function renderQuizSelf(category) {
         💡 ${isEn ? 'Answer honestly! Once you both answer, you\'ll see each other\'s responses.' : 'Responda com sinceridade! Depois que ambos responderem, vocês verão as respostas um do outro.'}
       </div>
       <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--text-light);margin-bottom:8px;">${label}</div>
-      <div style="font-size:0.9rem;font-weight:700;margin-bottom:12px;line-height:1.5;">${qText.replace('minha','sua').replace('meu','seu').replace('my','your').replace('me','you')}</div>
+      <div style="font-size:0.9rem;font-weight:700;margin-bottom:12px;line-height:1.5;">${qText.replace(/\bminha\b/g,'sua').replace(/\bmeu\b/g,'seu').replace(/\bmy\b/g,'your').replace(/\bme\b/g,'you')}</div>
       <div>${opts}</div>
       <div style="margin-top:14px;border-top:1px dashed rgba(0,0,0,0.08);padding-top:14px;">
         <button class="card-action small" onclick="this.style.display='none';document.getElementById('customSelfArea').style.display='block'">✏️ ${isEn ? 'Other...' : 'Outro...'}</button>
         <div id="customSelfArea" style="display:none;margin-top:8px;">
           <input type="text" id="customSelfInput" placeholder="${isEn ? 'Type your answer...' : 'Digite sua resposta...'}" style="width:100%;">
-          <button class="card-action small" onclick="answerSelfCustom('${category}')" style="margin-top:8px;">💕 ${isEn ? 'Submit' : 'Enviar'}</button>
+          <button class="card-action small" onclick="answerSelfCustom('${attrEsc(category)}')" style="margin-top:8px;">💕 ${isEn ? 'Submit' : 'Enviar'}</button>
         </div>
       </div>
     </div>
@@ -2036,8 +2063,8 @@ function renderQuizPartner(category) {
   const label = isEn ? `About ${partner} (${quizState.idx + 1}/${qs.length})` : `Sobre ${partner} (${quizState.idx + 1}/${qs.length})`;
   const qText = isEn ? q.en : q.pt;
   const qOpts = isEn ? q.opts_en : q.opts_pt;
-  const replaced = isEn ? qText.replace('my', `${partner}'s`).replace(' me ', ' ' + partner + ' ') : qText.replace('minha', `da ${partner}`).replace('meu', `do ${partner}`).replace(' minha ', ' da ' + partner).replace(' meu ', ' do ' + partner);
-  const opts = qOpts.map((o, i) => `<button class="answer-option" onclick="answerPartner(${i}, '${category}')">${esc(o)}</button>`).join('');
+  const replaced = isEn ? qText.replace(/\bmy\b/g, `${partner}'s`).replace(/\bme\b/g, partner) : qText.replace(/\bminha\b/g, `da ${partner}`).replace(/\bmeu\b/g, `do ${partner}`);
+  const opts = qOpts.map((o, i) => `<button class="answer-option" onclick="answerPartner(${i}, '${attrEsc(category)}')">${esc(o)}</button>`).join('');
 
   main.innerHTML = `<div class="section"><div class="section-title">❓ ${isEn ? 'Quiz' : 'Quiz'}${backLink()}</div>
     <div class="card" style="text-align:center;">
@@ -2051,7 +2078,7 @@ function renderQuizPartner(category) {
         <button class="card-action small" onclick="this.style.display='none';document.getElementById('customPartnerArea').style.display='block'">✏️ ${isEn ? 'Other...' : 'Outro...'}</button>
         <div id="customPartnerArea" style="display:none;margin-top:8px;">
           <input type="text" id="customPartnerInput" placeholder="${isEn ? 'Type your answer...' : 'Digite sua resposta...'}" style="width:100%;">
-          <button class="card-action small" onclick="answerPartnerCustom('${category}')" style="margin-top:8px;">💕 ${isEn ? 'Submit' : 'Enviar'}</button>
+          <button class="card-action small" onclick="answerPartnerCustom('${attrEsc(category)}')" style="margin-top:8px;">💕 ${isEn ? 'Submit' : 'Enviar'}</button>
         </div>
       </div>
     </div>
@@ -2233,6 +2260,8 @@ function showToast(msg, isError = false) {
 }
 
 function init() {
+  const lang = getLang();
+  document.title = lang === 'en' ? 'Still Learning 💕' : 'Still Learning 💕';
   initDecorations();
   if (!COUPLE_ID || !USER_NAME) {
     document.getElementById('mainContent').innerHTML = `<div class="empty-state" style="padding:60px 20px;">${getLang() === 'en' ? 'Please log in first' : 'Faça login primeiro'}<br><br><button class="btn btn-primary" onclick="window.location.href='/'">${getLang() === 'en' ? 'Go to Login' : 'Ir para Login'}</button></div>`;

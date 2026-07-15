@@ -32,8 +32,8 @@ self.addEventListener("fetch", (e) => {
     return;
   }
 
-  // API calls: network-first, fallback to cached
-  if (url.pathname.startsWith("/api/")) {
+  // API calls (GET only): network-first, fallback to cached
+  if (url.pathname.startsWith("/api/") && e.request.method === 'GET') {
     e.respondWith(
       fetch(e.request)
         .then((res) => {
