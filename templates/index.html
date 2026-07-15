@@ -101,7 +101,7 @@
   </div>
 
   <script>
-    const _pt = { title: 'Still Learning', sub: '✦ continue aprendendo um ao outro ✦', namePH: 'seu nome', passPH: 'senha', btn: 'entrar!', errDefault: 'Erro ao entrar' };
+    const _pt = { title: 'Still Learning',         sub: '✦ continuem aprendendo um com o outro ✦', namePH: 'seu nome', passPH: 'senha', btn: 'entrar!', errDefault: 'Erro ao entrar' };
     const _en = { title: 'Still Learning', sub: '✦ keep learning each other ✦', namePH: 'your name', passPH: 'password', btn: 'enter!', errDefault: 'Login failed' };
 
     function getLang() { const m = document.cookie.match(/lang=([^;]+)/); return m ? m[1] : 'pt'; }
@@ -241,6 +241,7 @@
           localStorage.setItem('user_name', data.name);
           localStorage.setItem('user_display', data.name);
           localStorage.setItem('partner_name', data.partner_name);
+          if (data.token) localStorage.setItem('auth_token', data.token);
           window.location.href = '/still-learning';
         } else if (data.incomplete) {
           window.location.href = `/quiz/${data.session_id}?resume=1`;

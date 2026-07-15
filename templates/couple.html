@@ -335,6 +335,9 @@ input[type="datetime-local"] { font-family: 'Nunito', sans-serif; font-size: 14p
   background: linear-gradient(135deg, var(--pink), var(--pink-dark));
   border-radius: 0 0 4px 4px;
 }
+.settings-btn { flex: 0.5; min-width: 44px; }
+.settings-btn .nav-icon { font-size: 1.2rem; margin-bottom: 0; }
+.settings-btn.active::after { width: 20px; }
 
 .diary-entry {
   border-left: 3px solid var(--pink);
@@ -549,23 +552,19 @@ input[type="datetime-local"] { font-family: 'Nunito', sans-serif; font-size: 14p
     </div>
     <button class="lang-toggle" onclick="toggleLang()" id="langBtn">EN</button>
     <h1>✨ Still Learning ✨</h1>
-    <div class="subtitle" id="headerSub">Aprendendo um ao outro, um dia de cada vez 💕</div>
+    <div class="subtitle" id="headerSub">Aprendendo um com o outro, um dia de cada vez 💕</div>
   </div>
   <div id="userGreeting" class="user-greeting"></div>
   <div id="mainContent"></div>
 </div>
 
 <div class="nav-bar" id="navBar">
-  <div class="nav-item active" data-nav="dashboard" onclick="showSection('dashboard')"><span class="nav-icon">🏠</span>Início</div>
-  <div class="nav-item" data-nav="question" onclick="showSection('question')"><span class="nav-icon">💭</span>Pergunta</div>
-  <div class="nav-item" data-nav="diary" onclick="showSection('diary')"><span class="nav-icon">📖</span>Diário</div>
-  <div class="nav-item" data-nav="memories" onclick="showSection('memories')"><span class="nav-icon">✨</span>Memórias</div>
-  <div class="nav-item" data-nav="challenge" onclick="showSection('challenge')"><span class="nav-icon">🎯</span>Desafio</div>
-  <div class="nav-item" data-nav="quiz" onclick="showSection('quiz')"><span class="nav-icon">❓</span>Quiz</div>
-  <div class="nav-item" data-nav="more" onclick="toggleMoreMenu()"><span class="nav-icon">🚪</span>Sair</div>
+  <div class="nav-item active" data-nav="today" onclick="showSection('today')"><span class="nav-icon">🏠</span>Hoje</div>
+  <div class="nav-item" data-nav="us" onclick="showSection('us')"><span class="nav-icon">💑</span>Nós</div>
+  <div class="nav-item settings-btn" data-nav="settings" onclick="toggleSettings()"><span class="nav-icon">⚙️</span></div>
 </div>
 
-<div class="modal-overlay" id="moreModal" onclick="if(event.target===this)closeMoreMenu()">
+<div class="modal-overlay" id="settingsModal" onclick="if(event.target===this)closeSettings()">
   <div class="modal-box" style="text-align:center;">
     <div class="card-heart" style="position:static;margin:0 auto 10px;transform:none;">
       <svg width="24" height="24" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -576,10 +575,15 @@ input[type="datetime-local"] { font-family: 'Nunito', sans-serif; font-size: 14p
     </div>
     <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--text);margin-bottom:16px;">Still Learning</div>
     <div style="display:grid;grid-template-columns:1fr;gap:10px;max-width:200px;margin:0 auto;">
+      <div class="more-card" onclick="toggleLang()">
+        <div style="font-size:1.5rem;">🌐</div>
+        <div style="font-weight:700;font-size:0.85rem;margin-top:4px;" data-i18n-setting="language">Idioma</div>
+        <div style="font-size:0.7rem;color:var(--text-light);margin-top:2px;" id="settingsLangLabel">🇧🇷 Português</div>
+      </div>
       <div class="more-card" onclick="logout(event)">
         <div style="font-size:2rem;">🚪</div>
-        <div style="font-weight:700;font-size:0.85rem;margin-top:4px;">Sair</div>
-        <div style="font-size:0.7rem;color:var(--text-light);margin-top:2px;" data-i18n="more_logout">Desconectar</div>
+        <div style="font-weight:700;font-size:0.85rem;margin-top:4px;" data-i18n-setting="logout">Sair</div>
+        <div style="font-size:0.7rem;color:var(--text-light);margin-top:2px;" data-i18n-setting="disconnect">Desconectar</div>
       </div>
     </div>
   </div>
@@ -592,7 +596,7 @@ const COUPLE_ID = localStorage.getItem('couple_id') || '';
 const USER_NAME = localStorage.getItem('user_name') || '';
 const USER_DISPLAY = localStorage.getItem('user_display') || '';
 const PARTNER_NAME = localStorage.getItem('partner_name') || '';
-let state = { section: 'dashboard', data: {} };
+let state = { section: 'today', data: {} };
 
 function initDecorations() {
   const isMobile = window.innerWidth <= 600;
@@ -625,8 +629,43 @@ function initDecorations() {
   }
 }
 
+function loadUsSection() {
+  const isEn = getLang() === 'en';
+  const main = document.getElementById('mainContent');
+  main.innerHTML = `
+    <div class="section">
+      <h2 class="section-title">${isEn ? '💑 Us' : '💑 Nós'}</h2>
+      <p style="text-align:center;color:var(--text-light);font-size:0.8rem;margin-bottom:20px;">${isEn ? 'Our shared memories and moments' : 'Nossas memórias e momentos compartilhados'}</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:400px;margin:0 auto;">
+        <div class="more-card" onclick="showSection('diary')">
+          <div style="font-size:2.5rem;">📖</div>
+          <div style="font-weight:700;font-size:0.9rem;margin-top:6px;">${isEn ? 'Diary' : 'Diário'}</div>
+          <div style="font-size:0.7rem;color:var(--text-light);margin-top:4px;">${isEn ? 'Our daily entries' : 'Nossas entradas diárias'}</div>
+        </div>
+        <div class="more-card" onclick="showSection('memories')">
+          <div style="font-size:2.5rem;">✨</div>
+          <div style="font-weight:700;font-size:0.9rem;margin-top:6px;">${isEn ? 'Memories' : 'Memórias'}</div>
+          <div style="font-size:0.7rem;color:var(--text-light);margin-top:4px;">${isEn ? 'Photos & mixed memories' : 'Fotos e memórias mistas'}</div>
+        </div>
+        <div class="more-card" onclick="showSection('quiz')">
+          <div style="font-size:2.5rem;">❓</div>
+          <div style="font-weight:700;font-size:0.9rem;margin-top:6px;">${isEn ? 'Quiz' : 'Quiz'}</div>
+          <div style="font-size:0.7rem;color:var(--text-light);margin-top:4px;">${isEn ? 'Test your knowledge' : 'Teste seu conhecimento'}</div>
+        </div>
+        <div class="more-card" onclick="showSection('challenge')">
+          <div style="font-size:2.5rem;">🎯</div>
+          <div style="font-weight:700;font-size:0.9rem;margin-top:6px;">${isEn ? 'Challenge' : 'Desafio'}</div>
+          <div style="font-size:0.7rem;color:var(--text-light);margin-top:4px;">${isEn ? 'Current challenge' : 'Desafio atual'}</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 async function api(path, opts = {}) {
   opts.headers = opts.headers || {};
+  const token = localStorage.getItem('auth_token');
+  if (token) opts.headers['Authorization'] = 'Bearer ' + token;
   if (COUPLE_ID) opts.headers['X-Couple-Id'] = COUPLE_ID;
   if (USER_NAME) opts.headers['X-User-Name'] = USER_NAME;
   if (PARTNER_NAME) opts.headers['X-Partner-Name'] = PARTNER_NAME;
@@ -638,12 +677,11 @@ async function api(path, opts = {}) {
 }
 
 function toggleLang() {
-  sessionStorage.setItem('lang_section', state.section || 'dashboard');
+  sessionStorage.setItem('lang_section', state.section || 'today');
   document.cookie = 'lang=' + (getLang() === 'pt' ? 'en' : 'pt') + ';path=/;max-age=31536000';
   location.reload();
 }
 function getLang() { const m = document.cookie.match(/lang=([^;]+)/); return m ? m[1] : 'pt'; }
-function t(key) { return _t[key] || key; }
 function esc(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
 function logout(e) {
@@ -655,40 +693,41 @@ function logout(e) {
 function updateNavLang() {
   const isEn = getLang() === 'en';
   document.getElementById('langBtn').textContent = isEn ? 'PT' : 'EN';
-  document.getElementById('headerSub').textContent = isEn ? 'Learning each other, one day at a time 💕' : 'Aprendendo um ao outro, um dia de cada vez 💕';
+  document.getElementById('headerSub').textContent = isEn ? 'Learning each other, one day at a time 💕' : 'Aprendendo um com o outro, um dia de cada vez 💕';
   document.querySelectorAll('[data-nav]').forEach(el => {
     const nav = el.dataset.nav;
-    const labels = { dashboard: isEn ? 'Home' : 'Início', question: isEn ? 'Question' : 'Pergunta', diary: isEn ? 'Diary' : 'Diário', memories: isEn ? 'Memories' : 'Memórias', challenge: isEn ? 'Challenge' : 'Desafio', quiz: isEn ? 'Quiz' : 'Quiz', more: isEn ? 'Exit' : 'Sair' };
+    if (nav === 'settings') return;
+    const labels = { today: isEn ? 'Today' : 'Hoje', us: isEn ? 'Us' : 'Nós' };
     el.childNodes[el.childNodes.length - 1].textContent = labels[nav] || nav;
   });
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    const key = el.dataset.i18n;
-    if (key === 'more_logout') el.textContent = isEn ? 'Disconnect' : 'Desconectar';
+  document.getElementById('settingsLangLabel').textContent = isEn ? '🇺🇸 English' : '🇧🇷 Português';
+  document.querySelectorAll('[data-i18n-setting]').forEach(el => {
+    const key = el.dataset.i18nSetting;
+    const labels = { language: isEn ? 'Language' : 'Idioma', logout: isEn ? 'Log out' : 'Sair', disconnect: isEn ? 'Disconnect' : 'Desconectar' };
+    el.textContent = labels[key] || key;
   });
-  // More card title
-  const moreTitles = document.querySelectorAll('.more-card > div:nth-child(2)');
-  if (moreTitles.length) moreTitles[0].textContent = isEn ? 'Exit' : 'Sair';
 }
-function toggleMoreMenu() { document.getElementById('moreModal').classList.toggle('show'); }
-function closeMoreMenu() { document.getElementById('moreModal').classList.remove('show'); }
+function toggleSettings() { document.getElementById('settingsModal').classList.toggle('show'); }
+function closeSettings() { document.getElementById('settingsModal').classList.remove('show'); }
 // Safari touch guard for modal overlay
 document.addEventListener('DOMContentLoaded', function() {
-  var mm = document.getElementById('moreModal');
-  if (mm) { mm.addEventListener('touchstart', function(e) { if (e.target === this) closeMoreMenu(); }, {passive:true}); }
+  var mm = document.getElementById('settingsModal');
+  if (mm) { mm.addEventListener('touchstart', function(e) { if (e.target === this) closeSettings(); }, {passive:true}); }
 });
 
 function backLink() {
   const isEn = getLang() === 'en';
-  return `<button onclick="showSection('dashboard')" style="margin-left:auto;font-family:'Press Start 2P',monospace;font-size:8px;color:var(--pink-dark);background:none;border:none;cursor:pointer;transition:all 0.2s var(--ease-bounce);display:flex;align-items:center;gap:4px;padding:8px 4px;">← ${isEn ? 'Back' : 'Voltar'}</button>`;
+  return `<button onclick="showSection('today')" style="margin-left:auto;font-family:'Press Start 2P',monospace;font-size:8px;color:var(--pink-dark);background:none;border:none;cursor:pointer;transition:all 0.2s var(--ease-bounce);display:flex;align-items:center;gap:4px;padding:8px 4px;">← ${isEn ? 'Back' : 'Voltar'}</button>`;
 }
 
 function showSection(name) {
   state.section = name;
   document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.nav === name));
-  closeMoreMenu();
+  closeSettings();
   const main = document.getElementById('mainContent');
   main.innerHTML = `<div class="loading"><div class="spinner"></div><div class="loading-text">${getLang() === 'en' ? 'Loading...' : 'Carregando...'}</div></div>`;
-  if (name === 'dashboard') loadDashboard();
+  if (name === 'today') loadDashboard();
+  else if (name === 'us') loadUsSection();
   else if (name === 'question') loadQuestion();
   else if (name === 'diary') loadDiary();
   else if (name === 'challenge') loadChallenge();
@@ -1017,7 +1056,7 @@ function loadChallenge() {
             html += `<div class="challenge-answer" style="border-left-color:var(--lavender);"><strong>${esc(d.partner_name)} ${isEn ? 'answers' : 'responde'} (${isEn ? 'my question' : 'minha pergunta'}):</strong> ${esc(d.partner_guess)}</div>`;
           }
           if (d.both_answered) {
-            html += `<div style="margin-top:12px;text-align:center;"><button class="btn btn-ghost" onclick="showSection('memories')">📸 ${isEn ? 'View in Mixed Memories' : 'Ver em Mixed Memories'}</button></div>`;
+            html += `<div style="margin-top:12px;text-align:center;"><button class="btn btn-ghost" onclick="showSection('memories')">📸 ${isEn ? 'View in Mixed Memories' : 'Ver em Memórias Misturadas'}</button></div>`;
           }
         }
       } else {
@@ -1477,7 +1516,7 @@ function loadAgenda() {
 
 function showAddAgenda() {
   const isEn = getLang() === 'en';
-  const modal = document.getElementById('moreModal');
+  const modal = document.getElementById('settingsModal');
   modal.querySelector('.modal-box').innerHTML = `
     <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--text);margin-bottom:16px;text-align:center;">📅 ${isEn ? 'New Event' : 'Novo Evento'}</div>
     <div class="add-form">
@@ -1485,7 +1524,7 @@ function showAddAgenda() {
       <input id="agDate" type="datetime-local">
       <textarea id="agDesc" rows=2 placeholder="${isEn ? 'Description (optional)' : 'Descrição (opcional)'}"></textarea>
       <button class="btn btn-primary" onclick="saveAgenda()">💕 ${isEn ? 'Save' : 'Salvar'}</button>
-      <button class="btn btn-outline" onclick="closeMoreMenu()">${isEn ? 'Cancel' : 'Cancelar'}</button>
+      <button class="btn btn-outline" onclick="closeSettings()">${isEn ? 'Cancel' : 'Cancelar'}</button>
     </div>`;
   modal.classList.add('show');
 }
@@ -1499,7 +1538,7 @@ async function saveAgenda() {
   try {
     await api('/api/couple/agenda/add', { method: 'POST', body: { couple_id: COUPLE_ID, title, date, description: desc, created_by: USER_NAME } });
     showToast(isEn ? 'Event added! 💕' : 'Evento adicionado! 💕');
-    closeMoreMenu();
+    closeSettings();
     loadAgenda();
   } catch(e) { showToast(e.message, true); }
 }
@@ -1536,14 +1575,14 @@ function loadTodos() {
 
 function showAddTodo() {
   const isEn = getLang() === 'en';
-  const modal = document.getElementById('moreModal');
+  const modal = document.getElementById('settingsModal');
   modal.querySelector('.modal-box').innerHTML = `
     <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--text);margin-bottom:16px;text-align:center;">📋 ${isEn ? 'New Item' : 'Novo Item'}</div>
     <div class="add-form">
       <input id="todoTitle" placeholder="${isEn ? 'What shall we do?' : 'O que vamos fazer?'}">
       <textarea id="todoDesc" rows=2 placeholder="${isEn ? 'Details...' : 'Detalhes...'}"></textarea>
       <button class="btn btn-primary" onclick="saveTodo()">💕 ${isEn ? 'Add' : 'Adicionar'}</button>
-      <button class="btn btn-outline" onclick="closeMoreMenu()">${isEn ? 'Cancel' : 'Cancelar'}</button>
+      <button class="btn btn-outline" onclick="closeSettings()">${isEn ? 'Cancel' : 'Cancelar'}</button>
     </div>`;
   modal.classList.add('show');
 }
@@ -1556,7 +1595,7 @@ async function saveTodo() {
   try {
     await api('/api/couple/todos/add', { method: 'POST', body: { couple_id: COUPLE_ID, title, description: desc, created_by: USER_NAME } });
     showToast(isEn ? 'Added! 💕' : 'Adicionado! 💕');
-    closeMoreMenu();
+    closeSettings();
     loadTodos();
   } catch(e) { showToast(e.message, true); }
 }
@@ -2158,12 +2197,12 @@ function renderQuizResults() {
 function showFullPhoto(idx, url) {
   const dataUrl = url || (idx >= 0 ? _photosData[idx] : null);
   if (!dataUrl) return;
-  const modal = document.getElementById('moreModal');
+  const modal = document.getElementById('settingsModal');
   modal.querySelector('.modal-box').innerHTML = `
     <div style="text-align:center;">
       <img src="${esc(dataUrl)}" style="max-width:100%;max-height:70vh;border-radius:var(--radius-sm);filter:sepia(0.3) contrast(0.9);box-shadow:var(--shadow);">
       <br><br>
-      <button class="btn btn-outline" onclick="closeMoreMenu()">${getLang() === 'en' ? 'Close' : 'Fechar'}</button>
+      <button class="btn btn-outline" onclick="closeSettings()">${getLang() === 'en' ? 'Close' : 'Fechar'}</button>
     </div>`;
   modal.classList.add('show');
 }
@@ -2207,7 +2246,7 @@ function init() {
     sessionStorage.removeItem('lang_section');
     showSection(savedSection);
   } else {
-    loadDashboard();
+    showSection('today');
   }
 }
 

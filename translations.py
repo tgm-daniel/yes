@@ -1,6 +1,6 @@
 L = {
     "app_name": {"pt": "Still Learning 💕", "en": "Still Learning 💕"},
-    "app_subtitle": {"pt": "Aprendendo um ao outro, um dia de cada vez", "en": "Learning each other, one day at a time"},
+    "app_subtitle": {"pt": "Aprendendo um com o outro, um dia de cada vez", "en": "Learning each other, one day at a time"},
 
     "nav_dashboard": {"pt": "Início", "en": "Home"},
     "nav_diary": {"pt": "Diário", "en": "Diary"},
@@ -69,7 +69,7 @@ L = {
     "challenge_past": {"pt": "Desafios Anteriores", "en": "Past Challenges"},
 
     "agenda_title": {"pt": "Nossa Agenda 📅", "en": "Our Agenda 📅"},
-    "agenda_subtitle": {"pt": "Moments marcados e planos juntos", "en": "Marked moments and plans together"},
+    "agenda_subtitle": {"pt": "Momentos marcados e planos juntos", "en": "Marked moments and plans together"},
     "agenda_add": {"pt": "Adicionar Evento", "en": "Add Event"},
     "agenda_title_label": {"pt": "Título", "en": "Title"},
     "agenda_date_label": {"pt": "Data e Hora", "en": "Date & Time"},
@@ -355,46 +355,28 @@ L = {
     },
 
     "notifications": {
-        "partner_answered_question_pt": "💌 {{name}} respondeu sua pergunta íntima!",
-        "partner_answered_question_en": "💌 {{name}} answered your intimate question!",
-        "partner_completed_challenge_pt": "🎯 {{name}} completou seu desafio!",
-        "partner_completed_challenge_en": "🎯 {{name}} completed your challenge!",
-        "partner_answered_daily_pt": "💭 {{name}} respondeu a pergunta do dia!",
-        "partner_answered_daily_en": "💭 {{name}} answered the daily question!",
-        "partner_wrote_diary_pt": "📖 {{name}} escreveu no diário!",
-        "partner_wrote_diary_en": "📖 {{name}} wrote in the diary!",
-        "new_notifications_pt": "Você tem {{count}} notificações novas 💕",
-        "new_notifications_en": "You have {{count}} new notifications 💕"
+        "partner_answered_question": {"pt": "💌 {{name}} respondeu sua pergunta íntima!", "en": "💌 {{name}} answered your intimate question!"},
+        "partner_completed_challenge": {"pt": "🎯 {{name}} completou seu desafio!", "en": "🎯 {{name}} completed your challenge!"},
+        "partner_answered_daily": {"pt": "💭 {{name}} respondeu a pergunta do dia!", "en": "💭 {{name}} answered the daily question!"},
+        "partner_wrote_diary": {"pt": "📖 {{name}} escreveu no diário!", "en": "📖 {{name}} wrote in the diary!"},
+        "new_notifications": {"pt": "Você tem {{count}} notificações novas 💕", "en": "You have {{count}} new notifications 💕"}
     },
 
     "memories": {
-        "title_pt": "Memórias 📖",
-        "title_en": "Memories 📖",
-        "subtitle_pt": "Todas as nossas interações guardadas com carinho",
-        "subtitle_en": "All our interactions kept with love",
-        "empty_pt": "Nenhuma memória ainda. Comece respondendo perguntas e desafios! 💕",
-        "empty_en": "No memories yet. Start by answering questions and challenges! 💕",
-        "section_questions_pt": "💭 Perguntas do Dia",
-        "section_questions_en": "💭 Daily Questions",
-        "section_challenges_pt": "🎯 Desafios",
-        "section_challenges_en": "🎯 Challenges",
-        "section_reviews_pt": "📖 Revisões Semanais",
-        "section_reviews_en": "📖 Weekly Reviews",
-        "section_quotes_pt": "💬 Citações",
-        "section_quotes_en": "💬 Quotes",
-        "you_pt": "Você",
-        "you_en": "You"
+        "title": {"pt": "Memórias 📖", "en": "Memories 📖"},
+        "subtitle": {"pt": "Todas as nossas interações guardadas com carinho", "en": "All our interactions kept with love"},
+        "empty": {"pt": "Nenhuma memória ainda. Comece respondendo perguntas e desafios! 💕", "en": "No memories yet. Start by answering questions and challenges! 💕"},
+        "section_questions": {"pt": "💭 Perguntas do Dia", "en": "💭 Daily Questions"},
+        "section_challenges": {"pt": "🎯 Desafios", "en": "🎯 Challenges"},
+        "section_reviews": {"pt": "📖 Revisões Semanais", "en": "📖 Weekly Reviews"},
+        "section_quotes": {"pt": "💬 Citações", "en": "💬 Quotes"},
+        "you": {"pt": "Você", "en": "You"}
     },
 
-    "both_must_answer_pt": "✋ Vocês só verão a resposta um do outro quando ambos responderem. Seu parceiro ainda não respondeu.",
-    "both_must_answer_en": "✋ You'll only see each other's answers when both have responded. Your partner hasn't answered yet.",
-    "both_revealed_pt": "✨ Ambos responderam! Aqui está a resposta do seu parceiro:",
-    "both_revealed_en": "✨ Both have answered! Here's your partner's response:",
-
-    "quote_title_pt": "💬 Citação do Dia",
-    "quote_title_en": "💬 Quote of the Day",
-    "quote_source_pt": "📖 Fonte",
-    "quote_source_en": "📖 Source",
+    "both_must_answer": {"pt": "✋ Vocês só verão a resposta um do outro quando ambos responderem. Seu parceiro ainda não respondeu.", "en": "✋ You'll only see each other's answers when both have responded. Your partner hasn't answered yet."},
+    "both_revealed": {"pt": "✨ Ambos responderam! Aqui está a resposta do seu parceiro:", "en": "✨ Both have answered! Here's your partner's response:"},
+    "quote_title": {"pt": "💬 Citação do Dia", "en": "💬 Quote of the Day"},
+    "quote_source": {"pt": "📖 Fonte", "en": "📖 Source"},
 
     "daily_quotes": {
         "pt": [
@@ -432,7 +414,7 @@ L = {
             {"text": "O amor é paciente, o amor é bondoso.", "author": "Bíblia", "source": "1 Coríntios 13", "original": "Love is patient, love is kind.", "curiosity": "1 Coríntios 13 é conhecido como o 'capítulo do amor'. Foi escrito pelo apóstolo Paulo para a igreja de Corinto, e é um dos textos mais citados em casamentos.", "curiosity_en": "1 Corinthians 13 is known as the 'love chapter'. It was written by the apostle Paul to the church in Corinth, and is one of the most quoted texts at weddings."},
             {"text": "Não há nada mais forte no mundo do que um coração partido que decide se curar.", "author": "Desconhecido", "source": "Sabedoria popular", "original": "There is nothing stronger in the world than a broken heart that decides to heal."},
             {"text": "A felicidade não é algo pronto. Ela vem das suas próprias ações.", "author": "Dalai Lama", "source": "A Arte da Felicidade", "original": "Happiness is not something ready-made. It comes from your own actions.", "curiosity": "O Dalai Lama é o líder espiritual do Tibete. 'A Arte da Felicidade' é um livro baseado em anos de conversas com o psiquiatra Howard Cutler.", "curiosity_en": "The Dalai Lama is the spiritual leader of Tibet. 'The Art of Happiness' is a book based on years of conversations with psychiatrist Howard Cutler."},
-            {"text": "O amor é a flor mais delicada e a mais forte que existe.", "author": "Desconhecido", "source": "Sabedoria popular", "original": "Love is the most delicate and the strongest flower that exists."}
+            {"text": "Love is the most delicate and strongest flower that exists.", "author": "Unknown", "source": "Popular wisdom", "original": "Love is the most delicate and the strongest flower that exists."}
         ]
     }
 }

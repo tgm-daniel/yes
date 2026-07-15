@@ -4,8 +4,15 @@ import random
 import uuid
 import hashlib
 from datetime import datetime, date, timedelta
+from typing import Optional
 
-from fastapi import FastAPI, Depends, HTTPException, Request, Response
+import bcrypt
+import jwt as pyjwt
+from dotenv import load_dotenv
+
+load_dotenv()
+
+from fastapi import FastAPI, Depends, HTTPException, Request, Response, Header
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
@@ -43,11 +50,76 @@ def startup_load_profiles():
         db.close()
 
 
-ADMIN_USERS = {"ttt": "sisrat", "T": "trs123", "Tadmin": "trs123"}
+# Load admin users from env var (JSON array)
+ADMIN_USERS = {}
+_admin_raw = os.environ.get("ADMIN_USERS", "")
+if _admin_raw:
+    try:
+        for entry in json.loads(_admin_raw):
+            ADMIN_USERS[entry["username"]] = entry["password"]
+    except: pass
+if not ADMIN_USERS:
+    ADMIN_USERS = {"ttt": "sisrat", "T": "trs123", "Tadmin": "trs123"}
+
+JWT_SECRET = os.environ.get("JWT_SECRET", "sl-jwt-dev-secret")
+JWT_ALGO = "HS256"
 
 
 def hash_pw(pw: str) -> str:
-    return hashlib.sha256((pw + "sl-hmac-2024").encode()).hexdigest()
+    return bcrypt.hashpw(pw.encode(), bcrypt.gensalt()).decode()
+
+
+def verify_pw(pw: str, stored: str) -> bool:
+    # Try bcrypt first
+    if stored.startswith("$2b$") or stored.startswith("$2a$"):
+        return bcrypt.checkpw(pw.encode(), stored.encode())
+    # Fallback: legacy SHA-256 (migration)
+    if hashlib.sha256((pw + "sl-hmac-2024").encode()).hexdigest() == stored:
+        return True
+    return False
+
+
+def create_jwt(data: dict) -> str:
+    payload = {**data, "iat": datetime.utcnow(), "exp": datetime.utcnow() + timedelta(hours=48)}
+    return pyjwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGO)
+
+
+def decode_jwt(token: str) -> Optional[dict]:
+    try:
+        return pyjwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGO])
+    except: return None
+
+
+def require_auth(authorization: Optional[str] = Header(None), request: Request = None):
+    """JWT auth dependency. Falls back to legacy X- headers."""
+    if authorization and authorization.startswith("Bearer "):
+        payload = decode_jwt(authorization[7:])
+        if payload:
+            return {
+                "login_name": payload.get("login_name", ""),
+                "profile_id": payload.get("profile_id", ""),
+                "couple_id": payload.get("couple_id", ""),
+                "role": payload.get("role", "user"),
+                "auth_method": "jwt",
+            }
+    # Fallback to legacy headers (for backward compatibility)
+    if request:
+        cid = request.headers.get("X-Couple-Id", "")
+        uname = request.headers.get("X-User-Name", "")
+        if cid and uname:
+            return {
+                "login_name": uname,
+                "couple_id": cid,
+                "auth_method": "header",
+            }
+    raise HTTPException(status_code=401, detail="Autenticação necessária")
+
+
+def check_admin(body: dict):
+    user = body.get("username", "")
+    pw = body.get("password", "")
+    if ADMIN_USERS.get(user) != pw:
+        raise HTTPException(status_code=401, detail="Credenciais inválidas")
 
 
 def migrate_profiles(db: Session):
@@ -294,8 +366,13 @@ def api_login(body: dict, request: Request, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail="Nome ou senha incorretos")
 
     cred = db.query(LoginCredential).filter(LoginCredential.login_name == name_raw).first()
-    if not cred or cred.password_hash != hash_pw(password):
+    if not cred or not verify_pw(password, cred.password_hash):
         raise HTTPException(status_code=401, detail="Nome ou senha incorretos")
+
+    # If password was verified with legacy SHA-256, re-hash with bcrypt
+    if not cred.password_hash.startswith("$2b$") and not cred.password_hash.startswith("$2a$"):
+        cred.password_hash = hash_pw(password)
+        db.commit()
 
     profile = PROFILES.get(profile_id)
     if not profile:
@@ -333,17 +410,23 @@ def api_login(body: dict, request: Request, db: Session = Depends(get_db)):
         }
     else:
         display = profile.get("display_name", name_raw)
-        return {"type": "couple", "name": display, "couple_id": profile.get("couple_id", ""), "partner_name": profile.get("partner_name", "")}
+        couple_id = profile.get("couple_id", "") or profile.get("partner", "")
+        partner_name = profile.get("partner_name", "") or profile.get("partner", "")
+        # Determine partner's login name for couple pairing
+        token = create_jwt({"login_name": name_raw, "profile_id": profile_id, "couple_id": couple_id, "role": "user"})
+        return {"type": "couple", "name": display, "couple_id": couple_id, "partner_name": partner_name, "token": token}
 
 
 # ---- COUPLE API ----
 
 @app.get("/api/couple/dashboard")
-def api_couple_dashboard(request: Request, db: Session = Depends(get_db)):
-    couple_id = request.headers.get("X-Couple-Id", "")
-    my_name = request.headers.get("X-User-Name", "")
-    if not couple_id or not my_name:
-        raise HTTPException(status_code=400, detail="Missing couple/name headers")
+def api_couple_dashboard(
+    request: Request,
+    db: Session = Depends(get_db),
+    auth: dict = Depends(require_auth)
+):
+    couple_id = request.headers.get("X-Couple-Id", "") or auth.get("couple_id", "")
+    my_name = request.headers.get("X-User-Name", "") or auth.get("login_name", "")
     today = date.today()
     partner_name = get_partner_name(couple_id, my_name)
     week_start = today - timedelta(days=today.weekday())

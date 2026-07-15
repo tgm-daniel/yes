@@ -1567,7 +1567,7 @@ function renderChallenges() {
   } else if (!filtered.length) {
     html += '<div style="color:var(--text-light);padding:12px 0;">Nenhum desafio encontrado com este filtro.</div>';
   } else {
-    html += '<div style="overflow-x:auto;"><table class=q-table style="font-size:0.75rem;"><thead><tr><th style="min-width:24px;"><input type=checkbox id="chkAll" onchange="toggleAllChallenges(this.checked)"></th><th style="min-width:24px;"></th><th>Tipo</th><th>Conteúdo</th><th>Autor</th><th>Status</th><th>Data</th></tr></thead><tbody>';
+    html += '<div style="overflow-x:auto;"><table class=q-table style="font-size:0.75rem;"><thead><tr><th style="min-width:24px;"><input type=checkbox id="chkAll" onchange="toggleAllChallenges(this.checked)"></th><th style="min-width:24px;"></th><th data-label="Tipo">Tipo</th><th data-label="Conteudo">Conteúdo</th><th data-label="Autor">Autor</th><th data-label="Status">Status</th><th data-label="Data">Data</th></tr></thead><tbody>';
     filtered.forEach(c => {
       const typeIcons = { daily: '🎯', riddle: '🧩', partner_question: '💑', partner_challenge: '🤝', photo: '📸', quote: '💌' };
       const icon = typeIcons[c.type] || '🎯';
@@ -1580,11 +1580,11 @@ function renderChallenges() {
       html += `<tr>
         <td><input type=checkbox class="chk-challenge" value="${c.id}" id="${chkId}"></td>
         <td><span class="q-del" onclick="deleteAdminChallenge(${c.id})" style="cursor:pointer;">✕</span></td>
-        <td>${icon} ${c.type || '—'}</td>
-        <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(content)}">${esc(content).slice(0,60)}${content.length > 60 ? '…' : ''}</td>
-        <td>${esc(c.author_id || c.created_by || '—')}</td>
-        <td>${status}</td>
-        <td style="white-space:nowrap;">${esc(c.date || c.created_at || '—')}</td>
+        <td data-label="Tipo">${icon} ${c.type || '—'}</td>
+        <td data-label="Conteudo" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(content)}">${esc(content).slice(0,60)}${content.length > 60 ? '…' : ''}</td>
+        <td data-label="Autor">${esc(c.author_id || c.created_by || '—')}</td>
+        <td data-label="Status">${status}</td>
+        <td data-label="Data" style="white-space:nowrap;">${esc(c.date || c.created_at || '—')}</td>
       </tr>`;
     });
     html += '</tbody></table></div>';
@@ -1594,7 +1594,6 @@ function renderChallenges() {
   el.innerHTML = html;
 }
 
-let _selectedChallengeIds = [];
 function toggleAllChallenges(checked) {
   document.querySelectorAll('.chk-challenge').forEach(cb => cb.checked = checked);
 }
