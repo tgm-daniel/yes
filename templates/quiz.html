@@ -293,6 +293,8 @@
     }
 
     // ---- LOAD QUESTION ----
+    function esc(s) { return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
     async function loadQuestion() {
       answered = false;
       document.getElementById('nextBtnWrap').classList.remove('show');
@@ -328,7 +330,7 @@
       data.options.forEach((option, i) => {
         const btn = document.createElement('button');
         btn.className = 'option-btn';
-        btn.innerHTML = `<span class="letter">${LETTERS[i]}</span><span class="option-text">${option}</span>`;
+        btn.innerHTML = `<span class="letter">${LETTERS[i]}</span><span class="option-text">${esc(option)}</span>`;
         btn.dataset.index = i;
         btn.onclick = () => selectAnswer(i);
         container.appendChild(btn);

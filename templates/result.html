@@ -175,18 +175,18 @@
               <path d="M48 58 Q60 68 72 58" stroke="#4a3a5a" stroke-width="2.5" fill="none" stroke-linecap="round" />
             </svg>
           </div>
-          <h1 class="title"><span class="title-highlight">SIM!!!</span></h1>
-          <div class="title-sub">${profileEmoji} você disse sim! ${profileEmoji}</div>
-          <p class="subtitle" style="margin-top: 12px;">
-            ${d.yesMessage}
-          </p>
-          <p style="font-family: 'Press Start 2P', monospace; font-size: 9px; color: var(--pink-dark); margin-top: 16px; letter-spacing: 1px;">
-            ${d.yesFooter}
-          </p>
-          <p class="subtitle" style="margin-top: 16px; font-size: 0.85rem;">
-            ps: me manda um direct no <strong>${d.instagram}</strong> 🫦<br>
-            só um "hey" mesmo pra gente voltar a se falar ✨
-          </p>
+              <h1 class="title"><span class="title-highlight">SIM!!!</span></h1>
+              <div class="title-sub">${esc(profileEmoji)} você disse sim! ${esc(profileEmoji)}</div>
+              <p class="subtitle" style="margin-top: 12px;">
+                ${esc(d.yesMessage)}
+              </p>
+              <p style="font-family: 'Press Start 2P', monospace; font-size: 9px; color: var(--pink-dark); margin-top: 16px; letter-spacing: 1px;">
+                ${esc(d.yesFooter)}
+              </p>
+              <p class="subtitle" style="margin-top: 16px; font-size: 0.85rem;">
+                ps: me manda um direct no <strong>${esc(d.instagram)}</strong> 🫦<br>
+                só um "hey" mesmo pra gente voltar a se falar ✨
+              </p>
         </div>
       `;
       startHeartsRain();
@@ -230,10 +230,10 @@
           <div style="font-size: 64px; margin-bottom: 12px;">😢💔</div>
           <h1 class="title">eu entendo...</h1>
           <p class="subtitle" style="margin-top: 12px;">
-            ${d.noMessage}
+            ${esc(d.noMessage)}
           </p>
           <p class="subtitle" style="margin-top: 4px; font-size: 0.9rem;">
-            ${d.noFooter}
+            ${esc(d.noFooter)}
           </p>
           <div class="result-divider" style="margin-top: 12px;">✧ ♡ ✧</div>
           <p style="margin-top: 16px;">
@@ -244,6 +244,7 @@
       document.querySelector('title').textContent = '😢💔';
     }
 
+    function esc(s) { return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
     loadResult();
   </script>
 </body>
